@@ -39,14 +39,10 @@ export const InvitationReveal = forwardRef<
       <div
         ref={cardRef}
         data-invitation-card
-        className="absolute inset-[3%] overflow-hidden rounded-[3px] opacity-0 shadow-[0_28px_70px_rgba(0,0,0,0.6)]"
-        // deckled/torn paper edge — irregular soft mask around the render
-        style={{
-          WebkitMaskImage:
-            "radial-gradient(120% 130% at 50% 50%, #000 92%, transparent 100%)",
-          maskImage: "radial-gradient(120% 130% at 50% 50%, #000 92%, transparent 100%)",
-        }}
+        className="absolute inset-0 overflow-hidden rounded-[3px] opacity-0 shadow-[0_28px_70px_rgba(0,0,0,0.6)]"
       >
+        {/* The render already carries its own deckled paper border, so
+            it fills the frame edge-to-edge (no extra mask/crop). */}
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={artwork.card}

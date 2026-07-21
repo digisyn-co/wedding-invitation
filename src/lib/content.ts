@@ -43,8 +43,8 @@ export const WEDDING = {
   ],
   artwork: {
     /** Full portrait invitation render (deckled paper, florals, crest). */
-    card: null as string | null,
-    /** Crest/monogram-only render, transparent or square. */
-    crest: null as string | null,
+    card: "/assets/invitation-card.jpg" as string | null,
+    /** Crest/monogram render, square. */
+    crest: "/assets/invitation-crest.jpg" as string | null,
   },
 } as const;

@@ -108,7 +108,7 @@ export function OpeningScene({ onOpened }: { onOpened?: () => void }) {
       <SoundToggle muted={muted} onToggle={toggleMute} className="absolute right-4 top-4 z-20" />
 
       <div className="relative z-10 flex flex-col items-center gap-8">
-        <div className="relative aspect-[3/4.3] w-[86vw] max-w-[380px]">
+        <div className="relative aspect-[5/7] w-[86vw] max-w-[380px]">
           {/* envelope body, visible as the border around the card until opened */}
           <div className="absolute inset-0 rounded-[3px] bg-gradient-to-b from-twilight-900 to-twilight-950 shadow-[0_25px_70px_rgba(0,0,0,0.6)]" />
 
