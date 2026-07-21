@@ -13,9 +13,9 @@ import "@fontsource/jost/500.css";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Helson & Luna — December 17, 2026",
+  title: "Luna & Helson — December 17, 2026",
   description:
-    "Two souls, one promise. Join Helson & Luna as they begin a journey of love, grace, and endless beginnings.",
+    "Together with their beloved families, Luna and Helson request the honor of your presence — a love written among the stars.",
 };
 
 export const viewport: Viewport = {

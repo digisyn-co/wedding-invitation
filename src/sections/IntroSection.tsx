@@ -1,5 +1,6 @@
 import { Reveal } from "@/components/Reveal";
 import { OrnamentDivider } from "@/components/OrnamentDivider";
+import { PaperTexture } from "@/components/PaperTexture";
 import { WEDDING } from "@/lib/content";
 
 /**
@@ -9,7 +10,8 @@ import { WEDDING } from "@/lib/content";
 export function IntroSection() {
   return (
     <section className="relative overflow-hidden bg-lavender-mist px-6 py-24 sm:py-32">
-      <div className="mx-auto flex max-w-2xl flex-col items-center text-center">
+      <PaperTexture variant="fiber" opacity={0.35} />
+      <div className="relative mx-auto flex max-w-2xl flex-col items-center text-center">
         <Reveal>
           <span className="font-script text-3xl text-soft-gold sm:text-4xl">You are invited</span>
         </Reveal>

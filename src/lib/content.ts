@@ -1,18 +1,28 @@
 /**
- * Single source of truth for all invitation content. Everything here
- * is placeholder per the reference image — swap these values for the
- * real details and the whole site updates.
+ * Single source of truth for all invitation content. Placeholder per
+ * the reference artwork — swap these values for the real details.
+ *
+ * `artwork.card` / `artwork.crest`: once the real invitation renders
+ * are dropped into /public/assets, set these to their paths (e.g.
+ * "/assets/invitation-card.jpg"). While null, the site falls back to
+ * the hand-built CSS/SVG card.
  */
 export const WEDDING = {
   couple: {
-    initials: ["H", "&", "L"] as const,
-    names: "Helson & Luna",
-    first: "Helson",
-    second: "Luna",
+    initials: ["L", "&", "H"] as const,
+    names: "Luna & Helson",
+    first: "Luna",
+    second: "Helson",
   },
-  tagline: ["Two souls, one promise,", "a journey of love, grace,", "and endless beginnings."],
+  // The celestial vow poem from the reference card.
+  poem: [
+    "Together with their beloved families",
+    "request the honor of your presence",
+    "as they unite beneath the celestial heavens",
+    "to celebrate a love written among the stars.",
+  ],
   intro:
-    "Together with their families, Helson and Luna request the honour of your presence as they exchange vows and begin their forever.",
+    "Together with their beloved families, Luna and Helson request the honor of your presence as they unite beneath the celestial heavens — to celebrate a love written among the stars.",
   // ISO date — used for both display and the live countdown.
   dateISO: "2026-12-17T16:00:00",
   dateDisplay: "12 . 17 . 2026",
@@ -31,4 +41,10 @@ export const WEDDING = {
       address: "128 Rosewood Lane, Lakeshore",
     },
   ],
+  artwork: {
+    /** Full portrait invitation render (deckled paper, florals, crest). */
+    card: null as string | null,
+    /** Crest/monogram-only render, transparent or square. */
+    crest: null as string | null,
+  },
 } as const;

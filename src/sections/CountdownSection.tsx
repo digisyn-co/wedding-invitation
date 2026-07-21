@@ -2,6 +2,7 @@
 
 import { Reveal } from "@/components/Reveal";
 import { SectionHeading } from "@/components/SectionHeading";
+import { PaperTexture } from "@/components/PaperTexture";
 import { useCountdown } from "@/hooks/useCountdown";
 import { WEDDING } from "@/lib/content";
 
@@ -32,7 +33,8 @@ export function CountdownSection() {
 
   return (
     <section className="relative overflow-hidden bg-moon-lavender px-6 py-24 sm:py-28">
-      <div className="mx-auto flex max-w-3xl flex-col items-center">
+      <PaperTexture variant="fiber" opacity={0.3} />
+      <div className="relative mx-auto flex max-w-3xl flex-col items-center">
         <SectionHeading eyebrow="counting the days" title="Until We Say I Do" />
 
         <Reveal delay={0.15} className="mt-12">

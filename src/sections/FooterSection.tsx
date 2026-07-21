@@ -17,8 +17,8 @@ export function FooterSection() {
           {WEDDING.dateDisplay}
         </p>
 
-        <p className="mt-6 max-w-xs font-body text-xs leading-relaxed tracking-wide text-pearl-white/40">
-          {WEDDING.tagline.join(" ")}
+        <p className="mt-6 max-w-sm font-body text-xs leading-relaxed tracking-wide text-pearl-white/40">
+          A love written among the stars.
         </p>
       </div>
     </footer>

@@ -7,6 +7,7 @@ import { motion, AnimatePresence } from "motion/react";
 import { SectionHeading } from "@/components/SectionHeading";
 import { Reveal } from "@/components/Reveal";
 import { OrnamentDivider } from "@/components/OrnamentDivider";
+import { PaperTexture } from "@/components/PaperTexture";
 import { rsvpSchema, type RsvpInput, type RsvpValues } from "@/lib/rsvpSchema";
 import { WEDDING } from "@/lib/content";
 import { cn } from "@/lib/utils";
@@ -54,7 +55,8 @@ export function RsvpSection() {
 
   return (
     <section id="rsvp" className="relative overflow-hidden bg-lavender-mist px-6 py-24 sm:py-28">
-      <div className="mx-auto flex w-full max-w-xl flex-col items-center">
+      <PaperTexture variant="fiber" opacity={0.32} />
+      <div className="relative mx-auto flex w-full max-w-xl flex-col items-center">
         <SectionHeading eyebrow="with love" title="RSVP" />
 
         <Reveal delay={0.1} className="mt-4 w-full">
