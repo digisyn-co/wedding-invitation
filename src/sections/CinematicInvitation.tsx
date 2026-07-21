@@ -127,6 +127,19 @@ export function CinematicInvitation() {
       });
     });
 
+    // Section-arrival bloom: toggle .sect-active as each snap section
+    // enters, so the gold light-bloom re-runs every time you scroll to it.
+    const sectIO = new IntersectionObserver(
+      (es) => {
+        es.forEach((e) => {
+          if (e.isIntersecting) e.target.classList.add("sect-active");
+          else e.target.classList.remove("sect-active");
+        });
+      },
+      { threshold: 0.4 },
+    );
+    document.querySelectorAll(".snap-sect").forEach((s) => sectIO.observe(s));
+
     const mm = (ev: MouseEvent) => {
       const l = lightRef.current;
       if (!l) return;
@@ -171,6 +184,7 @@ export function CinematicInvitation() {
     return () => {
       cancelAnimationFrame(obs);
       io.disconnect();
+      sectIO.disconnect();
       window.removeEventListener("mousemove", mm);
       window.removeEventListener("scroll", onScroll);
       window.removeEventListener("resize", onScroll);
@@ -297,7 +311,7 @@ export function CinematicInvitation() {
       </div>
 
       {/* SCENE 3 — HERO */}
-      <section id="hero" style={{ position: "relative", minHeight: "100vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textAlign: "center", padding: "120px 24px 90px", background: "radial-gradient(130% 100% at 50% 0%, rgba(246,244,250,.62) 0%, rgba(226,225,239,.48) 42%, rgba(215,215,234,.4) 100%)", overflow: "hidden" }}>
+      <section id="hero" className="snap-sect" style={{ position: "relative", minHeight: "100vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textAlign: "center", padding: "120px 24px 90px", background: "radial-gradient(130% 100% at 50% 0%, rgba(246,244,250,.62) 0%, rgba(226,225,239,.48) 42%, rgba(215,215,234,.4) 100%)", overflow: "hidden" }}>
         <div style={{ position: "absolute", top: "12%", left: "8%", width: 2, height: 150, background: "linear-gradient(180deg,transparent,rgba(216,189,133,.5),transparent)", animation: "floatySlow 9s ease-in-out infinite" }} />
         <div style={{ position: "absolute", bottom: "14%", right: "10%", width: 2, height: 120, background: "linear-gradient(180deg,transparent,rgba(216,189,133,.4),transparent)", animation: "floatySlow 11s ease-in-out infinite" }} />
         <div data-reveal style={{ ...reveal(), fontFamily: "'Jost',sans-serif", fontWeight: 300, fontSize: 12, letterSpacing: ".62em", textTransform: "uppercase", color: "#8a86a4", marginBottom: 26 }}>Together with their families</div>
@@ -316,7 +330,7 @@ export function CinematicInvitation() {
       </section>
 
       {/* SCENE 4 — COUPLE */}
-      <section id="couple" style={{ position: "relative", padding: "clamp(96px,15vh,180px) 24px", background: "radial-gradient(100% 80% at 50% 8%, rgba(38,36,59,.9) 0%, rgba(30,28,48,.86) 45%, rgba(22,20,36,.92) 100%)", display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center", overflow: "hidden" }}>
+      <section id="couple" className="snap-sect" style={{ position: "relative", padding: "clamp(96px,15vh,180px) 24px", background: "radial-gradient(100% 80% at 50% 8%, rgba(38,36,59,.9) 0%, rgba(30,28,48,.86) 45%, rgba(22,20,36,.92) 100%)", display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center", overflow: "hidden" }}>
         <div style={{ position: "absolute", top: "-6%", left: "50%", transform: "translateX(-50%)", width: "70vw", height: "70vw", maxWidth: 820, maxHeight: 820, borderRadius: "50%", background: "radial-gradient(circle, rgba(216,189,133,.16), rgba(200,196,224,.06) 44%, transparent 68%)", pointerEvents: "none" }} />
         {fx?.sparkles.map((s, i) => (
           <span key={i} style={{ position: "absolute", top: s.top, left: s.left, width: s.size, height: s.size, pointerEvents: "none", background: "radial-gradient(circle,#f6eccf,rgba(216,189,133,0))", borderRadius: "50%", boxShadow: "0 0 8px 2px rgba(216,189,133,.6)", animation: `sparkle ${s.dur} ease-in-out ${s.delay} infinite` }} />
@@ -380,7 +394,7 @@ export function CinematicInvitation() {
       </section>
 
       {/* SCENE 6 — DETAILS */}
-      <section id="details" style={{ position: "relative", padding: "clamp(90px,14vh,160px) 24px", background: "radial-gradient(120% 80% at 50% 0%, rgba(244,239,232,.74) 0%, rgba(236,231,226,.6) 55%, rgba(230,223,218,.5) 100%)", overflow: "hidden" }}>
+      <section id="details" className="snap-sect" style={{ position: "relative", padding: "clamp(90px,14vh,160px) 24px", background: "radial-gradient(120% 80% at 50% 0%, rgba(244,239,232,.74) 0%, rgba(236,231,226,.6) 55%, rgba(230,223,218,.5) 100%)", overflow: "hidden" }}>
         <div style={{ maxWidth: 1040, margin: "0 auto", textAlign: "center" }}>
           <div data-reveal style={{ ...reveal(), fontSize: 11, letterSpacing: ".56em", textTransform: "uppercase", color: "#9b8a72", marginBottom: 14 }}>The Celebration</div>
           <h2 data-reveal data-reveal-delay="120" style={{ ...reveal(), margin: "0 0 56px", fontFamily: "'Pinyon Script',cursive", fontSize: "clamp(38px,7vw,80px)", ...goldText }}>Wedding Details</h2>
@@ -399,7 +413,7 @@ export function CinematicInvitation() {
       </section>
 
       {/* SCENE 7 — VENUE */}
-      <section id="venue" style={{ position: "relative", padding: "clamp(90px,14vh,160px) 24px", background: "linear-gradient(180deg,rgba(230,223,218,.5) 0%,rgba(220,218,235,.42) 100%)", overflow: "hidden" }}>
+      <section id="venue" className="snap-sect" style={{ position: "relative", padding: "clamp(90px,14vh,160px) 24px", background: "linear-gradient(180deg,rgba(230,223,218,.5) 0%,rgba(220,218,235,.42) 100%)", overflow: "hidden" }}>
         <div style={{ maxWidth: 1000, margin: "0 auto", display: "flex", flexWrap: "wrap", gap: "clamp(30px,5vw,68px)", alignItems: "center", justifyContent: "center" }}>
           <div data-reveal style={{ ...reveal(), flex: "1 1 300px", minWidth: 280 }}>
             <div style={{ fontSize: 11, letterSpacing: ".56em", textTransform: "uppercase", color: "#8a86a4", marginBottom: 16 }}>The Venue</div>
@@ -426,12 +440,12 @@ export function CinematicInvitation() {
       </section>
 
       {/* SCENE 9 — RSVP */}
-      <section id="rsvp" style={{ position: "relative", padding: "clamp(90px,14vh,170px) 24px", background: "radial-gradient(120% 90% at 50% 10%, rgba(239,234,243,.6) 0%, rgba(228,226,239,.46) 55%, rgba(216,215,234,.4) 100%)", overflow: "hidden" }}>
+      <section id="rsvp" className="snap-sect" style={{ position: "relative", padding: "clamp(90px,14vh,170px) 24px", background: "radial-gradient(120% 90% at 50% 10%, rgba(239,234,243,.6) 0%, rgba(228,226,239,.46) 55%, rgba(216,215,234,.4) 100%)", overflow: "hidden" }}>
         <RsvpForm />
       </section>
 
       {/* SCENE 10 — CLOSING */}
-      <section style={{ position: "relative", minHeight: "100vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textAlign: "center", padding: "120px 24px", background: "radial-gradient(130% 100% at 50% 30%, #26243b 0%, #17152300 0%, #100e18 100%),linear-gradient(180deg,#1b1930,#100e18)", overflow: "hidden" }}>
+      <section className="snap-sect" style={{ position: "relative", minHeight: "100vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textAlign: "center", padding: "120px 24px", background: "radial-gradient(130% 100% at 50% 30%, #26243b 0%, #17152300 0%, #100e18 100%),linear-gradient(180deg,#1b1930,#100e18)", overflow: "hidden" }}>
         <div style={{ position: "absolute", top: "8%", left: "50%", transform: "translateX(-50%)", width: "44vw", height: "44vw", maxWidth: 520, maxHeight: 520, borderRadius: "50%", background: "radial-gradient(circle,rgba(240,236,224,.16),transparent 66%)" }} />
         {fx?.stars.map((s, i) => (
           <span key={i} style={{ position: "absolute", top: s.top, left: s.left, width: s.size, height: s.size, borderRadius: "50%", background: "#f3ecd8", animation: `twinkle ${s.dur} ease-in-out ${s.delay} infinite` }} />

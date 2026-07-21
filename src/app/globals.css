@@ -105,7 +105,40 @@
 }
 
 html {
-  scroll-behavior: auto;
+  scroll-behavior: smooth;
+  /* One-section-at-a-time snapping. Proximity (not mandatory) so the
+     tall cinematic story in the middle can still scroll freely. */
+  scroll-snap-type: y proximity;
+}
+
+/* Snap targets — the ~viewport-height scenes. The story section is
+   deliberately excluded so its internal scroll-driven chapters work. */
+.snap-sect {
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+}
+
+/* Soft gold light-bloom that washes over each section as you arrive. */
+.snap-sect::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0;
+  background: radial-gradient(120% 62% at 50% 0%, rgba(216, 189, 133, 0.18), transparent 55%);
+}
+.snap-sect.sect-active::before {
+  animation: sectBloom 1.7s ease-out;
+}
+@keyframes sectBloom {
+  0% { opacity: 0; }
+  28% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-snap-type: none; }
+  .snap-sect.sect-active::before { animation: none; }
 }
 
 body {
