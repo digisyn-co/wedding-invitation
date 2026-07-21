@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
-import { Slot } from "@/components/Slot";
+import { AnimatedCharacter } from "@/components/AnimatedCharacter";
 import { HeroCountdown } from "@/components/HeroCountdown";
 import { RsvpForm } from "@/components/RsvpForm";
 
@@ -242,7 +242,7 @@ export function CinematicInvitation() {
       <div ref={montageRef} style={{ position: "fixed", inset: 0, zIndex: 82, pointerEvents: "none", display: "none", opacity: 1, transition: "opacity .8s ease", background: "radial-gradient(circle at 50% 50%, rgba(24,22,38,.34), rgba(16,14,24,.68) 80%)" }}>
         {MEMORIES.map((m) => (
           <div key={m.slot} style={{ position: "absolute", left: "50%", top: "50%", ["--r" as string]: m.r, opacity: 0, width: "min(70vw,340px)", aspectRatio: "4/5", borderRadius: 6, overflow: "hidden", boxShadow: "0 30px 80px rgba(0,0,0,.6),0 0 0 2px rgba(216,189,133,.6),0 0 0 10px rgba(255,255,255,.06)", animation: `memflash .82s ease-out ${m.delay} both` }}>
-            <Slot caption="A memory" />
+            <AnimatedCharacter variant="couple" />
           </div>
         ))}
       </div>
@@ -338,7 +338,7 @@ export function CinematicInvitation() {
               <div key={p.slot} data-reveal data-reveal-delay={p.delay} style={{ opacity: 0, display: "flex", flexDirection: "column", alignItems: "center", animation: p.anim }}>
                 <div style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 22, color: "#d8bd85", marginBottom: -4, textShadow: "0 0 14px rgba(216,189,133,.6)" }}>♛</div>
                 <div style={{ position: "relative", width: "min(70vw,258px)", aspectRatio: "4/5", borderRadius: "50%", overflow: "hidden", boxShadow: "0 0 0 2px rgba(216,189,133,.7),0 0 0 12px rgba(255,255,255,.06),0 30px 70px rgba(0,0,0,.5),0 0 60px rgba(216,189,133,.25)" }}>
-                  <Slot caption={`Portrait of ${p.name}`} />
+                  <AnimatedCharacter variant={p.name === "Helson" ? "groom" : "bride"} />
                 </div>
                 <div style={{ marginTop: 26, fontFamily: "'Pinyon Script',cursive", fontSize: "clamp(46px,6vw,64px)", lineHeight: 0.9, background: "linear-gradient(120deg,#c9a35b,#f6ecc4,#c9a35b)", backgroundSize: "200% 100%", WebkitBackgroundClip: "text", backgroundClip: "text", WebkitTextFillColor: "transparent", animation: `shimmer 5s linear infinite ${p.sh}` }}>{p.name}</div>
                 <div style={{ fontSize: 10, letterSpacing: ".44em", textTransform: "uppercase", color: "#b7aecf", marginTop: 6 }}>{p.role}</div>
@@ -376,7 +376,7 @@ export function CinematicInvitation() {
             <div key={c.i} data-ch={c.i} style={{ position: "absolute", left: "50%", top: "50%", transform: "translate(-50%,-50%)", width: "min(90vw,660px)", opacity: 0, textAlign: "center", willChange: "transform,opacity,filter" }}>
               <div style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 14, letterSpacing: ".52em", textTransform: "uppercase", color: "#d8bd85", marginBottom: 24, textShadow: "0 0 20px rgba(216,189,133,.4)" }}>{c.no}</div>
               <div style={{ position: "relative", width: "min(56vw,214px)", aspectRatio: "4/5", margin: "0 auto 32px", borderRadius: "50%", overflow: "hidden", boxShadow: "0 0 0 2px rgba(216,189,133,.7),0 0 0 10px rgba(255,255,255,.05),0 26px 60px rgba(0,0,0,.5),0 0 56px rgba(216,189,133,.22)", animation: "floatySlow 12s ease-in-out infinite" }}>
-                <Slot caption={c.title} />
+                <AnimatedCharacter variant="couple" />
               </div>
               <h3 style={{ margin: "0 0 20px", fontFamily: "'Cormorant Garamond',serif", fontWeight: 300, fontStyle: "italic", fontSize: "clamp(34px,5.4vw,60px)", color: "#f2ead4", lineHeight: 1.08 }}>{c.title}</h3>
               <p style={{ margin: "0 auto", maxWidth: "40ch", fontFamily: "'Cormorant Garamond',serif", fontWeight: 300, fontSize: "clamp(18px,2.3vw,23px)", lineHeight: 1.75, color: "#d6cebc" }}>{c.body}</p>
