@@ -299,6 +299,47 @@ body {
   55% { opacity: 0.55; }
   100% { transform: scale(1.6); opacity: 0; }
 }
+@keyframes veilFlash {
+  0% { opacity: 0; }
+  16% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+/* --- Story emblems: self-drawing gold line art (StoryEmblem.tsx) --- */
+@keyframes drawIn {
+  to { stroke-dashoffset: 0; }
+}
+@keyframes dashTravel {
+  from { stroke-dashoffset: 1; }
+  to { stroke-dashoffset: -1; }
+}
+@keyframes spinSlow {
+  to { transform: rotate(360deg); }
+}
+.story-emblem .draw {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+}
+.ch-active .draw {
+  animation: drawIn 2.4s cubic-bezier(0.65, 0, 0.25, 1) var(--dd, 0s) forwards;
+}
+.story-emblem .spark-line {
+  stroke-dasharray: 0.07 0.93;
+  stroke-dashoffset: 1;
+  opacity: 0;
+  transition: opacity 0.8s ease;
+}
+.ch-active .spark-line {
+  opacity: 0.95;
+  animation: dashTravel 3.4s linear calc(var(--dd, 0s) + 2.3s) infinite;
+}
+.story-emblem .em-fade {
+  opacity: 0;
+  transition: opacity 1.2s ease 2s;
+}
+.ch-active .em-fade {
+  opacity: 1;
+}
 
 /* Hide the middle nav links on small screens (brand + RSVP remain). */
 @media (max-width: 720px) {

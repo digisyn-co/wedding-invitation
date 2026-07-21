@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import { AnimatedCharacter } from "@/components/AnimatedCharacter";
 import { EtherealScene } from "@/components/EtherealScene";
-import { StoryScene } from "@/components/StoryScene";
+import { StoryEmblem } from "@/components/StoryEmblem";
 import { HeroCountdown } from "@/components/HeroCountdown";
 import { RsvpForm } from "@/components/RsvpForm";
 import { Dove } from "@/components/Dove";
@@ -26,7 +26,7 @@ interface Fly { top: string; left: string; fx: string; fy: string; dur: string; 
 interface Bfly { top: string; left: string; fx: string; fy: string; fr: string; scale: string; dur: string; delay: string; flap: string }
 interface Particles { dust: Dust[]; sparkles: Spark[]; stars: Star[]; fireflies: Fly[]; butterflies: Bfly[] }
 interface PixieBit { px: string; py: string; pr: string; size: number; c: string; dur: string; delay: string; star: boolean }
-interface SealBurst { x: number; y: number; bits: PixieBit[] }
+interface SealBurst { x: number; y: number; r: number; bits: PixieBit[] }
 
 const rnd = (a: number, b: number) => a + Math.random() * (b - a);
 
@@ -173,6 +173,9 @@ export function CinematicInvitation() {
         el.style.filter = `blur(${(Math.min(dist, 1) * 9).toFixed(2)}px)`;
         el.style.zIndex = op > 0.5 ? "3" : "1";
         el.style.pointerEvents = op > 0.6 ? "auto" : "none";
+        // Drives the engraved-gold emblem: draws itself when its
+        // chapter takes center stage, resets when it leaves.
+        el.classList.toggle("ch-active", op > 0.55);
       });
       if (progRef.current) progRef.current.style.height = (p * 100).toFixed(1) + "%";
       if (counterRef.current) counterRef.current.textContent = ("0" + Math.min(n, Math.max(1, Math.floor(pos) + 1))).slice(-2);
@@ -208,20 +211,24 @@ export function CinematicInvitation() {
     if (seal) {
       const r = seal.getBoundingClientRect();
       const colors = ["#f6ecc4", "#e9d29a", "#c7c2dd", "#ffffff", "#f2d8d7"];
+      // Reach: past every screen corner, so the dust engulfs the viewport.
+      const R = Math.hypot(window.innerWidth, window.innerHeight) / 2 + 80;
       setBurst({
         x: r.left + r.width / 2,
         y: r.top + r.height / 2,
-        bits: Array.from({ length: 46 }, (_, i) => {
+        r: R,
+        bits: Array.from({ length: 110 }, (_, i) => {
+          const far = i >= 48; // wave 2 — slower, farther, rides the shockwave
           const a = rnd(0, Math.PI * 2);
-          const d = rnd(60, 250);
+          const d = far ? rnd(R * 0.4, R * 1.05) : rnd(60, R * 0.45);
           return {
             px: (Math.cos(a) * d).toFixed(0) + "px",
-            py: (Math.sin(a) * d - 40).toFixed(0) + "px", // biased upward
-            pr: rnd(-260, 260).toFixed(0) + "deg",
-            size: +rnd(3, 7).toFixed(1),
+            py: (Math.sin(a) * d - (far ? 90 : 40)).toFixed(0) + "px", // biased upward
+            pr: rnd(-320, 320).toFixed(0) + "deg",
+            size: +rnd(2.5, far ? 6 : 7.5).toFixed(1),
             c: colors[i % colors.length],
-            dur: rnd(1.1, 2.1).toFixed(2) + "s",
-            delay: rnd(0, 0.28).toFixed(2) + "s",
+            dur: (far ? rnd(2.2, 3.8) : rnd(1.1, 1.9)).toFixed(2) + "s",
+            delay: (far ? rnd(0.3, 0.95) : rnd(0, 0.25)).toFixed(2) + "s",
             star: i % 3 === 0,
           };
         }),
@@ -346,9 +353,12 @@ export function CinematicInvitation() {
           and the layer ignores pointer events. */}
       {burst && (
         <div style={{ position: "fixed", left: burst.x, top: burst.y, zIndex: 84, pointerEvents: "none" }} aria-hidden="true">
-            {/* soft golden flash + expanding ring */}
+            {/* full-screen golden veil, breathing out from the seal */}
+            <span style={{ position: "absolute", left: -burst.x, top: -burst.y, width: "100vw", height: "100vh", background: `radial-gradient(120% 120% at ${burst.x}px ${burst.y}px, rgba(246,236,196,.5), rgba(216,189,133,.22) 40%, transparent 75%)`, animation: "veilFlash 2.4s ease-out forwards", opacity: 0 }} />
+            {/* soft golden flash + expanding rings (near + shockwave to the screen edge) */}
             <span style={{ position: "absolute", left: -80, top: -80, width: 160, height: 160, borderRadius: "50%", background: "radial-gradient(circle, rgba(255,251,240,.9), rgba(233,210,154,.4) 45%, transparent 70%)", animation: "burstGlow 1.4s ease-out forwards" }} />
             <span style={{ position: "absolute", left: -90, top: -90, width: 180, height: 180, borderRadius: "50%", border: "1.5px solid rgba(246,236,196,.85)", boxShadow: "0 0 24px rgba(233,210,154,.7), inset 0 0 24px rgba(233,210,154,.5)", animation: "burstRing 1.2s cubic-bezier(.16,.84,.28,1) forwards" }} />
+            <span style={{ position: "absolute", left: -burst.r, top: -burst.r, width: burst.r * 2, height: burst.r * 2, borderRadius: "50%", border: "1px solid rgba(246,236,196,.55)", boxShadow: "0 0 40px rgba(233,210,154,.4)", animation: "burstRing 2.6s cubic-bezier(.16,.84,.28,1) .12s forwards", opacity: 0 }} />
 
             {/* exploding pixie dust */}
             {burst.bits.map((b, i) =>
@@ -443,7 +453,7 @@ export function CinematicInvitation() {
             <div key={c.i} data-ch={c.i} style={{ position: "absolute", left: "50%", top: "50%", transform: "translate(-50%,-50%)", width: "min(90vw,660px)", opacity: 0, textAlign: "center", willChange: "transform,opacity,filter" }}>
               <div style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 14, letterSpacing: ".52em", textTransform: "uppercase", color: "#d8bd85", marginBottom: 24, textShadow: "0 0 20px rgba(216,189,133,.4)" }}>{c.no}</div>
               <div style={{ position: "relative", width: "min(56vw,214px)", aspectRatio: "4/5", margin: "0 auto 32px", borderRadius: "50%", overflow: "hidden", boxShadow: "0 0 0 2px rgba(216,189,133,.7),0 0 0 10px rgba(255,255,255,.05),0 26px 60px rgba(0,0,0,.5),0 0 56px rgba(216,189,133,.22)", animation: "floatySlow 12s ease-in-out infinite" }}>
-                <StoryScene chapter={c.i} />
+                <StoryEmblem chapter={c.i} />
               </div>
               <h3 style={{ margin: "0 0 20px", fontFamily: "'Cormorant Garamond',serif", fontWeight: 300, fontStyle: "italic", fontSize: "clamp(34px,5.4vw,60px)", color: "#f2ead4", lineHeight: 1.08 }}>{c.title}</h3>
               <p style={{ margin: "0 auto", maxWidth: "40ch", fontFamily: "'Cormorant Garamond',serif", fontWeight: 300, fontSize: "clamp(18px,2.3vw,23px)", lineHeight: 1.75, color: "#d6cebc" }}>{c.body}</p>
