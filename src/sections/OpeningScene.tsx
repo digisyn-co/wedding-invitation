@@ -9,6 +9,7 @@ import { InvitationReveal } from "@/sections/InvitationReveal";
 import { createSealBreakTimeline } from "@/animations/sealTimeline";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { useSound } from "@/hooks/useSound";
+import { cn } from "@/lib/utils";
 
 type Stage = "idle" | "breaking" | "opened";
 
@@ -18,7 +19,7 @@ type Stage = "idle" | "breaking" | "opened";
  * rising into view. Owns every ref the break timeline animates so the
  * sequencing logic itself lives in `animations/sealTimeline.ts`.
  */
-export function OpeningScene() {
+export function OpeningScene({ onOpened }: { onOpened?: () => void }) {
   const [stage, setStage] = useState<Stage>("idle");
   const [bloomed, setBloomed] = useState(false);
   const reduced = useReducedMotion();
@@ -63,6 +64,7 @@ export function OpeningScene() {
       !instruction
     ) {
       setStage("opened");
+      onOpened?.();
       return;
     }
 
@@ -86,11 +88,14 @@ export function OpeningScene() {
       {
         onFlowersBloom: () => setBloomed(true),
         onMusicSwell: () => swell(),
-        onComplete: () => setStage("opened"),
+        onComplete: () => {
+          setStage("opened");
+          onOpened?.();
+        },
       },
       reduced,
     );
-  }, [stage, reduced, swell]);
+  }, [stage, reduced, swell, onOpened]);
 
   return (
     <div
@@ -160,6 +165,26 @@ export function OpeningScene() {
         >
           Click the Wax Seal
         </p>
+
+        {/* Scroll cue — fades in only after the invitation has opened */}
+        <div
+          className={cn(
+            "flex flex-col items-center gap-2 text-champagne-gold/70 transition-opacity duration-1000",
+            stage === "opened" ? "opacity-100" : "pointer-events-none opacity-0",
+          )}
+          aria-hidden={stage !== "opened"}
+        >
+          <span className="font-body text-[10px] uppercase tracking-[0.3em]">Scroll</span>
+          <svg
+            viewBox="0 0 24 24"
+            className="h-4 w-4 motion-safe:animate-bounce"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth={1.5}
+          >
+            <path d="M12 5v14M6 13l6 6 6-6" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </div>
       </div>
     </div>
   );

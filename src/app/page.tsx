@@ -1,11 +1,9 @@
-import { OpeningScene } from "@/sections/OpeningScene";
+import { ExperienceShell } from "@/sections/ExperienceShell";
 
 export default function Home() {
   return (
     <main className="flex min-h-dvh flex-col">
-      <OpeningScene />
-      {/* Next milestones: RSVP, event details, gallery, and other
-          sections mount below once the invitation has opened. */}
+      <ExperienceShell />
     </main>
   );
 }
