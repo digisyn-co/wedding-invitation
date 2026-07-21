@@ -154,12 +154,21 @@ export function AnimatedCharacter({
       <Sparkles />
 
       {variant === "couple" ? (
+        // Two figures side by side. Positioning lives on the OUTER <g>
+        // (SVG transform attribute); the float animation lives on an
+        // INNER <g> (CSS transform) so the two don't collide — a CSS
+        // transform overrides the SVG transform attribute on the same
+        // element, which would otherwise stack both figures at center.
         <>
-          <g style={{ transformBox: "fill-box", transformOrigin: "center", animation: "floatySlow 11s ease-in-out infinite" } as CSSProperties} transform="translate(2 24) scale(.62)">
-            <Figure variant="groom" blinkDelay="0.2s" />
+          <g transform="translate(0 30) scale(.5)">
+            <g style={{ transformBox: "fill-box", transformOrigin: "center", animation: "floatySlow 11s ease-in-out infinite" } as CSSProperties}>
+              <Figure variant="groom" blinkDelay="0.2s" />
+            </g>
           </g>
-          <g style={{ transformBox: "fill-box", transformOrigin: "center", animation: "floatySlow 13s ease-in-out infinite" } as CSSProperties} transform="translate(36 24) scale(.62)">
-            <Figure variant="bride" blinkDelay="1.4s" />
+          <g transform="translate(50 30) scale(.5)">
+            <g style={{ transformBox: "fill-box", transformOrigin: "center", animation: "floatySlow 13s ease-in-out infinite" } as CSSProperties}>
+              <Figure variant="bride" blinkDelay="1.4s" />
+            </g>
           </g>
         </>
       ) : (

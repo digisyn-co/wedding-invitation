@@ -93,7 +93,7 @@ export function RsvpForm() {
               style={{
                 margin: "0 0 8px",
                 fontFamily: "'Pinyon Script',cursive",
-                fontSize: "clamp(48px,8vw,76px)",
+                fontSize: "clamp(34px,8vw,76px)",
                 ...goldText,
               }}
             >

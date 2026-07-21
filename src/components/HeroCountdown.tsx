@@ -50,12 +50,12 @@ export function HeroCountdown() {
         opacity: 0,
         transform: "translateY(38px)",
         display: "flex",
-        gap: "clamp(14px,3vw,40px)",
+        gap: "clamp(10px,3vw,40px)",
         marginTop: 52,
       }}
     >
       {units.map((c) => (
-        <div key={c.k} style={{ minWidth: 70, textAlign: "center" }}>
+        <div key={c.k} style={{ minWidth: "clamp(52px,15vw,70px)", textAlign: "center" }}>
           <div
             suppressHydrationWarning
             style={{

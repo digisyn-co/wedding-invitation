@@ -251,10 +251,12 @@ export function CinematicInvitation() {
       <nav ref={navRef} style={{ position: "fixed", top: 0, left: 0, right: 0, zIndex: 55, display: "flex", alignItems: "center", justifyContent: "space-between", padding: "22px clamp(20px,5vw,64px)", opacity: 0, transition: "opacity 1.2s ease", pointerEvents: "none", background: "linear-gradient(180deg,rgba(20,18,30,.34),transparent)" }}>
         <a href="#hero" style={{ fontFamily: "'Cormorant Garamond',serif", fontWeight: 500, letterSpacing: ".42em", fontSize: 15, color: "#e9ddc4", textTransform: "uppercase" }}>H <span style={{ color: "#d8bd85" }}>&amp;</span> L</a>
         <div style={{ display: "flex", gap: "clamp(16px,2.4vw,34px)", alignItems: "center" }}>
-          <a href="#couple" style={navLink}>Couple</a>
-          <a href="#story" style={navLink}>Story</a>
-          <a href="#details" style={navLink}>Details</a>
-          <a href="#venue" style={navLink}>Venue</a>
+          <span className="nav-mid" style={{ display: "flex", gap: "clamp(16px,2.4vw,34px)", alignItems: "center" }}>
+            <a href="#couple" style={navLink}>Couple</a>
+            <a href="#story" style={navLink}>Story</a>
+            <a href="#details" style={navLink}>Details</a>
+            <a href="#venue" style={navLink}>Venue</a>
+          </span>
           <a href="#rsvp" style={{ ...navLink, padding: "9px 20px", border: "1px solid rgba(216,189,133,.6)", borderRadius: 100, color: "#f3e8cf" }}>RSVP</a>
         </div>
       </nav>
@@ -302,7 +304,7 @@ export function CinematicInvitation() {
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/assets/logo.webp" alt="" style={{ display: "block", width: "100%", filter: "drop-shadow(0 22px 42px rgba(90,84,130,.34))" }} />
         </div>
-        <h1 data-reveal data-reveal-delay="300" style={{ ...reveal(), margin: "22px 0 4px", fontFamily: "'Pinyon Script',cursive", fontWeight: 400, fontSize: "clamp(58px,12vw,138px)", lineHeight: 0.92, ...goldText }}>Helson &amp; Luna</h1>
+        <h1 data-reveal data-reveal-delay="300" style={{ ...reveal(), margin: "22px 0 4px", fontFamily: "'Pinyon Script',cursive", fontWeight: 400, fontSize: "clamp(42px,12vw,138px)", lineHeight: 0.92, ...goldText }}>Helson &amp; Luna</h1>
         <div data-reveal data-reveal-delay="450" style={{ ...reveal(), display: "flex", alignItems: "center", gap: 18, marginTop: 14, color: "#6d688a" }}>
           <span style={{ width: 52, height: 1, background: "linear-gradient(90deg,transparent,#c9a35b)" }} />
           <span style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 20, letterSpacing: ".36em", textTransform: "uppercase" }}>12 · 12 · 2026</span>
@@ -326,25 +328,14 @@ export function CinematicInvitation() {
         </div>
         <h2 data-reveal data-reveal-delay="140" style={{ opacity: 0, position: "relative", zIndex: 2, margin: "0 0 60px", fontFamily: "'Cormorant Garamond',serif", fontWeight: 300, fontStyle: "italic", fontSize: "clamp(26px,3.6vw,44px)", color: "#efe7d2", maxWidth: "18ch", lineHeight: 1.3 }}>Woven together by destiny, and sealed in gold.</h2>
 
-        <div style={{ position: "relative", zIndex: 2, display: "flex", flexWrap: "wrap", gap: "clamp(30px,6vw,88px)", alignItems: "center", justifyContent: "center", maxWidth: 960 }}>
-          {[
-            { name: "Helson", role: "The Groom", slot: "hero-groom", delay: "220", anim: "floatySlow 11s ease-in-out infinite", sh: "" },
-            null,
-            { name: "Luna", role: "The Bride", slot: "hero-bride", delay: "460", anim: "floatySlow 13s ease-in-out infinite", sh: ".6s" },
-          ].map((p) =>
-            p === null ? (
-              <div key="amp" data-reveal data-reveal-delay="340" style={{ opacity: 0, fontFamily: "'Pinyon Script',cursive", fontSize: "clamp(58px,8vw,92px)", ...goldText, textShadow: "0 0 40px rgba(216,189,133,.3)", animation: "floaty 6s ease-in-out infinite" }}>&amp;</div>
-            ) : (
-              <div key={p.slot} data-reveal data-reveal-delay={p.delay} style={{ opacity: 0, display: "flex", flexDirection: "column", alignItems: "center", animation: p.anim }}>
-                <div style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 22, color: "#d8bd85", marginBottom: -4, textShadow: "0 0 14px rgba(216,189,133,.6)" }}>♛</div>
-                <div style={{ position: "relative", width: "min(70vw,258px)", aspectRatio: "4/5", borderRadius: "50%", overflow: "hidden", boxShadow: "0 0 0 2px rgba(216,189,133,.7),0 0 0 12px rgba(255,255,255,.06),0 30px 70px rgba(0,0,0,.5),0 0 60px rgba(216,189,133,.25)" }}>
-                  <AnimatedCharacter variant={p.name === "Helson" ? "groom" : "bride"} />
-                </div>
-                <div style={{ marginTop: 26, fontFamily: "'Pinyon Script',cursive", fontSize: "clamp(46px,6vw,64px)", lineHeight: 0.9, background: "linear-gradient(120deg,#c9a35b,#f6ecc4,#c9a35b)", backgroundSize: "200% 100%", WebkitBackgroundClip: "text", backgroundClip: "text", WebkitTextFillColor: "transparent", animation: `shimmer 5s linear infinite ${p.sh}` }}>{p.name}</div>
-                <div style={{ fontSize: 10, letterSpacing: ".44em", textTransform: "uppercase", color: "#b7aecf", marginTop: 6 }}>{p.role}</div>
-              </div>
-            ),
-          )}
+        <div style={{ position: "relative", zIndex: 2, display: "flex", flexDirection: "column", alignItems: "center", maxWidth: 520, width: "100%" }}>
+          <div style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 22, color: "#d8bd85", marginBottom: 2, textShadow: "0 0 14px rgba(216,189,133,.6)" }}>♛</div>
+          {/* single framed portrait — the couple together */}
+          <div data-reveal data-reveal-delay="120" style={{ opacity: 0, position: "relative", width: "min(84vw,360px)", aspectRatio: "4/5", borderRadius: "50%", overflow: "hidden", boxShadow: "0 0 0 2px rgba(216,189,133,.7),0 0 0 12px rgba(255,255,255,.06),0 30px 70px rgba(0,0,0,.5),0 0 60px rgba(216,189,133,.25)", animation: "floatySlow 12s ease-in-out infinite" }}>
+            <AnimatedCharacter variant="couple" />
+          </div>
+          <div data-reveal data-reveal-delay="240" style={{ opacity: 0, marginTop: 28, fontFamily: "'Pinyon Script',cursive", fontSize: "clamp(46px,10vw,78px)", lineHeight: 0.9, background: "linear-gradient(120deg,#c9a35b,#f6ecc4,#c9a35b)", backgroundSize: "200% 100%", WebkitBackgroundClip: "text", backgroundClip: "text", WebkitTextFillColor: "transparent", animation: "shimmer 5s linear infinite" }}>Helson &amp; Luna</div>
+          <div data-reveal data-reveal-delay="300" style={{ opacity: 0, fontSize: 10, letterSpacing: ".44em", textTransform: "uppercase", color: "#b7aecf", marginTop: 8 }}>The Groom &amp; The Bride</div>
         </div>
 
         <div data-reveal data-reveal-delay="240" style={{ opacity: 0, position: "relative", zIndex: 2, display: "flex", alignItems: "center", gap: 16, margin: "64px 0 22px", color: "#d8bd85" }}>
@@ -391,7 +382,7 @@ export function CinematicInvitation() {
       <section id="details" style={{ position: "relative", padding: "clamp(90px,14vh,160px) 24px", background: "radial-gradient(120% 80% at 50% 0%, rgba(244,239,232,.74) 0%, rgba(236,231,226,.6) 55%, rgba(230,223,218,.5) 100%)", overflow: "hidden" }}>
         <div style={{ maxWidth: 1040, margin: "0 auto", textAlign: "center" }}>
           <div data-reveal style={{ ...reveal(), fontSize: 11, letterSpacing: ".56em", textTransform: "uppercase", color: "#9b8a72", marginBottom: 14 }}>The Celebration</div>
-          <h2 data-reveal data-reveal-delay="120" style={{ ...reveal(), margin: "0 0 56px", fontFamily: "'Pinyon Script',cursive", fontSize: "clamp(46px,7vw,80px)", ...goldText }}>Wedding Details</h2>
+          <h2 data-reveal data-reveal-delay="120" style={{ ...reveal(), margin: "0 0 56px", fontFamily: "'Pinyon Script',cursive", fontSize: "clamp(38px,7vw,80px)", ...goldText }}>Wedding Details</h2>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(240px,1fr))", gap: 26 }}>
             {details.map((d) => (
               <div key={d.label} data-reveal data-reveal-delay={String(d.delay)} style={{ ...reveal(), position: "relative", padding: "44px 26px 38px", borderRadius: 6, background: "linear-gradient(180deg,#fbf8f3,#f3ede4)", boxShadow: "0 20px 46px rgba(120,105,80,.16),inset 0 0 0 1px rgba(216,189,133,.35),inset 0 0 0 6px rgba(255,255,255,.5)" }}>
@@ -450,7 +441,7 @@ export function CinematicInvitation() {
         <div data-reveal style={{ opacity: 0, transform: "translateY(38px)", position: "relative", zIndex: 2 }}>
           <div style={{ fontFamily: "'Cormorant Garamond',serif", fontWeight: 300, fontStyle: "italic", fontSize: "clamp(24px,4vw,40px)", lineHeight: 1.6, color: "#e6dcc4", maxWidth: "20ch", margin: "0 auto" }}>&ldquo;And in the hush of the stars, forever began.&rdquo;</div>
           <div style={{ margin: "44px auto 0", width: 60, height: 1, background: "linear-gradient(90deg,transparent,#c9a35b,transparent)" }} />
-          <div style={{ marginTop: 44, fontFamily: "'Pinyon Script',cursive", fontSize: "clamp(56px,10vw,110px)", ...goldText }}>Helson &amp; Luna</div>
+          <div style={{ marginTop: 44, fontFamily: "'Pinyon Script',cursive", fontSize: "clamp(42px,10vw,110px)", ...goldText }}>Helson &amp; Luna</div>
           <div style={{ marginTop: 14, fontSize: 11, letterSpacing: ".5em", textTransform: "uppercase", color: "#a49f8a" }}>12 December 2026 · Iloilo City</div>
         </div>
       </section>
