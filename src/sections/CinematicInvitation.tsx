@@ -6,6 +6,7 @@ import { EtherealScene } from "@/components/EtherealScene";
 import { StoryScene } from "@/components/StoryScene";
 import { HeroCountdown } from "@/components/HeroCountdown";
 import { RsvpForm } from "@/components/RsvpForm";
+import { Dove } from "@/components/Dove";
 
 /* Ported 1:1 from the approved "Helson & Luna" cinematic design.
    Static markup + inline styles reproduce it pixel-for-pixel; the
@@ -24,6 +25,8 @@ interface Star { top: string; left: string; size: string; dur: string; delay: st
 interface Fly { top: string; left: string; fx: string; fy: string; dur: string; delay: string }
 interface Bfly { top: string; left: string; fx: string; fy: string; fr: string; scale: string; dur: string; delay: string; flap: string }
 interface Particles { dust: Dust[]; sparkles: Spark[]; stars: Star[]; fireflies: Fly[]; butterflies: Bfly[] }
+interface PixieBit { px: string; py: string; pr: string; size: number; c: string; dur: string; delay: string; star: boolean }
+interface SealBurst { x: number; y: number; bits: PixieBit[] }
 
 const rnd = (a: number, b: number) => a + Math.random() * (b - a);
 
@@ -51,6 +54,7 @@ const MEMORIES = [
 
 export function CinematicInvitation() {
   const [fx, setFx] = useState<Particles | null>(null);
+  const [burst, setBurst] = useState<SealBurst | null>(null);
 
   const lightRef = useRef<HTMLDivElement>(null);
   const bloomRef = useRef<HTMLDivElement>(null);
@@ -198,6 +202,31 @@ export function CinematicInvitation() {
     if (entered.current || opening.current) return;
     opening.current = true;
     const seal = sealRef.current, card = cardRef.current, bloom = bloomRef.current;
+
+    // Doves + exploding pixie dust, anchored to the seal's center.
+    // (Overlay is fixed inset:0, so viewport coords map directly.)
+    if (seal) {
+      const r = seal.getBoundingClientRect();
+      const colors = ["#f6ecc4", "#e9d29a", "#c7c2dd", "#ffffff", "#f2d8d7"];
+      setBurst({
+        x: r.left + r.width / 2,
+        y: r.top + r.height / 2,
+        bits: Array.from({ length: 46 }, (_, i) => {
+          const a = rnd(0, Math.PI * 2);
+          const d = rnd(60, 250);
+          return {
+            px: (Math.cos(a) * d).toFixed(0) + "px",
+            py: (Math.sin(a) * d - 40).toFixed(0) + "px", // biased upward
+            pr: rnd(-260, 260).toFixed(0) + "deg",
+            size: +rnd(3, 7).toFixed(1),
+            c: colors[i % colors.length],
+            dur: rnd(1.1, 2.1).toFixed(2) + "s",
+            delay: rnd(0, 0.28).toFixed(2) + "s",
+            star: i % 3 === 0,
+          };
+        }),
+      });
+    }
     const overlay = overlayRef.current, butter = butterRef.current, montage = montageRef.current, nav = navRef.current;
     if (seal) {
       seal.style.transition = "transform 1.4s cubic-bezier(.16,.84,.28,1), opacity 1.2s ease, filter 1.2s ease";
@@ -310,6 +339,37 @@ export function CinematicInvitation() {
 
         <p style={{ zIndex: 3, marginTop: 34, fontFamily: "'Jost',sans-serif", fontWeight: 300, fontSize: 12, letterSpacing: ".5em", textTransform: "uppercase", color: "rgba(233,221,196,.82)", animation: "floaty 4s ease-in-out infinite" }}>Click the Seal to Begin</p>
       </div>
+
+      {/* Seal-break magic: two doves ascend + pixie dust explodes.
+          Fixed layer ABOVE the memory montage (z 82) so the doves soar
+          over the flashing memories; every piece self-fades (forwards),
+          and the layer ignores pointer events. */}
+      {burst && (
+        <div style={{ position: "fixed", left: burst.x, top: burst.y, zIndex: 84, pointerEvents: "none" }} aria-hidden="true">
+            {/* soft golden flash + expanding ring */}
+            <span style={{ position: "absolute", left: -80, top: -80, width: 160, height: 160, borderRadius: "50%", background: "radial-gradient(circle, rgba(255,251,240,.9), rgba(233,210,154,.4) 45%, transparent 70%)", animation: "burstGlow 1.4s ease-out forwards" }} />
+            <span style={{ position: "absolute", left: -90, top: -90, width: 180, height: 180, borderRadius: "50%", border: "1.5px solid rgba(246,236,196,.85)", boxShadow: "0 0 24px rgba(233,210,154,.7), inset 0 0 24px rgba(233,210,154,.5)", animation: "burstRing 1.2s cubic-bezier(.16,.84,.28,1) forwards" }} />
+
+            {/* exploding pixie dust */}
+            {burst.bits.map((b, i) =>
+              b.star ? (
+                <svg key={i} viewBox="0 0 10 10" style={{ position: "absolute", left: -b.size, top: -b.size, width: b.size * 2, height: b.size * 2, ["--px" as string]: b.px, ["--py" as string]: b.py, ["--pr" as string]: b.pr, animation: `pixie ${b.dur} cubic-bezier(.16,.84,.4,1) ${b.delay} forwards`, filter: "drop-shadow(0 0 5px rgba(246,236,196,.9))" } as CSSProperties}>
+                  <path d="M5 0 L6.1 3.9 L10 5 L6.1 6.1 L5 10 L3.9 6.1 L0 5 L3.9 3.9 Z" fill={b.c} />
+                </svg>
+              ) : (
+                <span key={i} style={{ position: "absolute", left: -b.size / 2, top: -b.size / 2, width: b.size, height: b.size, borderRadius: "50%", background: b.c, boxShadow: `0 0 ${b.size + 3}px ${b.c}`, ["--px" as string]: b.px, ["--py" as string]: b.py, ["--pr" as string]: b.pr, animation: `pixie ${b.dur} cubic-bezier(.16,.84,.4,1) ${b.delay} forwards` } as CSSProperties} />
+              ),
+            )}
+
+            {/* two doves, ascending left and right */}
+            <span style={{ position: "absolute", left: -32, top: -22, ["--dx" as string]: "-150px", ["--dy" as string]: "-340px", ["--dr" as string]: "-6deg", ["--dr2" as string]: "-14deg", animation: "doveFly 3.4s cubic-bezier(.3,.6,.4,1) .15s forwards", opacity: 0 } as CSSProperties}>
+              <Dove flip />
+            </span>
+            <span style={{ position: "absolute", left: -32, top: -22, ["--dx" as string]: "150px", ["--dy" as string]: "-360px", ["--dr" as string]: "6deg", ["--dr2" as string]: "14deg", animation: "doveFly 3.6s cubic-bezier(.3,.6,.4,1) .3s forwards", opacity: 0 } as CSSProperties}>
+              <Dove flapDelay=".2s" />
+            </span>
+        </div>
+      )}
 
       {/* SCENE 3 — HERO */}
       <section id="hero" className="snap-sect" style={{ position: "relative", minHeight: "100vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textAlign: "center", padding: "120px 24px 90px", background: "radial-gradient(130% 100% at 50% 0%, rgba(246,244,250,.62) 0%, rgba(226,225,239,.48) 42%, rgba(215,215,234,.4) 100%)", overflow: "hidden" }}>
