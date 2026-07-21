@@ -1,26 +1,135 @@
 @import "tailwindcss";
 
+/* ---------------------------------------------------------------
+   Design tokens — "Ethereal Lavender Luxury"
+   Exact values from the approved color system. Do not introduce
+   additional colors outside this file without updating the system.
+
+   One deliberate extension: the brief's opening scene calls for a
+   "dark screen" / night moment, but the approved palette has no dark
+   tones (and forbids pure black). `--color-twilight-*` below are
+   deepened, desaturated shades of the same lavender hue (not a new
+   hue) used ONLY as the opening-scene backdrop, so the signature
+   wax-seal moment still reads as night. Everything else — cards,
+   type, gold, florals — uses the palette exactly as specified.
+   ------------------------------------------------------------- */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Primary — surfaces */
+  --color-lavender-mist: #d7d5e8; /* main backgrounds, hero, large surfaces */
+  --color-dusty-lilac: #c7c2dd; /* secondary backgrounds, cards, elevated sections */
+  --color-moon-lavender: #e7e5f3; /* alternate sections, soft gradients, content bg */
+
+  /* Neutrals */
+  --color-pearl-white: #f7f4f1; /* reading surfaces, cards, modal backgrounds */
+  --color-ivory-silk: #f2eee7; /* warm neutral backgrounds, soft highlights */
+
+  /* Luxury metallics */
+  --color-champagne-gold: #d8be86; /* headings, borders, icons, flourishes, foil */
+  --color-soft-gold: #cfae70; /* hover states, buttons, interactive elements */
+  --color-antique-gold: #b88a4a; /* premium accents, CTA highlights — use sparingly */
+
+  /* Floral accents (decorative only) */
+  --color-blush-rose: #f2d8d7;
+  --color-rose-quartz: #ebcfcf;
+  --color-soft-cream-rose: #f6eee6;
+  --color-dusty-blue-floral: #a9b5d6;
+
+  /* Typography */
+  --color-heading: #d8be86;
+  --color-body-text: #7d778a;
+  --color-muted-text: #a19cab;
+
+  /* Borders */
+  --color-gold-border: #d8be86;
+  --border-soft: rgba(216, 190, 134, 0.35);
+
+  /* Glass & crystal */
+  --glass-surface: rgba(255, 255, 255, 0.2);
+  --glass-border: rgba(255, 255, 255, 0.25);
+  --color-crystal-highlight: #f9fafc;
+  --crystal-reflection: rgba(255, 255, 255, 0.45);
+
+  /* Gradients */
+  --gradient-lavender-dream: linear-gradient(180deg, #e7e5f3 0%, #d7d5e8 100%);
+  --gradient-moonlight: linear-gradient(180deg, #f7f4f1 0%, #e7e5f3 100%);
+  --gradient-champagne-glow: linear-gradient(135deg, #e6d6a8 0%, #cfae70 100%);
+
+  /* Extension for the opening scene only — see note above */
+  --color-twilight-900: #2e2a40;
+  --color-twilight-950: #201d30;
+  --color-twilight-975: #17141f;
+
+  --font-display: "Cormorant Garamond", "Times New Roman", serif;
+  --font-script: "Parisienne", cursive;
+  --font-body: "Jost", "Helvetica Neue", Arial, sans-serif;
+
+  --ease-luxury: cubic-bezier(0.19, 1, 0.22, 1);
+  --ease-silk: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-lavender-mist: var(--color-lavender-mist);
+  --color-dusty-lilac: var(--color-dusty-lilac);
+  --color-moon-lavender: var(--color-moon-lavender);
+
+  --color-pearl-white: var(--color-pearl-white);
+  --color-ivory-silk: var(--color-ivory-silk);
+
+  --color-champagne-gold: var(--color-champagne-gold);
+  --color-soft-gold: var(--color-soft-gold);
+  --color-antique-gold: var(--color-antique-gold);
+
+  --color-blush-rose: var(--color-blush-rose);
+  --color-rose-quartz: var(--color-rose-quartz);
+  --color-soft-cream-rose: var(--color-soft-cream-rose);
+  --color-dusty-blue-floral: var(--color-dusty-blue-floral);
+
+  --color-heading: var(--color-heading);
+  --color-body-text: var(--color-body-text);
+  --color-muted-text: var(--color-muted-text);
+
+  --color-gold-border: var(--color-gold-border);
+  --color-crystal-highlight: var(--color-crystal-highlight);
+
+  --color-twilight-900: var(--color-twilight-900);
+  --color-twilight-950: var(--color-twilight-950);
+  --color-twilight-975: var(--color-twilight-975);
+
+  --font-display: var(--font-display);
+  --font-script: var(--font-script);
+  --font-body: var(--font-body);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: auto;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--color-twilight-975);
+  color: var(--color-pearl-white);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+/* Respect reduced-motion globally; components should also check
+   this via the useReducedMotion hook before running JS timelines. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+::selection {
+  background: var(--color-champagne-gold);
+  color: var(--color-twilight-975);
 }
