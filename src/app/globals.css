@@ -215,6 +215,39 @@ body {
     display: none !important;
   }
 }
+
+/* --- Ethereal moving scene (EtherealScene.tsx) --- */
+@keyframes driftX {
+  0%, 100% { transform: translateX(-5%); }
+  50% { transform: translateX(5%); }
+}
+@keyframes aurora {
+  0%, 100% { transform: translate(-4%, 0) rotate(-8deg); opacity: 0.32; }
+  50% { transform: translate(6%, -3%) rotate(-6deg); opacity: 0.6; }
+}
+@keyframes moonPulse {
+  0%, 100% { opacity: 0.92; box-shadow: 0 0 60px 20px rgba(246,238,214,.28); }
+  50% { opacity: 1; box-shadow: 0 0 84px 30px rgba(246,238,214,.4); }
+}
+@keyframes shootStar {
+  0% { transform: translate(0, 0) rotate(24deg); opacity: 0; }
+  6% { opacity: 1; }
+  24% { opacity: 1; }
+  46%, 100% { transform: translate(320px, 150px) rotate(24deg); opacity: 0; }
+}
+@keyframes petalRise {
+  0% { transform: translateY(0) translateX(0) rotate(0deg); opacity: 0; }
+  12% { opacity: 0.85; }
+  100% { transform: translateY(-260px) translateX(var(--rx, 0px)) rotate(var(--rr, 200deg)); opacity: 0; }
+}
+@keyframes archGlow {
+  0%, 100% { opacity: 0.55; transform: translateX(-50%) scale(1); }
+  50% { opacity: 0.85; transform: translateX(-50%) scale(1.03); }
+}
+@keyframes beam {
+  0%, 100% { opacity: 0.25; }
+  50% { opacity: 0.5; }
+}
 @keyframes memflash {
   0% { opacity: 0; transform: translate(-50%, -50%) scale(1.16) rotate(var(--r)); }
   28% { opacity: 1; transform: translate(-50%, -50%) scale(1) rotate(var(--r)); }

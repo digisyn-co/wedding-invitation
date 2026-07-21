@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import { AnimatedCharacter } from "@/components/AnimatedCharacter";
+import { EtherealScene } from "@/components/EtherealScene";
 import { HeroCountdown } from "@/components/HeroCountdown";
 import { RsvpForm } from "@/components/RsvpForm";
 
@@ -269,7 +270,7 @@ export function CinematicInvitation() {
         <div aria-hidden style={{ position: "absolute", inset: 0, zIndex: 0, overflow: "hidden" }}>
           <iframe
             title="Ambient background video"
-            src="https://www.youtube.com/embed/dBIeMASILrw?autoplay=1&mute=1&controls=0&loop=1&playlist=dBIeMASILrw&start=6&modestbranding=1&playsinline=1&rel=0&disablekb=1&iv_load_policy=3"
+            src="https://www.youtube.com/embed/G77R3ZKzOOg?autoplay=1&mute=1&controls=0&loop=1&playlist=G77R3ZKzOOg&start=6&modestbranding=1&playsinline=1&rel=0&disablekb=1&iv_load_policy=3"
             allow="autoplay; encrypted-media; picture-in-picture; web-share"
             referrerPolicy="strict-origin-when-cross-origin"
             style={{ position: "absolute", top: "50%", left: "50%", width: "100vw", height: "56.25vw", minWidth: "177.78vh", minHeight: "100vh", transform: "translate(-50%,-50%)", border: 0, pointerEvents: "none" }}
@@ -328,11 +329,11 @@ export function CinematicInvitation() {
         </div>
         <h2 data-reveal data-reveal-delay="140" style={{ opacity: 0, position: "relative", zIndex: 2, margin: "0 0 60px", fontFamily: "'Cormorant Garamond',serif", fontWeight: 300, fontStyle: "italic", fontSize: "clamp(26px,3.6vw,44px)", color: "#efe7d2", maxWidth: "18ch", lineHeight: 1.3 }}>Woven together by destiny, and sealed in gold.</h2>
 
-        <div style={{ position: "relative", zIndex: 2, display: "flex", flexDirection: "column", alignItems: "center", maxWidth: 520, width: "100%" }}>
-          <div style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 22, color: "#d8bd85", marginBottom: 2, textShadow: "0 0 14px rgba(216,189,133,.6)" }}>♛</div>
-          {/* single framed portrait — the couple together */}
-          <div data-reveal data-reveal-delay="120" style={{ opacity: 0, position: "relative", width: "min(84vw,360px)", aspectRatio: "4/5", borderRadius: "50%", overflow: "hidden", boxShadow: "0 0 0 2px rgba(216,189,133,.7),0 0 0 12px rgba(255,255,255,.06),0 30px 70px rgba(0,0,0,.5),0 0 60px rgba(216,189,133,.25)", animation: "floatySlow 12s ease-in-out infinite" }}>
-            <AnimatedCharacter variant="couple" />
+        <div style={{ position: "relative", zIndex: 2, display: "flex", flexDirection: "column", alignItems: "center", maxWidth: 760, width: "100%" }}>
+          <div style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 22, color: "#d8bd85", marginBottom: 14, textShadow: "0 0 14px rgba(216,189,133,.6)" }}>♛</div>
+          {/* the couple within a majestic moving celestial scene */}
+          <div data-reveal data-reveal-delay="120" style={{ opacity: 0, position: "relative", width: "min(94vw,760px)", aspectRatio: "16/11", borderRadius: 14, overflow: "hidden", boxShadow: "0 0 0 1px rgba(216,189,133,.5),0 0 0 7px rgba(255,255,255,.05),0 40px 90px rgba(0,0,0,.55),0 0 70px rgba(216,189,133,.2)" }}>
+            <EtherealScene />
           </div>
           <div data-reveal data-reveal-delay="240" style={{ opacity: 0, marginTop: 28, fontFamily: "'Pinyon Script',cursive", fontSize: "clamp(46px,10vw,78px)", lineHeight: 0.9, background: "linear-gradient(120deg,#c9a35b,#f6ecc4,#c9a35b)", backgroundSize: "200% 100%", WebkitBackgroundClip: "text", backgroundClip: "text", WebkitTextFillColor: "transparent", animation: "shimmer 5s linear infinite" }}>Helson &amp; Luna</div>
           <div data-reveal data-reveal-delay="300" style={{ opacity: 0, fontSize: 10, letterSpacing: ".44em", textTransform: "uppercase", color: "#b7aecf", marginTop: 8 }}>The Groom &amp; The Bride</div>

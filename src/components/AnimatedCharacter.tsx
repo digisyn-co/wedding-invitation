@@ -131,15 +131,19 @@ function Sparkles() {
 export function AnimatedCharacter({
   variant,
   style,
+  background = true,
 }: {
   variant: "groom" | "bride" | "couple";
   style?: CSSProperties;
+  /** Draw the soft lavender backing plate. Set false to place the
+   *  figures transparently over a custom scene. */
+  background?: boolean;
 }) {
   const gid = `charbg-${variant}`;
   return (
     <svg
       viewBox="0 0 100 125"
-      preserveAspectRatio="xMidYMid slice"
+      preserveAspectRatio="xMidYMid meet"
       style={{ position: "absolute", inset: 0, width: "100%", height: "100%", ...style }}
       aria-hidden="true"
     >
@@ -150,7 +154,7 @@ export function AnimatedCharacter({
           <stop offset="100%" stopColor="#c7c2dd" />
         </radialGradient>
       </defs>
-      <rect x={0} y={0} width={100} height={125} fill={`url(#${gid})`} />
+      {background && <rect x={0} y={0} width={100} height={125} fill={`url(#${gid})`} />}
       <Sparkles />
 
       {variant === "couple" ? (
