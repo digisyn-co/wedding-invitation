@@ -6,16 +6,18 @@ import "@fontsource/cormorant-garamond/300.css";
 import "@fontsource/cormorant-garamond/400.css";
 import "@fontsource/cormorant-garamond/500.css";
 import "@fontsource/cormorant-garamond/600.css";
-import "@fontsource/parisienne/400.css";
+import "@fontsource/cormorant-garamond/300-italic.css";
+import "@fontsource/cormorant-garamond/400-italic.css";
+import "@fontsource/pinyon-script/400.css";
 import "@fontsource/jost/300.css";
 import "@fontsource/jost/400.css";
 import "@fontsource/jost/500.css";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Luna & Helson — December 17, 2026",
+  title: "Helson & Luna — December 12, 2026",
   description:
-    "Together with their beloved families, Luna and Helson request the honor of your presence — a love written among the stars.",
+    "Together with their families, Helson and Luna request the honour of your presence — a love written among the stars.",
 };
 
 export const viewport: Viewport = {

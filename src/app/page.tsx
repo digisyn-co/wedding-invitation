@@ -1,9 +1,9 @@
-import { ExperienceShell } from "@/sections/ExperienceShell";
+import { CinematicInvitation } from "@/sections/CinematicInvitation";
 
 export default function Home() {
   return (
-    <main className="flex min-h-dvh flex-col">
-      <ExperienceShell />
+    <main style={{ background: "#14121e" }}>
+      <CinematicInvitation />
     </main>
   );
 }
