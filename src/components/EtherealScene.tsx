@@ -80,9 +80,12 @@ export function EtherealScene() {
       {/* warm ground glow */}
       <div style={{ position: "absolute", bottom: "10%", left: "50%", width: "44%", height: "14%", zIndex: 5, transform: "translateX(-50%)", borderRadius: "50%", background: "radial-gradient(circle, rgba(233,210,154,.4), transparent 70%)", filter: "blur(10px)" }} />
 
-      {/* the couple */}
-      <div style={{ position: "absolute", bottom: "9%", left: "50%", transform: "translateX(-50%)", width: "46%", maxWidth: 260, aspectRatio: "4/5", zIndex: 6, animation: "floatySlow 12s ease-in-out infinite" }}>
-        <AnimatedCharacter variant="couple" background={false} />
+      {/* the couple — positioning on the outer div, float on the inner
+          one so the animation's transform can't cancel the centering. */}
+      <div style={{ position: "absolute", bottom: "9%", left: "50%", transform: "translateX(-50%)", width: "clamp(150px,50%,260px)", aspectRatio: "4/5", zIndex: 6 }}>
+        <div style={{ position: "absolute", inset: 0, animation: "floatySlow 12s ease-in-out infinite" }}>
+          <AnimatedCharacter variant="couple" background={false} />
+        </div>
       </div>
 
       {/* rising gold petals */}
