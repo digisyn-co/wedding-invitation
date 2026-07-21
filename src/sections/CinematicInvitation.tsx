@@ -414,13 +414,13 @@ export function CinematicInvitation() {
       </section>
 
       {/* SCENE 7 — VENUE */}
-      <section id="venue" className="snap-sect" style={{ position: "relative", padding: "clamp(90px,14vh,160px) 24px", background: "linear-gradient(180deg,rgba(230,223,218,.5) 0%,rgba(220,218,235,.42) 100%)", overflow: "hidden" }}>
+      <section id="venue" className="snap-sect" style={{ position: "relative", padding: "clamp(90px,14vh,160px) 24px", background: "linear-gradient(180deg,rgba(241,238,244,.92) 0%,rgba(228,226,240,.88) 100%)", overflow: "hidden" }}>
         <div style={{ maxWidth: 1000, margin: "0 auto", display: "flex", flexWrap: "wrap", gap: "clamp(30px,5vw,68px)", alignItems: "center", justifyContent: "center" }}>
           <div data-reveal style={{ ...reveal(), flex: "1 1 300px", minWidth: 280 }}>
-            <div style={{ fontSize: 11, letterSpacing: ".56em", textTransform: "uppercase", color: "#8a86a4", marginBottom: 16 }}>The Venue</div>
-            <h2 style={{ margin: "0 0 8px", fontFamily: "'Cormorant Garamond',serif", fontWeight: 400, fontSize: "clamp(34px,5vw,58px)", color: "#4a4468", lineHeight: 1.05 }}>Diversion 21</h2>
-            <div style={{ fontFamily: "'Cormorant Garamond',serif", fontWeight: 300, fontStyle: "italic", fontSize: 22, color: "#7a7392", marginBottom: 26 }}>Iloilo City, Philippines</div>
-            <p style={{ fontFamily: "'Cormorant Garamond',serif", fontWeight: 300, fontSize: 18, lineHeight: 1.75, color: "#5d587a", maxWidth: "42ch" }}>Follow the golden path to an evening of candlelight and quiet wonder. Ceremony at half past three, followed by dinner beneath the stars.</p>
+            <div style={{ fontSize: 11, letterSpacing: ".56em", textTransform: "uppercase", color: "#6a6486", marginBottom: 16 }}>The Venue</div>
+            <h2 style={{ margin: "0 0 8px", fontFamily: "'Cormorant Garamond',serif", fontWeight: 400, fontSize: "clamp(34px,5vw,58px)", color: "#3d3860", lineHeight: 1.05 }}>Diversion 21</h2>
+            <div style={{ fontFamily: "'Cormorant Garamond',serif", fontWeight: 300, fontStyle: "italic", fontSize: 22, color: "#574f74", marginBottom: 26 }}>Iloilo City, Philippines</div>
+            <p style={{ fontFamily: "'Cormorant Garamond',serif", fontWeight: 300, fontSize: 18, lineHeight: 1.75, color: "#4e4a68", maxWidth: "42ch" }}>Follow the golden path to an evening of candlelight and quiet wonder. Ceremony at half past three, followed by dinner beneath the stars.</p>
             <a href="https://maps.google.com/?q=Diversion+21+Iloilo+City" target="_blank" rel="noopener" style={{ display: "inline-flex", alignItems: "center", gap: 10, marginTop: 30, padding: "14px 30px", borderRadius: 100, border: "1px solid rgba(201,163,91,.7)", fontSize: 11, letterSpacing: ".32em", textTransform: "uppercase", color: "#a9853f" }}>Open in Maps →</a>
           </div>
           <div data-reveal data-reveal-delay="200" style={{ ...reveal(), flex: "1 1 320px", minWidth: 300 }}>
