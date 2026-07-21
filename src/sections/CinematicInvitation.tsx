@@ -362,10 +362,10 @@ export function CinematicInvitation() {
             )}
 
             {/* two doves, ascending left and right */}
-            <span style={{ position: "absolute", left: -32, top: -22, ["--dx" as string]: "-150px", ["--dy" as string]: "-340px", ["--dr" as string]: "-6deg", ["--dr2" as string]: "-14deg", animation: "doveFly 3.4s cubic-bezier(.3,.6,.4,1) .15s forwards", opacity: 0 } as CSSProperties}>
+            <span style={{ position: "absolute", left: -42, top: -30, ["--dx" as string]: "-150px", ["--dy" as string]: "-340px", ["--dr" as string]: "-6deg", ["--dr2" as string]: "-14deg", animation: "doveFly 3.4s cubic-bezier(.3,.6,.4,1) .15s forwards", opacity: 0 } as CSSProperties}>
               <Dove flip />
             </span>
-            <span style={{ position: "absolute", left: -32, top: -22, ["--dx" as string]: "150px", ["--dy" as string]: "-360px", ["--dr" as string]: "6deg", ["--dr2" as string]: "14deg", animation: "doveFly 3.6s cubic-bezier(.3,.6,.4,1) .3s forwards", opacity: 0 } as CSSProperties}>
+            <span style={{ position: "absolute", left: -42, top: -30, ["--dx" as string]: "150px", ["--dy" as string]: "-360px", ["--dr" as string]: "6deg", ["--dr2" as string]: "14deg", animation: "doveFly 3.6s cubic-bezier(.3,.6,.4,1) .3s forwards", opacity: 0 } as CSSProperties}>
               <Dove flapDelay=".2s" />
             </span>
         </div>
