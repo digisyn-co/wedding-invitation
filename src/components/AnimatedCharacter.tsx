@@ -38,7 +38,7 @@ function Face({ blinkDelay }: { blinkDelay: string }) {
 }
 
 /** A single figure drawn in a 100×125 local coordinate box. */
-function Figure({ variant, blinkDelay }: { variant: "groom" | "bride"; blinkDelay: string }) {
+export function Figure({ variant, blinkDelay }: { variant: "groom" | "bride"; blinkDelay: string }) {
   if (variant === "groom") {
     return (
       <g>

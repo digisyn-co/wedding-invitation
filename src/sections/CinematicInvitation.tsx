@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import { AnimatedCharacter } from "@/components/AnimatedCharacter";
 import { EtherealScene } from "@/components/EtherealScene";
+import { StoryScene } from "@/components/StoryScene";
 import { HeroCountdown } from "@/components/HeroCountdown";
 import { RsvpForm } from "@/components/RsvpForm";
 
@@ -382,7 +383,7 @@ export function CinematicInvitation() {
             <div key={c.i} data-ch={c.i} style={{ position: "absolute", left: "50%", top: "50%", transform: "translate(-50%,-50%)", width: "min(90vw,660px)", opacity: 0, textAlign: "center", willChange: "transform,opacity,filter" }}>
               <div style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 14, letterSpacing: ".52em", textTransform: "uppercase", color: "#d8bd85", marginBottom: 24, textShadow: "0 0 20px rgba(216,189,133,.4)" }}>{c.no}</div>
               <div style={{ position: "relative", width: "min(56vw,214px)", aspectRatio: "4/5", margin: "0 auto 32px", borderRadius: "50%", overflow: "hidden", boxShadow: "0 0 0 2px rgba(216,189,133,.7),0 0 0 10px rgba(255,255,255,.05),0 26px 60px rgba(0,0,0,.5),0 0 56px rgba(216,189,133,.22)", animation: "floatySlow 12s ease-in-out infinite" }}>
-                <AnimatedCharacter variant="couple" />
+                <StoryScene chapter={c.i} />
               </div>
               <h3 style={{ margin: "0 0 20px", fontFamily: "'Cormorant Garamond',serif", fontWeight: 300, fontStyle: "italic", fontSize: "clamp(34px,5.4vw,60px)", color: "#f2ead4", lineHeight: 1.08 }}>{c.title}</h3>
               <p style={{ margin: "0 auto", maxWidth: "40ch", fontFamily: "'Cormorant Garamond',serif", fontWeight: 300, fontSize: "clamp(18px,2.3vw,23px)", lineHeight: 1.75, color: "#d6cebc" }}>{c.body}</p>
