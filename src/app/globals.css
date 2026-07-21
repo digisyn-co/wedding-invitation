@@ -274,6 +274,45 @@ body {
   50% { opacity: 1; transform: scale(1.12); }
 }
 
+/* --- Running-couple tracking shot (RunningCouple + EtherealScene) --- */
+@keyframes legSwing {
+  0%, 100% { transform: rotate(34deg); }
+  50% { transform: rotate(-34deg); }
+}
+@keyframes armSwing {
+  0%, 100% { transform: rotate(-22deg); }
+  50% { transform: rotate(22deg); }
+}
+@keyframes runBob {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-3px); }
+}
+@keyframes veilStream {
+  0%, 100% { transform: skewX(-6deg) scaleY(1); }
+  50% { transform: skewX(-16deg) scaleY(0.94); }
+}
+@keyframes gownFlow {
+  0%, 100% { transform: skewX(-2deg); }
+  50% { transform: skewX(-8deg); }
+}
+@keyframes hillScroll {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+@keyframes windStreak {
+  0% { transform: translateX(0); opacity: 0; }
+  10% { opacity: 0.6; }
+  75% { opacity: 0.35; }
+  100% { transform: translateX(-700%); opacity: 0; }
+}
+.rc-leg { transform-box: fill-box; transform-origin: top center; animation: legSwing 0.5s ease-in-out infinite; }
+.rc-legB { animation-delay: -0.25s; }
+.rc-arm { transform-box: fill-box; transform-origin: top center; animation: armSwing 0.5s ease-in-out infinite; }
+.rc-armB { animation-delay: -0.25s; }
+.rc-bob { animation: runBob 0.25s ease-in-out infinite; }
+.rc-veil { transform-box: fill-box; transform-origin: top right; animation: veilStream 0.6s ease-in-out infinite; }
+.rc-gown { transform-box: fill-box; transform-origin: bottom center; animation: gownFlow 0.5s ease-in-out infinite; }
+
 /* --- Seal-break doves + pixie dust (arrival scene) --- */
 @keyframes doveFly {
   0% { transform: translate(0, 0) scale(0.5) rotate(var(--dr, 0deg)); opacity: 0; }

@@ -1,12 +1,12 @@
 import type { CSSProperties } from "react";
-import { AnimatedCharacter } from "@/components/AnimatedCharacter";
+import { RunningCouple } from "@/components/RunningCouple";
 
 /**
- * A self-contained, majestic moving illustration: a moonlit celestial
- * sky with drifting aurora, twinkling stars, shooting stars, rising
- * gold petals, parallax hills, a glowing portal arch, and the couple
- * beneath it. Pure CSS/SVG motion — no external assets, no JS. Fills
- * its (relatively-positioned) parent.
+ * A living tracking shot: the couple runs hand-in-hand toward the
+ * glowing arch ahead while the world streams past — endlessly
+ * scrolling parallax hills, wind streaks, drifting mist, rising gold
+ * petals, aurora, moon and stars above. Pure CSS/SVG motion — no
+ * external assets, no JS. Fills its (relatively-positioned) parent.
  */
 
 // Deterministic star field (fixed so SSR and client markup match).
@@ -69,23 +69,31 @@ export function EtherealScene() {
       <div style={{ position: "absolute", bottom: "18%", left: "-10%", width: "60%", height: "22%", zIndex: 4, borderRadius: "50%", background: "radial-gradient(circle, rgba(199,194,221,.28), transparent 70%)", filter: "blur(20px)", animation: "driftX 26s ease-in-out infinite" }} />
       <div style={{ position: "absolute", bottom: "12%", left: "40%", width: "55%", height: "20%", zIndex: 4, borderRadius: "50%", background: "radial-gradient(circle, rgba(216,189,133,.2), transparent 70%)", filter: "blur(22px)", animation: "driftX 32s ease-in-out infinite reverse" }} />
 
-      {/* parallax hills */}
-      <svg viewBox="0 0 400 130" preserveAspectRatio="none" style={{ position: "absolute", bottom: 0, left: 0, width: "100%", height: "38%", zIndex: 5 }}>
-        <path d="M0 70 Q100 40 200 66 T400 60 L400 130 L0 130 Z" fill="#2f2a48" opacity={0.85} />
-        <path d="M0 92 Q120 66 240 90 T400 86 L400 130 L0 130 Z" fill="#211d36" />
-      </svg>
+      {/* endlessly scrolling parallax hills — the world streams past */}
+      <div style={{ position: "absolute", bottom: 0, left: 0, width: "200%", height: "38%", zIndex: 5, animation: "hillScroll 34s linear infinite", willChange: "transform" }}>
+        <svg viewBox="0 0 800 130" preserveAspectRatio="none" style={{ display: "block", width: "100%", height: "100%" }}>
+          <path d="M0 70 Q100 40 200 66 T400 70 Q500 40 600 66 T800 70 L800 130 L0 130 Z" fill="#2f2a48" opacity={0.85} />
+        </svg>
+      </div>
+      <div style={{ position: "absolute", bottom: 0, left: 0, width: "200%", height: "30%", zIndex: 5, animation: "hillScroll 17s linear infinite", willChange: "transform" }}>
+        <svg viewBox="0 0 800 100" preserveAspectRatio="none" style={{ display: "block", width: "100%", height: "100%" }}>
+          <path d="M0 46 Q120 20 240 44 T400 46 Q520 20 640 44 T800 46 L800 100 L0 100 Z" fill="#211d36" />
+        </svg>
+      </div>
 
-      {/* glowing portal arch behind the couple */}
-      <div style={{ position: "absolute", bottom: "16%", left: "50%", width: "34%", aspectRatio: "3/4", zIndex: 5, transform: "translateX(-50%)", borderRadius: "50% 50% 46% 46%", border: "1.5px solid rgba(216,189,133,.55)", boxShadow: "0 0 40px rgba(216,189,133,.35), inset 0 0 40px rgba(216,189,133,.18)", animation: "archGlow 7s ease-in-out infinite" }} />
-      {/* warm ground glow */}
-      <div style={{ position: "absolute", bottom: "10%", left: "50%", width: "44%", height: "14%", zIndex: 5, transform: "translateX(-50%)", borderRadius: "50%", background: "radial-gradient(circle, rgba(233,210,154,.4), transparent 70%)", filter: "blur(10px)" }} />
+      {/* wind streaks racing past the runners */}
+      {[{ t: 46, d: "0s", du: "2.6s", w: 16 }, { t: 58, d: "1.1s", du: "3.2s", w: 12 }, { t: 68, d: "0.5s", du: "2.2s", w: 20 }, { t: 38, d: "1.8s", du: "3.6s", w: 10 }].map((s, i) => (
+        <span key={i} style={{ position: "absolute", top: `${s.t}%`, left: "100%", width: `${s.w}%`, height: 1.5, zIndex: 6, borderRadius: 2, background: "linear-gradient(90deg, transparent, rgba(233,210,154,.55), transparent)", animation: `windStreak ${s.du} linear ${s.d} infinite`, pointerEvents: "none" }} />
+      ))}
 
-      {/* the couple — positioning on the outer div, float on the inner
-          one so the animation's transform can't cancel the centering. */}
-      <div style={{ position: "absolute", bottom: "9%", left: "50%", transform: "translateX(-50%)", width: "clamp(150px,50%,260px)", aspectRatio: "4/5", zIndex: 6 }}>
-        <div style={{ position: "absolute", inset: 0, animation: "floatySlow 12s ease-in-out infinite" }}>
-          <AnimatedCharacter variant="couple" background={false} />
-        </div>
+      {/* the glowing arch — their destination, ahead of the run */}
+      <div style={{ position: "absolute", bottom: "15%", left: "76%", width: "24%", aspectRatio: "3/4", zIndex: 5, transform: "translateX(-50%)", borderRadius: "50% 50% 46% 46%", border: "1.5px solid rgba(216,189,133,.55)", boxShadow: "0 0 40px rgba(216,189,133,.35), inset 0 0 40px rgba(216,189,133,.18)", animation: "archGlow 7s ease-in-out infinite" }} />
+      {/* warm ground glow beneath the runners */}
+      <div style={{ position: "absolute", bottom: "8%", left: "42%", width: "48%", height: "14%", zIndex: 5, transform: "translateX(-50%)", borderRadius: "50%", background: "radial-gradient(circle, rgba(233,210,154,.4), transparent 70%)", filter: "blur(10px)" }} />
+
+      {/* the couple, running hand-in-hand toward the arch */}
+      <div style={{ position: "absolute", bottom: "7%", left: "40%", transform: "translateX(-50%)", width: "clamp(210px,62%,360px)", aspectRatio: "220/140", zIndex: 6 }}>
+        <RunningCouple />
       </div>
 
       {/* rising gold petals */}
