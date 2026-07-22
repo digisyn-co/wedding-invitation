@@ -200,7 +200,114 @@ export function CinematicInvitation() {
     window.addEventListener("resize", onScroll);
     storyScroll();
 
+    // ── The glide engine: one gesture = one scene ──────────────────
+    // Wheel / swipe / keys are quantized into single steps between
+    // "stops": each scene top, the four story-chapter centers, and
+    // intermediate stops inside any scene taller than the viewport
+    // (so nothing becomes unreachable on small screens). Each step
+    // glides there over ~950ms with a cinematic ease; native scrolling
+    // is suppressed. Recomputed per gesture, so it survives resizes
+    // and anchor jumps. Disabled under prefers-reduced-motion.
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    let gliding = false;
+    let cooldownUntil = 0;
+    let touchStartY: number | null = null;
+
+    const computeStops = () => {
+      const vh = window.innerHeight;
+      const maxY = Math.max(0, document.documentElement.scrollHeight - vh);
+      const stops = new Set<number>();
+      document.querySelectorAll<HTMLElement>(".snap-sect").forEach((el) => {
+        const top = Math.min(el.offsetTop, maxY);
+        stops.add(top);
+        let off = 0;
+        while (el.offsetHeight - off > vh * 1.15) {
+          off += vh * 0.85;
+          stops.add(Math.min(top + off, maxY));
+        }
+      });
+      const story = storyRef.current;
+      if (story) {
+        const t = story.offsetTop;
+        const total = story.offsetHeight - vh;
+        for (let k = 0; k < 4; k++) stops.add(Math.min(t + ((k + 0.5) / 4) * total, maxY));
+      }
+      return [...stops].sort((a, b) => a - b);
+    };
+
+    const glide = (target: number) => {
+      gliding = true;
+      const start = window.scrollY;
+      const dist = target - start;
+      const t0 = performance.now();
+      const D = 950;
+      const ease = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
+      const frame = (now: number) => {
+        const p = Math.min(1, (now - t0) / D);
+        window.scrollTo({ top: start + dist * ease(p), behavior: "instant" as ScrollBehavior });
+        if (p < 1) requestAnimationFrame(frame);
+        else {
+          gliding = false;
+          cooldownUntil = performance.now() + 350;
+        }
+      };
+      requestAnimationFrame(frame);
+    };
+
+    const stepScene = (dir: 1 | -1) => {
+      const cur = window.scrollY;
+      const stops = computeStops();
+      const target =
+        dir > 0 ? stops.find((s) => s > cur + 24) : [...stops].reverse().find((s) => s < cur - 24);
+      if (target !== undefined) glide(target);
+    };
+
+    const gestureBlocked = () =>
+      gliding || performance.now() < cooldownUntil || document.body.style.overflow === "hidden";
+
+    const onWheel = (e: WheelEvent) => {
+      if (reducedMotion) return;
+      e.preventDefault();
+      if (gestureBlocked() || Math.abs(e.deltaY) < 4) return;
+      stepScene(e.deltaY > 0 ? 1 : -1);
+    };
+    const onTouchStart = (e: TouchEvent) => {
+      touchStartY = e.touches[0].clientY;
+    };
+    const onTouchMove = (e: TouchEvent) => {
+      if (!reducedMotion && document.body.style.overflow !== "hidden") e.preventDefault();
+    };
+    const onTouchEnd = (e: TouchEvent) => {
+      if (reducedMotion || touchStartY === null) return;
+      const dy = touchStartY - e.changedTouches[0].clientY;
+      touchStartY = null;
+      if (gestureBlocked() || Math.abs(dy) < 50) return;
+      stepScene(dy > 0 ? 1 : -1);
+    };
+    const onKey = (e: KeyboardEvent) => {
+      if (reducedMotion) return;
+      const t = e.target as HTMLElement | null;
+      if (t && t.closest("input,textarea,select")) return;
+      if (["ArrowDown", "PageDown", " "].includes(e.key)) {
+        e.preventDefault();
+        if (!gestureBlocked()) stepScene(1);
+      } else if (["ArrowUp", "PageUp"].includes(e.key)) {
+        e.preventDefault();
+        if (!gestureBlocked()) stepScene(-1);
+      }
+    };
+    window.addEventListener("wheel", onWheel, { passive: false });
+    window.addEventListener("touchstart", onTouchStart, { passive: true });
+    window.addEventListener("touchmove", onTouchMove, { passive: false });
+    window.addEventListener("touchend", onTouchEnd, { passive: true });
+    window.addEventListener("keydown", onKey);
+
     return () => {
+      window.removeEventListener("wheel", onWheel);
+      window.removeEventListener("touchstart", onTouchStart);
+      window.removeEventListener("touchmove", onTouchMove);
+      window.removeEventListener("touchend", onTouchEnd);
+      window.removeEventListener("keydown", onKey);
       cancelAnimationFrame(obs);
       io.disconnect();
       sectIO.disconnect();

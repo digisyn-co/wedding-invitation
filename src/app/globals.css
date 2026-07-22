@@ -106,16 +106,15 @@
 
 html {
   scroll-behavior: smooth;
-  /* One-section-at-a-time snapping. Proximity (not mandatory) so the
-     tall cinematic story in the middle can still scroll freely. */
-  scroll-snap-type: y proximity;
+  /* Section stepping is JS-driven (one gesture = one scene, including
+     the story's internal chapters) — see the glide engine in
+     CinematicInvitation. CSS snap is intentionally off so it can't
+     fight the glide. .snap-sect now only marks scenes for the
+     arrival-bloom observer and the stop list. */
 }
 
-/* Snap targets — the ~viewport-height scenes. The story section is
-   deliberately excluded so its internal scroll-driven chapters work. */
 .snap-sect {
-  scroll-snap-align: start;
-  scroll-snap-stop: always;
+  scroll-snap-align: none;
 }
 
 /* Soft gold light-bloom that washes over each section as you arrive. */
@@ -137,7 +136,6 @@ html {
   100% { opacity: 0; }
 }
 @media (prefers-reduced-motion: reduce) {
-  html { scroll-snap-type: none; }
   .snap-sect.sect-active::before { animation: none; }
 }
 
