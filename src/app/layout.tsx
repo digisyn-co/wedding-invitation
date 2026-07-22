@@ -18,6 +18,7 @@ export const metadata: Metadata = {
   title: "Helson & Luna — December 12, 2026",
   description:
     "Together with their families, Helson and Luna request the honour of your presence — a love written among the stars.",
+  icons: { icon: "/assets/logo.webp" },
 };
 
 export const viewport: Viewport = {

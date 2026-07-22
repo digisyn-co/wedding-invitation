@@ -90,6 +90,7 @@ export function RsvpForm() {
               Répondez s&apos;il vous plaît
             </div>
             <h2
+              className="gold-shimmer"
               style={{
                 margin: "0 0 8px",
                 fontFamily: "'Pinyon Script',cursive",
@@ -135,6 +136,7 @@ export function RsvpForm() {
             <span style={label}>Will you attend?</span>
             <div style={{ display: "flex", gap: 14, marginTop: 12 }}>
               <button
+                className="lux-btn"
                 onClick={() => {
                   setAttend("joy");
                   setErrors((p) => ({ ...p, attend: undefined }));
@@ -159,6 +161,7 @@ export function RsvpForm() {
                 {attend === "joy" && <span style={{ color: "#c9a35b" }}>✦</span>}Joyfully accepts
               </button>
               <button
+                className="lux-btn"
                 onClick={() => {
                   setAttend("regret");
                   setErrors((p) => ({ ...p, attend: undefined }));
@@ -213,6 +216,7 @@ export function RsvpForm() {
           </label>
 
           <button
+            className="lux-btn"
             onClick={submit}
             style={{
               width: "100%",
@@ -255,6 +259,7 @@ export function RsvpForm() {
             ✦
           </div>
           <h2
+            className="gold-shimmer"
             style={{
               margin: "0 0 10px",
               fontFamily: "'Pinyon Script',cursive",

@@ -313,6 +313,71 @@ body {
 .rc-veil { transform-box: fill-box; transform-origin: top right; animation: veilStream 0.6s ease-in-out infinite; }
 .rc-gown { transform-box: fill-box; transform-origin: bottom center; animation: gownFlow 0.5s ease-in-out infinite; }
 
+/* ---------------------------------------------------------------
+   Beauty pass — living foil, melting section bridges, petals,
+   jewelry-grade micro-interactions, gold scrollbar.
+   ------------------------------------------------------------- */
+@keyframes petalFall {
+  0% { transform: translateY(-8vh) translateX(0) rotate(0deg); opacity: 0; }
+  8% { opacity: 0.85; }
+  85% { opacity: 0.6; }
+  100% { transform: translateY(105vh) translateX(var(--px, 40px)) rotate(var(--pr, 300deg)); opacity: 0; }
+}
+
+/* Gold type becomes moving foil — light forever traveling the letters */
+.gold-shimmer {
+  background-size: 200% 100% !important;
+  animation: shimmer 8s linear infinite;
+}
+
+/* Nav links: hairline gold underline that draws on hover */
+.nav-link { position: relative; transition: color 0.4s ease; }
+.nav-link:hover { color: #f6ecc4 !important; }
+.nav-link::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 100%;
+  bottom: -5px;
+  height: 1px;
+  background: linear-gradient(90deg, #e9d29a, #c9a35b);
+  transition: right 0.5s cubic-bezier(0.19, 1, 0.22, 1);
+}
+.nav-link:hover::after { right: 0; }
+.rsvp-pill { transition: background 0.5s ease, color 0.5s ease, box-shadow 0.5s ease; }
+.rsvp-pill:hover {
+  background: rgba(216, 189, 133, 0.16);
+  color: #fffaf0 !important;
+  box-shadow: 0 0 24px rgba(216, 189, 133, 0.35);
+}
+
+/* Cards lift toward the light */
+.lux-card {
+  transition: transform 0.7s cubic-bezier(0.19, 1, 0.22, 1), box-shadow 0.7s ease;
+}
+.lux-card:hover {
+  transform: translateY(-8px) !important;
+  box-shadow: 0 32px 64px rgba(120, 105, 80, 0.28), inset 0 0 0 1px rgba(216, 189, 133, 0.65),
+    inset 0 0 0 6px rgba(255, 255, 255, 0.55) !important;
+}
+
+/* Buttons: breathe up on hover, settle on press */
+.lux-btn {
+  transition: transform 0.45s cubic-bezier(0.19, 1, 0.22, 1), box-shadow 0.45s ease, filter 0.45s ease;
+}
+.lux-btn:hover { transform: translateY(-2px); filter: brightness(1.06); }
+.lux-btn:active { transform: translateY(0) scale(0.985); }
+
+/* Gold scrollbar */
+html { scrollbar-width: thin; scrollbar-color: #b8935a #14121e; }
+::-webkit-scrollbar { width: 9px; }
+::-webkit-scrollbar-track { background: #14121e; }
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #e9d29a, #b8935a);
+  border-radius: 8px;
+}
+::-webkit-scrollbar-thumb:hover { background: #e9d29a; }
+
 /* --- Seal-break doves + pixie dust (arrival scene) --- */
 @keyframes doveFly {
   0% { transform: translate(0, 0) scale(0.5) rotate(var(--dr, 0deg)); opacity: 0; }

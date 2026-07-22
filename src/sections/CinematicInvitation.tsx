@@ -52,6 +52,17 @@ const MEMORIES = [
   { slot: "memory-5", r: "-5deg", delay: "1.36s" },
 ];
 
+// Petals drifting through the hero — deterministic (SSR-safe).
+const HERO_PETALS = [
+  { left: "8%", c: "#f2d8d7", s: 11, dur: "13s", delay: "0s", px: "60px", pr: "320deg" },
+  { left: "22%", c: "#e9d29a", s: 8, dur: "16s", delay: "4s", px: "-40px", pr: "-280deg" },
+  { left: "38%", c: "#f6eee6", s: 10, dur: "14s", delay: "8s", px: "50px", pr: "300deg" },
+  { left: "55%", c: "#ebcfcf", s: 9, dur: "17s", delay: "2s", px: "-56px", pr: "-340deg" },
+  { left: "70%", c: "#f2d8d7", s: 12, dur: "12s", delay: "6s", px: "44px", pr: "260deg" },
+  { left: "84%", c: "#e9d29a", s: 8, dur: "15s", delay: "10s", px: "-38px", pr: "-300deg" },
+  { left: "93%", c: "#f6eee6", s: 10, dur: "18s", delay: "1s", px: "36px", pr: "280deg" },
+];
+
 export function CinematicInvitation() {
   const [fx, setFx] = useState<Particles | null>(null);
   const [burst, setBurst] = useState<SealBurst | null>(null);
@@ -304,12 +315,12 @@ export function CinematicInvitation() {
         <a href="#hero" style={{ fontFamily: "'Cormorant Garamond',serif", fontWeight: 500, letterSpacing: ".42em", fontSize: 15, color: "#e9ddc4", textTransform: "uppercase" }}>H <span style={{ color: "#d8bd85" }}>&amp;</span> L</a>
         <div style={{ display: "flex", gap: "clamp(16px,2.4vw,34px)", alignItems: "center" }}>
           <span className="nav-mid" style={{ display: "flex", gap: "clamp(16px,2.4vw,34px)", alignItems: "center" }}>
-            <a href="#couple" style={navLink}>Couple</a>
-            <a href="#story" style={navLink}>Story</a>
-            <a href="#details" style={navLink}>Details</a>
-            <a href="#venue" style={navLink}>Venue</a>
+            <a href="#couple" className="nav-link" style={navLink}>Couple</a>
+            <a href="#story" className="nav-link" style={navLink}>Story</a>
+            <a href="#details" className="nav-link" style={navLink}>Details</a>
+            <a href="#venue" className="nav-link" style={navLink}>Venue</a>
           </span>
-          <a href="#rsvp" style={{ ...navLink, padding: "9px 20px", border: "1px solid rgba(216,189,133,.6)", borderRadius: 100, color: "#f3e8cf" }}>RSVP</a>
+          <a href="#rsvp" className="rsvp-pill" style={{ ...navLink, padding: "9px 20px", border: "1px solid rgba(216,189,133,.6)", borderRadius: 100, color: "#f3e8cf" }}>RSVP</a>
         </div>
       </nav>
 
@@ -385,12 +396,16 @@ export function CinematicInvitation() {
       <section id="hero" className="snap-sect" style={{ position: "relative", minHeight: "100vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textAlign: "center", padding: "120px 24px 90px", background: "radial-gradient(130% 100% at 50% 0%, rgba(246,244,250,.62) 0%, rgba(226,225,239,.48) 42%, rgba(215,215,234,.4) 100%)", overflow: "hidden" }}>
         <div style={{ position: "absolute", top: "12%", left: "8%", width: 2, height: 150, background: "linear-gradient(180deg,transparent,rgba(216,189,133,.5),transparent)", animation: "floatySlow 9s ease-in-out infinite" }} />
         <div style={{ position: "absolute", bottom: "14%", right: "10%", width: 2, height: 120, background: "linear-gradient(180deg,transparent,rgba(216,189,133,.4),transparent)", animation: "floatySlow 11s ease-in-out infinite" }} />
+        {/* petals drifting down through the hero */}
+        {HERO_PETALS.map((p, i) => (
+          <span key={i} aria-hidden style={{ position: "absolute", top: 0, left: p.left, width: p.s, height: p.s * 0.72, borderRadius: "60% 60% 60% 0", background: p.c, opacity: 0, ["--px" as string]: p.px, ["--pr" as string]: p.pr, animation: `petalFall ${p.dur} linear ${p.delay} infinite`, pointerEvents: "none", filter: "drop-shadow(0 2px 3px rgba(90,84,130,.25))" } as CSSProperties} />
+        ))}
         <div data-reveal style={{ ...reveal(), fontFamily: "'Jost',sans-serif", fontWeight: 300, fontSize: 12, letterSpacing: ".62em", textTransform: "uppercase", color: "#8a86a4", marginBottom: 26 }}>Together with their families</div>
         <div data-reveal data-reveal-delay="150" style={{ ...reveal(), position: "relative", width: "min(82vw,420px)", marginBottom: -8, animation: "floatySlow 10s ease-in-out infinite" }}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/assets/logo.webp" alt="" style={{ display: "block", width: "100%", filter: "drop-shadow(0 22px 42px rgba(90,84,130,.34))" }} />
         </div>
-        <h1 data-reveal data-reveal-delay="300" style={{ ...reveal(), margin: "22px 0 4px", fontFamily: "'Pinyon Script',cursive", fontWeight: 400, fontSize: "clamp(42px,12vw,138px)", lineHeight: 0.92, ...goldText }}>Helson &amp; Luna</h1>
+        <h1 data-reveal data-reveal-delay="300" className="gold-shimmer" style={{ ...reveal(), margin: "22px 0 4px", fontFamily: "'Pinyon Script',cursive", fontWeight: 400, fontSize: "clamp(42px,12vw,138px)", lineHeight: 0.92, ...goldText }}>Helson &amp; Luna</h1>
         <div data-reveal data-reveal-delay="450" style={{ ...reveal(), display: "flex", alignItems: "center", gap: 18, marginTop: 14, color: "#6d688a" }}>
           <span style={{ width: 52, height: 1, background: "linear-gradient(90deg,transparent,#c9a35b)" }} />
           <span style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 20, letterSpacing: ".36em", textTransform: "uppercase" }}>12 · 12 · 2026</span>
@@ -402,6 +417,8 @@ export function CinematicInvitation() {
 
       {/* SCENE 4 — COUPLE */}
       <section id="couple" className="snap-sect" style={{ position: "relative", padding: "clamp(96px,15vh,180px) 24px", background: "radial-gradient(100% 80% at 50% 8%, rgba(38,36,59,.9) 0%, rgba(30,28,48,.86) 45%, rgba(22,20,36,.92) 100%)", display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center", overflow: "hidden" }}>
+        {/* bridge: the hero's lavender light melts into this dusk */}
+        <div aria-hidden style={{ position: "absolute", top: 0, left: 0, right: 0, height: 130, zIndex: 1, pointerEvents: "none", background: "linear-gradient(180deg, rgba(224,223,239,.42), transparent)" }} />
         <div style={{ position: "absolute", top: "-6%", left: "50%", transform: "translateX(-50%)", width: "70vw", height: "70vw", maxWidth: 820, maxHeight: 820, borderRadius: "50%", background: "radial-gradient(circle, rgba(216,189,133,.16), rgba(200,196,224,.06) 44%, transparent 68%)", pointerEvents: "none" }} />
         {fx?.sparkles.map((s, i) => (
           <span key={i} style={{ position: "absolute", top: s.top, left: s.left, width: s.size, height: s.size, pointerEvents: "none", background: "radial-gradient(circle,#f6eccf,rgba(216,189,133,0))", borderRadius: "50%", boxShadow: "0 0 8px 2px rgba(216,189,133,.6)", animation: `sparkle ${s.dur} ease-in-out ${s.delay} infinite` }} />
@@ -441,7 +458,7 @@ export function CinematicInvitation() {
           ))}
 
           <div style={{ position: "absolute", top: "clamp(30px,5vh,54px)", left: 0, right: 0, textAlign: "center", zIndex: 6, pointerEvents: "none" }}>
-            <div style={{ fontFamily: "'Pinyon Script',cursive", fontSize: "clamp(38px,5vw,62px)", lineHeight: 0.9, ...goldText }}>Our Story</div>
+            <div className="gold-shimmer" style={{ fontFamily: "'Pinyon Script',cursive", fontSize: "clamp(38px,5vw,62px)", lineHeight: 0.9, ...goldText }}>Our Story</div>
             <div style={{ marginTop: 8, fontFamily: "'Cormorant Garamond',serif", fontSize: 15, letterSpacing: ".4em", color: "#c7bfe0" }}><span ref={counterRef} style={{ color: "#e9d29a" }}>01</span> &nbsp;/&nbsp; 04</div>
           </div>
 
@@ -466,12 +483,14 @@ export function CinematicInvitation() {
 
       {/* SCENE 6 — DETAILS */}
       <section id="details" className="snap-sect" style={{ position: "relative", padding: "clamp(90px,14vh,160px) 24px", background: "radial-gradient(120% 80% at 50% 0%, rgba(244,239,232,.74) 0%, rgba(236,231,226,.6) 55%, rgba(230,223,218,.5) 100%)", overflow: "hidden" }}>
-        <div style={{ maxWidth: 1040, margin: "0 auto", textAlign: "center" }}>
+        {/* bridge: dusk melting into daylight */}
+        <div aria-hidden style={{ position: "absolute", top: 0, left: 0, right: 0, height: 150, zIndex: 1, pointerEvents: "none", background: "linear-gradient(180deg, rgba(23,20,34,.8), transparent)" }} />
+        <div style={{ position: "relative", zIndex: 2, maxWidth: 1040, margin: "0 auto", textAlign: "center" }}>
           <div data-reveal style={{ ...reveal(), fontSize: 11, letterSpacing: ".56em", textTransform: "uppercase", color: "#9b8a72", marginBottom: 14 }}>The Celebration</div>
-          <h2 data-reveal data-reveal-delay="120" style={{ ...reveal(), margin: "0 0 56px", fontFamily: "'Pinyon Script',cursive", fontSize: "clamp(38px,7vw,80px)", ...goldText }}>Wedding Details</h2>
+          <h2 data-reveal data-reveal-delay="120" className="gold-shimmer" style={{ ...reveal(), margin: "0 0 56px", fontFamily: "'Pinyon Script',cursive", fontSize: "clamp(38px,7vw,80px)", ...goldText }}>Wedding Details</h2>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(240px,1fr))", gap: 26 }}>
             {details.map((d) => (
-              <div key={d.label} data-reveal data-reveal-delay={String(d.delay)} style={{ ...reveal(), position: "relative", padding: "44px 26px 38px", borderRadius: 6, background: "linear-gradient(180deg,#fbf8f3,#f3ede4)", boxShadow: "0 20px 46px rgba(120,105,80,.16),inset 0 0 0 1px rgba(216,189,133,.35),inset 0 0 0 6px rgba(255,255,255,.5)" }}>
+              <div key={d.label} data-reveal data-reveal-delay={String(d.delay)} className="lux-card" style={{ ...reveal(), position: "relative", padding: "44px 26px 38px", borderRadius: 6, background: "linear-gradient(180deg,#fbf8f3,#f3ede4)", boxShadow: "0 20px 46px rgba(120,105,80,.16),inset 0 0 0 1px rgba(216,189,133,.35),inset 0 0 0 6px rgba(255,255,255,.5)" }}>
                 <div style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 26, color: "#c9a35b", marginBottom: 14 }}>{d.icon}</div>
                 <div style={{ width: 34, height: 1, background: "#d8bd85", margin: "0 auto 18px" }} />
                 <div style={{ fontSize: 10, letterSpacing: ".4em", textTransform: "uppercase", color: "#a99a80", marginBottom: 10 }}>{d.label}</div>
@@ -491,7 +510,7 @@ export function CinematicInvitation() {
             <h2 style={{ margin: "0 0 8px", fontFamily: "'Cormorant Garamond',serif", fontWeight: 400, fontSize: "clamp(34px,5vw,58px)", color: "#3d3860", lineHeight: 1.05 }}>Diversion 21</h2>
             <div style={{ fontFamily: "'Cormorant Garamond',serif", fontWeight: 300, fontStyle: "italic", fontSize: 22, color: "#574f74", marginBottom: 26 }}>Iloilo City, Philippines</div>
             <p style={{ fontFamily: "'Cormorant Garamond',serif", fontWeight: 300, fontSize: 18, lineHeight: 1.75, color: "#4e4a68", maxWidth: "42ch" }}>Follow the golden path to an evening of candlelight and quiet wonder. Ceremony at half past three, followed by dinner beneath the stars.</p>
-            <a href="https://maps.google.com/?q=Diversion+21+Iloilo+City" target="_blank" rel="noopener" style={{ display: "inline-flex", alignItems: "center", gap: 10, marginTop: 30, padding: "14px 30px", borderRadius: 100, border: "1px solid rgba(201,163,91,.7)", fontSize: 11, letterSpacing: ".32em", textTransform: "uppercase", color: "#a9853f" }}>Open in Maps →</a>
+            <a href="https://maps.google.com/?q=Diversion+21+Iloilo+City" target="_blank" rel="noopener" className="lux-btn" style={{ display: "inline-flex", alignItems: "center", gap: 10, marginTop: 30, padding: "14px 30px", borderRadius: 100, border: "1px solid rgba(201,163,91,.7)", fontSize: 11, letterSpacing: ".32em", textTransform: "uppercase", color: "#a9853f" }}>Open in Maps →</a>
           </div>
           <div data-reveal data-reveal-delay="200" style={{ ...reveal(), flex: "1 1 320px", minWidth: 300 }}>
             <div style={{ position: "relative", borderRadius: 8, overflow: "hidden", boxShadow: "0 30px 60px rgba(90,84,130,.26),inset 0 0 0 1px rgba(216,189,133,.4),inset 0 0 0 7px rgba(255,255,255,.55)", background: "linear-gradient(160deg,#eef0f5,#e4e6f0)" }}>
@@ -517,6 +536,8 @@ export function CinematicInvitation() {
 
       {/* SCENE 10 — CLOSING */}
       <section className="snap-sect" style={{ position: "relative", minHeight: "100vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textAlign: "center", padding: "120px 24px", background: "radial-gradient(130% 100% at 50% 30%, #26243b 0%, #17152300 0%, #100e18 100%),linear-gradient(180deg,#1b1930,#100e18)", overflow: "hidden" }}>
+        {/* bridge: the last daylight fading into the final night */}
+        <div aria-hidden style={{ position: "absolute", top: 0, left: 0, right: 0, height: 150, zIndex: 1, pointerEvents: "none", background: "linear-gradient(180deg, rgba(221,219,236,.4), transparent)" }} />
         <div style={{ position: "absolute", top: "8%", left: "50%", transform: "translateX(-50%)", width: "44vw", height: "44vw", maxWidth: 520, maxHeight: 520, borderRadius: "50%", background: "radial-gradient(circle,rgba(240,236,224,.16),transparent 66%)" }} />
         {fx?.stars.map((s, i) => (
           <span key={i} style={{ position: "absolute", top: s.top, left: s.left, width: s.size, height: s.size, borderRadius: "50%", background: "#f3ecd8", animation: `twinkle ${s.dur} ease-in-out ${s.delay} infinite` }} />
@@ -527,7 +548,7 @@ export function CinematicInvitation() {
         <div data-reveal style={{ opacity: 0, transform: "translateY(38px)", position: "relative", zIndex: 2 }}>
           <div style={{ fontFamily: "'Cormorant Garamond',serif", fontWeight: 300, fontStyle: "italic", fontSize: "clamp(24px,4vw,40px)", lineHeight: 1.6, color: "#e6dcc4", maxWidth: "20ch", margin: "0 auto" }}>&ldquo;And in the hush of the stars, forever began.&rdquo;</div>
           <div style={{ margin: "44px auto 0", width: 60, height: 1, background: "linear-gradient(90deg,transparent,#c9a35b,transparent)" }} />
-          <div style={{ marginTop: 44, fontFamily: "'Pinyon Script',cursive", fontSize: "clamp(42px,10vw,110px)", ...goldText }}>Helson &amp; Luna</div>
+          <div className="gold-shimmer" style={{ marginTop: 44, fontFamily: "'Pinyon Script',cursive", fontSize: "clamp(42px,10vw,110px)", ...goldText }}>Helson &amp; Luna</div>
           <div style={{ marginTop: 14, fontSize: 11, letterSpacing: ".5em", textTransform: "uppercase", color: "#a49f8a" }}>12 December 2026 · Iloilo City</div>
         </div>
       </section>
