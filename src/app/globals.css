@@ -376,6 +376,21 @@ html { scrollbar-width: thin; scrollbar-color: #b8935a #14121e; }
 }
 ::-webkit-scrollbar-thumb:hover { background: #e9d29a; }
 
+/* --- Wedding Details: compact 2×2 card grid on phones so the title
+       and all four cards share ONE screen (!important beats the
+       component's inline desktop styles only inside this query) --- */
+@media (max-width: 640px) {
+  #details { padding: 72px 16px 44px !important; }
+  #details .details-title { margin-bottom: 26px !important; }
+  .details-grid { grid-template-columns: 1fr 1fr !important; gap: 12px !important; }
+  .details-grid .lux-card { padding: 20px 10px 18px !important; }
+  .details-grid .det-icon { font-size: 18px !important; margin-bottom: 8px !important; }
+  .details-grid .det-divider { width: 26px !important; margin: 0 auto 10px !important; }
+  .details-grid .det-label { font-size: 8px !important; letter-spacing: .3em !important; margin-bottom: 6px !important; }
+  .details-grid .det-title { font-size: 16px !important; line-height: 1.25 !important; }
+  .details-grid .det-sub { font-size: 12.5px !important; margin-top: 4px !important; }
+}
+
 /* --- Seal-break doves + pixie dust (arrival scene) --- */
 @keyframes doveFly {
   0% { transform: translate(0, 0) scale(0.5) rotate(var(--dr, 0deg)); opacity: 0; }
