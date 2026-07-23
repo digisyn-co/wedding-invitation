@@ -16,15 +16,18 @@ const label = {
   color: "#a99a80",
 } as const;
 
+/* Vertical rhythm is clamped against viewport HEIGHT so the whole
+   card compresses to fit a single phone screen (in-app browsers
+   included) while staying airy on desktop. */
 const field = {
-  marginTop: 8,
+  marginTop: 6,
   width: "100%",
   boxSizing: "border-box",
-  padding: "14px 4px",
+  padding: "clamp(8px,1.4vh,14px) 4px",
   border: "none",
   borderBottom: "1px solid rgba(201,163,91,.5)",
   background: "transparent",
-  fontSize: 18,
+  fontSize: "clamp(16px,2.2vh,18px)",
   fontFamily: "'Cormorant Garamond',serif",
   color: "#4a4468",
   outline: "none",
@@ -68,7 +71,7 @@ export function RsvpForm() {
         position: "relative",
         maxWidth: 600,
         margin: "0 auto",
-        padding: "clamp(38px,5vw,64px)",
+        padding: "clamp(18px,3vh,52px) clamp(20px,5vw,64px)",
         borderRadius: 8,
         background: "linear-gradient(180deg,#fbf9f4,#f3eee7)",
         boxShadow:
@@ -80,11 +83,11 @@ export function RsvpForm() {
           <div style={{ textAlign: "center" }}>
             <div
               style={{
-                fontSize: 11,
-                letterSpacing: ".56em",
+                fontSize: 10,
+                letterSpacing: ".46em",
                 textTransform: "uppercase",
                 color: "#9b8a72",
-                marginBottom: 12,
+                marginBottom: "clamp(6px,1vh,12px)",
               }}
             >
               Répondez s&apos;il vous plaît
@@ -92,9 +95,9 @@ export function RsvpForm() {
             <h2
               className="gold-shimmer"
               style={{
-                margin: "0 0 8px",
+                margin: "0 0 4px",
                 fontFamily: "'Pinyon Script',cursive",
-                fontSize: "clamp(34px,8vw,76px)",
+                fontSize: "clamp(30px,7vw,76px)",
                 ...goldText,
               }}
             >
@@ -105,16 +108,16 @@ export function RsvpForm() {
                 fontFamily: "'Cormorant Garamond',serif",
                 fontWeight: 300,
                 fontStyle: "italic",
-                fontSize: 18,
+                fontSize: "clamp(15px,2.1vh,18px)",
                 color: "#7a7392",
-                margin: "0 0 34px",
+                margin: "0 0 clamp(12px,2.4vh,32px)",
               }}
             >
               Kindly reply on or before the 1st of November, 2026.
             </p>
           </div>
 
-          <label style={{ display: "block", textAlign: "left", marginBottom: 20 }}>
+          <label style={{ display: "block", textAlign: "left", marginBottom: "clamp(10px,1.8vh,20px)" }}>
             <span style={label}>Your Name</span>
             <input
               value={name}
@@ -132,9 +135,9 @@ export function RsvpForm() {
             )}
           </label>
 
-          <div style={{ textAlign: "left", marginBottom: 22 }}>
+          <div style={{ textAlign: "left", marginBottom: "clamp(10px,2vh,22px)" }}>
             <span style={label}>Will you attend?</span>
-            <div style={{ display: "flex", gap: 14, marginTop: 12 }}>
+            <div style={{ display: "flex", gap: 12, marginTop: "clamp(6px,1.2vh,12px)" }}>
               <button
                 className="lux-btn"
                 onClick={() => {
@@ -144,7 +147,7 @@ export function RsvpForm() {
                 style={{
                   flex: 1,
                   cursor: "pointer",
-                  padding: 16,
+                  padding: "clamp(10px,1.6vh,16px) 8px",
                   borderRadius: 5,
                   border: "1px solid rgba(201,163,91,.5)",
                   background: attend === "joy" ? "rgba(216,189,133,.22)" : "transparent",
@@ -154,7 +157,7 @@ export function RsvpForm() {
                   justifyContent: "center",
                   gap: 8,
                   fontFamily: "'Cormorant Garamond',serif",
-                  fontSize: 17,
+                  fontSize: "clamp(15px,2vh,17px)",
                   color: "#5d587a",
                 }}
               >
@@ -169,7 +172,7 @@ export function RsvpForm() {
                 style={{
                   flex: 1,
                   cursor: "pointer",
-                  padding: 16,
+                  padding: "clamp(10px,1.6vh,16px) 8px",
                   borderRadius: 5,
                   border: "1px solid rgba(201,163,91,.5)",
                   background: attend === "regret" ? "rgba(216,189,133,.22)" : "transparent",
@@ -179,7 +182,7 @@ export function RsvpForm() {
                   justifyContent: "center",
                   gap: 8,
                   fontFamily: "'Cormorant Garamond',serif",
-                  fontSize: 17,
+                  fontSize: "clamp(15px,2vh,17px)",
                   color: "#5d587a",
                 }}
               >
@@ -194,9 +197,9 @@ export function RsvpForm() {
             )}
           </div>
 
-          <label style={{ display: "block", textAlign: "left", marginBottom: 16 }}>
+          <label style={{ display: "block", textAlign: "left", marginBottom: "clamp(8px,1.6vh,16px)" }}>
             <span style={label}>Number in your party</span>
-            <select value={guests} onChange={(e) => setGuests(e.target.value)} style={{ ...field, padding: "12px 4px", fontSize: 17 }}>
+            <select value={guests} onChange={(e) => setGuests(e.target.value)} style={{ ...field, padding: "clamp(7px,1.2vh,12px) 4px", fontSize: "clamp(15px,2vh,17px)" }}>
               <option value="1">1 guest</option>
               <option value="2">2 guests</option>
               <option value="3">3 guests</option>
@@ -204,14 +207,14 @@ export function RsvpForm() {
             </select>
           </label>
 
-          <label style={{ display: "block", textAlign: "left", marginBottom: 30 }}>
+          <label style={{ display: "block", textAlign: "left", marginBottom: "clamp(12px,2.2vh,28px)" }}>
             <span style={label}>A note to the couple</span>
             <textarea
               value={message}
               onChange={(e) => setMessage(e.target.value)}
-              rows={2}
+              rows={1}
               placeholder="Optional well-wishes…"
-              style={{ ...field, padding: "12px 4px", fontSize: 17, resize: "none" }}
+              style={{ ...field, padding: "clamp(7px,1.2vh,12px) 4px", fontSize: "clamp(15px,2vh,17px)", resize: "none" }}
             />
           </label>
 
@@ -221,7 +224,7 @@ export function RsvpForm() {
             style={{
               width: "100%",
               cursor: "pointer",
-              padding: 18,
+              padding: "clamp(12px,1.9vh,18px)",
               border: "none",
               borderRadius: 100,
               background: "linear-gradient(120deg,#e9d29a,#c9a35b 55%,#e9d29a)",

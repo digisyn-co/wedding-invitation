@@ -467,8 +467,10 @@ export function CinematicInvitation() {
       <div ref={lightRef} style={{ position: "fixed", inset: 0, zIndex: 60, pointerEvents: "none", mixBlendMode: "screen", background: "radial-gradient(720px circle at 50% 30%, rgba(215,189,133,.08), transparent 60%)" }} />
       <div ref={bloomRef} style={{ position: "fixed", inset: 0, zIndex: 80, pointerEvents: "none", opacity: 0, background: "radial-gradient(circle at 50% 42%, rgba(255,251,240,.95), rgba(244,231,196,.5) 30%, transparent 70%)" }} />
 
-      {/* butterflies */}
-      <div ref={butterRef} style={{ position: "fixed", inset: 0, zIndex: 54, pointerEvents: "none", opacity: 0, transition: "opacity 1.6s ease" }}>
+      {/* butterflies — screen-blended so they read as living light on
+          the dark scenes but melt away over the cream cards instead of
+          sitting on top of the text */}
+      <div ref={butterRef} style={{ position: "fixed", inset: 0, zIndex: 54, pointerEvents: "none", opacity: 0, transition: "opacity 1.6s ease", mixBlendMode: "screen" }}>
         {fx?.butterflies.map((b, i) => (
           <span key={i} style={{ position: "absolute", top: b.top, left: b.left, ["--fx" as string]: b.fx, ["--fy" as string]: b.fy, ["--fr" as string]: b.fr, animation: `bfly ${b.dur} ease-in-out ${b.delay} infinite` }}>
             <span style={{ display: "flex", alignItems: "center", perspective: "70px", transform: `scale(${b.scale})` }}>
@@ -661,10 +663,11 @@ export function CinematicInvitation() {
 
       {/* SCENE 6 — DETAILS */}
       <section id="details" className="snap-sect" style={{ position: "relative", padding: "clamp(90px,14vh,160px) 24px", background: "radial-gradient(120% 80% at 50% 0%, rgba(244,239,232,.74) 0%, rgba(236,231,226,.6) 55%, rgba(230,223,218,.5) 100%)", overflow: "hidden" }}>
-        {/* bridge: dusk melting into daylight */}
-        <div aria-hidden style={{ position: "absolute", top: 0, left: 0, right: 0, height: 150, zIndex: 1, pointerEvents: "none", background: "linear-gradient(180deg, rgba(23,20,34,.8), transparent)" }} />
+        {/* bridge: dusk melting into daylight — kept short so the
+            section label never sinks into the dark band on phones */}
+        <div aria-hidden style={{ position: "absolute", top: 0, left: 0, right: 0, height: 96, zIndex: 1, pointerEvents: "none", background: "linear-gradient(180deg, rgba(23,20,34,.8), transparent)" }} />
         <div style={{ position: "relative", zIndex: 2, maxWidth: 1040, margin: "0 auto", textAlign: "center" }}>
-          <div data-reveal style={{ ...reveal(), fontSize: 11, letterSpacing: ".56em", textTransform: "uppercase", color: "#9b8a72", marginBottom: 14 }}>The Celebration</div>
+          <div data-reveal style={{ ...reveal(), fontSize: 11, letterSpacing: ".56em", textTransform: "uppercase", color: "#b3a184", textShadow: "0 1px 10px rgba(20,18,30,.45)", marginBottom: 14 }}>The Celebration</div>
           <h2 data-reveal data-reveal-delay="120" className="gold-shimmer" style={{ ...reveal(), margin: "0 0 56px", fontFamily: "'Pinyon Script',cursive", fontSize: "clamp(38px,7vw,80px)", ...goldText }}>Wedding Details</h2>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(240px,1fr))", gap: 26 }}>
             {details.map((d) => (
@@ -708,7 +711,7 @@ export function CinematicInvitation() {
       </section>
 
       {/* SCENE 9 — RSVP */}
-      <section id="rsvp" className="snap-sect" style={{ position: "relative", padding: "clamp(90px,14vh,170px) 24px", background: "radial-gradient(120% 90% at 50% 10%, rgba(239,234,243,.6) 0%, rgba(228,226,239,.46) 55%, rgba(216,215,234,.4) 100%)", overflow: "hidden" }}>
+      <section id="rsvp" className="snap-sect" style={{ position: "relative", minHeight: "100dvh", display: "flex", flexDirection: "column", justifyContent: "center", padding: "clamp(40px,6vh,150px) 20px", boxSizing: "border-box", background: "radial-gradient(120% 90% at 50% 10%, rgba(239,234,243,.6) 0%, rgba(228,226,239,.46) 55%, rgba(216,215,234,.4) 100%)", overflow: "hidden" }}>
         <RsvpForm />
       </section>
 
