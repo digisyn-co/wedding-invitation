@@ -394,14 +394,15 @@ html { scrollbar-width: thin; scrollbar-color: #b8935a #14121e; }
 /* --- Couple scene: compressed on phones so the header, portrait,
        names, and vow paragraph share ONE screen --- */
 @media (max-width: 640px) {
-  #couple { padding: 60px 18px 40px !important; }
-  #couple .couple-head { gap: 8px !important; margin-bottom: 8px !important; }
-  #couple .couple-line { height: 22px !important; }
-  #couple .couple-quote { margin-bottom: 18px !important; font-size: 19px !important; }
-  #couple .couple-crown { font-size: 16px !important; margin-bottom: 8px !important; }
-  #couple .couple-names { margin-top: 14px !important; font-size: 40px !important; }
-  #couple .couple-div { margin: 16px 0 10px !important; }
-  #couple .couple-text { font-size: 14.5px !important; line-height: 1.55 !important; max-width: 36ch !important; }
+  #couple { padding: 44px 18px 48px !important; }
+  #couple .couple-head { gap: 5px !important; margin-bottom: 5px !important; }
+  #couple .couple-line { display: none !important; }
+  #couple .couple-quote { margin-bottom: 12px !important; font-size: 17px !important; }
+  #couple .couple-crown { font-size: 14px !important; margin-bottom: 5px !important; }
+  #couple .couple-scene { width: min(82vw, 330px) !important; }
+  #couple .couple-names { margin-top: 10px !important; font-size: 36px !important; }
+  #couple .couple-div { margin: 10px 0 8px !important; }
+  #couple .couple-text { font-size: 14px !important; line-height: 1.5 !important; max-width: 38ch !important; }
 }
 
 /* --- Seal-break doves + pixie dust (arrival scene) --- */

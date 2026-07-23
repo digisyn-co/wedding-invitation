@@ -718,7 +718,7 @@ export function CinematicInvitation() {
         <div style={{ position: "relative", zIndex: 2, display: "flex", flexDirection: "column", alignItems: "center", maxWidth: 760, width: "100%" }}>
           <div className="couple-crown" style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 22, color: "#d8bd85", marginBottom: 14, textShadow: "0 0 14px rgba(216,189,133,.6)" }}>♛</div>
           {/* the couple within a majestic moving celestial scene */}
-          <div data-reveal data-reveal-delay="120" style={{ opacity: 0, position: "relative", width: "min(94vw,760px)", aspectRatio: "16/11", borderRadius: 14, overflow: "hidden", boxShadow: "0 0 0 1px rgba(216,189,133,.5),0 0 0 7px rgba(255,255,255,.05),0 40px 90px rgba(0,0,0,.55),0 0 70px rgba(216,189,133,.2)" }}>
+          <div data-reveal data-reveal-delay="120" className="couple-scene" style={{ opacity: 0, position: "relative", width: "min(94vw,760px)", aspectRatio: "16/11", borderRadius: 14, overflow: "hidden", boxShadow: "0 0 0 1px rgba(216,189,133,.5),0 0 0 7px rgba(255,255,255,.05),0 40px 90px rgba(0,0,0,.55),0 0 70px rgba(216,189,133,.2)" }}>
             <EtherealScene />
           </div>
           <div data-reveal data-reveal-delay="240" className="couple-names" style={{ opacity: 0, marginTop: 28, fontFamily: "'Pinyon Script',cursive", fontSize: "clamp(46px,10vw,78px)", lineHeight: 0.9, background: "linear-gradient(120deg,#c9a35b,#f6ecc4,#c9a35b)", backgroundSize: "200% 100%", WebkitBackgroundClip: "text", backgroundClip: "text", WebkitTextFillColor: "transparent", animation: "shimmer 5s linear infinite" }}>Helson &amp; Luna</div>
