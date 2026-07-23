@@ -5,6 +5,16 @@ gsap.registerPlugin(MotionPathPlugin);
 
 const rnd = gsap.utils.random;
 
+/** Phones and low-core devices get a lighter show: fewer nodes and —
+ *  critically — no per-particle blur filters, which are the single
+ *  most expensive thing in the burst on mobile GPUs. */
+function isLowPower() {
+  return (
+    typeof window !== "undefined" &&
+    (window.innerWidth < 768 || (navigator.hardwareConcurrency || 8) <= 4)
+  );
+}
+
 /** Champagne / moonlight / lilac palette shared with the scene. */
 const PIXIE_COLORS = ["#fff7e0", "#f6ecc4", "#e9d29a", "#d9c7f0", "#ffffff", "#f2d8d7"];
 const WAX_GRADIENTS = [
@@ -114,13 +124,16 @@ export function playCameraDive({ overlay, hero, layer, x, y, reduced }: CameraDi
     return tl;
   }
 
+  const lowPower = isLowPower();
+
   // Light streaks: thin gold lines tearing outward from the seal —
   // the "warp" that sells the acceleration.
   const root = anchor(layer, x, y);
   tl.eventCallback("onComplete", () => root.remove());
   tl.eventCallback("onInterrupt", () => root.remove());
-  for (let i = 0; i < 16; i += 1) {
-    const angle = (i / 16) * 360 + rnd(-8, 8);
+  const STREAKS = lowPower ? 9 : 16;
+  for (let i = 0; i < STREAKS; i += 1) {
+    const angle = (i / STREAKS) * 360 + rnd(-8, 8);
     const streak = spawn(root, {
       width: `${rnd(120, 340)}px`,
       height: `${rnd(1, 2.5)}px`,
@@ -144,16 +157,24 @@ export function playCameraDive({ overlay, hero, layer, x, y, reduced }: CameraDi
   // rAF ticker on weaker GPUs).
   const ox = (x / window.innerWidth) * 100;
   const oy = (y / window.innerHeight) * 100;
-  tl.set(overlay, { transformOrigin: `${ox}% ${oy}%`, willChange: "transform, opacity" }, 0)
-    .to(overlay, { scale: 1.9, filter: "blur(2px)", duration: 0.5, ease: "power2.in" }, 0.05)
-    .to(overlay, {
-      scale: 4.2,
-      opacity: 0,
-      filter: "blur(6px)",
-      duration: 0.85,
-      ease: "power3.in",
-    }, 0.55)
-    .set(overlay, { pointerEvents: "none" }, 0.55);
+  tl.set(overlay, { transformOrigin: `${ox}% ${oy}%`, willChange: "transform, opacity" }, 0);
+  if (lowPower) {
+    // No blur on the full-screen layer — compositing a blurred,
+    // scaled viewport is what makes phones drop frames here.
+    tl.to(overlay, { scale: 1.7, duration: 0.5, ease: "power2.in" }, 0.05)
+      .to(overlay, { scale: 3, opacity: 0, duration: 0.8, ease: "power3.in" }, 0.55)
+      .set(overlay, { pointerEvents: "none" }, 0.55);
+  } else {
+    tl.to(overlay, { scale: 1.9, filter: "blur(2px)", duration: 0.5, ease: "power2.in" }, 0.05)
+      .to(overlay, {
+        scale: 4.2,
+        opacity: 0,
+        filter: "blur(6px)",
+        duration: 0.85,
+        ease: "power3.in",
+      }, 0.55)
+      .set(overlay, { pointerEvents: "none" }, 0.55);
+  }
 
   // Emerging on the far side: the hero settles from oversized + soft
   // to crisp — we arrive somewhere, we don't just land on a page.
@@ -192,6 +213,7 @@ export function playCameraDive({ overlay, hero, layer, x, y, reduced }: CameraDi
  */
 export function playSealBurst3D({ layer, x, y, seal, doves, reduced }: SealBurst3DOptions) {
   const vh = window.innerHeight;
+  const lowPower = isLowPower();
   const anchors: HTMLElement[] = [];
   const tl = gsap.timeline({
     onComplete: () => anchors.forEach((a) => a.remove()),
@@ -259,7 +281,8 @@ export function playSealBurst3D({ layer, x, y, seal, doves, reduced }: SealBurst
   tl.fromTo(halo, { scale: 0.12, opacity: 0.9 }, { scale: 5.5, opacity: 0, duration: 1.6, ease: "power3.out" }, 0.52);
 
   // ══ 2b. WAX SHARDS — the seal breaks into real 3D pieces ══
-  for (let i = 0; i < 18; i += 1) {
+  const SHARDS = lowPower ? 10 : 18;
+  for (let i = 0; i < SHARDS; i += 1) {
     const size = rnd(9, 26);
     const shard = spawn(root, {
       width: `${size}px`,
@@ -308,8 +331,9 @@ export function playSealBurst3D({ layer, x, y, seal, doves, reduced }: SealBurst
 
   // ══ 2c. PIXIE DUST — comet-trailed motes + lens-glint stars in 3D ══
   const R = Math.hypot(window.innerWidth, vh) / 2 + 80;
-  for (let i = 0; i < 110; i += 1) {
-    const far = i >= 46; // wave 2: rides the shockwave, slower, farther
+  const DUST = lowPower ? 48 : 110;
+  for (let i = 0; i < DUST; i += 1) {
+    const far = i >= Math.floor(DUST * 0.42); // wave 2: rides the shockwave, slower, farther
     const color = PIXIE_COLORS[i % PIXIE_COLORS.length];
     const isStar = i % 4 === 0;
     const size = rnd(2.5, far ? 6 : 8);
@@ -320,11 +344,12 @@ export function playSealBurst3D({ layer, x, y, seal, doves, reduced }: SealBurst
     const p = spawn(root, {});
     if (isStar) {
       p.innerHTML = starSVG(size * 2.6, color);
-      p.style.filter = `drop-shadow(0 0 5px ${color}) blur(${depthBlur * 0.6}px)`;
+      // per-particle filters murder mobile GPUs — desktop only
+      if (!lowPower) p.style.filter = `drop-shadow(0 0 5px ${color}) blur(${depthBlur * 0.6}px)`;
     } else {
       // trail streams opposite the flight direction
       p.innerHTML = cometHTML(size, color, (a * 180) / Math.PI);
-      if (depthBlur > 0.8) p.style.filter = `blur(${depthBlur}px)`; // depth of field
+      if (!lowPower && depthBlur > 0.8) p.style.filter = `blur(${depthBlur}px)`; // depth of field
     }
     const trail = p.querySelector<HTMLElement>("[data-trail]");
 
@@ -367,7 +392,8 @@ export function playSealBurst3D({ layer, x, y, seal, doves, reduced }: SealBurst
   }
 
   // ══ 3. THE RISING HELIX — a spiral of dust climbing out of the seal ══
-  for (let i = 0; i < 34; i += 1) {
+  const HELIX = lowPower ? 14 : 34;
+  for (let i = 0; i < HELIX; i += 1) {
     const color = PIXIE_COLORS[(i + 2) % PIXIE_COLORS.length];
     const size = rnd(2, 4.5);
     const p = spawn(root, {
@@ -441,7 +467,8 @@ export function playSealBurst3D({ layer, x, y, seal, doves, reduced }: SealBurst
   });
 
   // ══ 4b. Down-feathers shed mid-flight, fluttering to earth ══
-  for (let i = 0; i < 6; i += 1) {
+  const FEATHERS = lowPower ? 3 : 6;
+  for (let i = 0; i < FEATHERS; i += 1) {
     const f = spawn(root, { opacity: "0" });
     f.innerHTML = featherSVG();
     const startX = rnd(-140, 140);

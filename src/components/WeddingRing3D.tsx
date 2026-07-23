@@ -40,7 +40,8 @@ export function WeddingRing3D({ breaking }: { breaking: boolean }) {
       } catch {
         return; // WebGL unavailable — the scene degrades gracefully without the ring
       }
-      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      const coarse = window.matchMedia("(pointer: coarse)").matches;
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, coarse ? 1.5 : 2));
       renderer.setSize(SIZE, SIZE);
       renderer.toneMapping = THREE.ACESFilmicToneMapping;
       renderer.toneMappingExposure = 1.15;
@@ -99,9 +100,11 @@ export function WeddingRing3D({ breaking }: { breaking: boolean }) {
       scene.add(group);
 
       let raf = 0;
+      let stopped = false;
       const clock = new THREE.Clock();
       const speed = reduced ? 0.04 : 0.25;
       const tick = () => {
+        if (stopped) return;
         raf = requestAnimationFrame(tick);
         const t = clock.getElapsedTime();
         group.rotation.z = t * speed;
@@ -122,6 +125,9 @@ export function WeddingRing3D({ breaking }: { breaking: boolean }) {
           gsap.to(group.rotation, { z: "+=9", duration: 2.3, ease: "power2.in" });
           gsap.to(group.position, { z: 4.7, y: 0.35, duration: 2.15, ease: "power3.in", delay: 0.25 });
           gsap.to(mount, { opacity: 0, duration: 0.5, delay: 1.75, ease: "power1.in" });
+          // Once it's flown past and faded, stop paying for the render
+          // loop — the burst and dive need every frame we can give them.
+          gsap.delayedCall(2.4, () => { stopped = true; });
         },
       };
 
