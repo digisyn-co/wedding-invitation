@@ -66,6 +66,9 @@ export function Dove({
         </linearGradient>
       </defs>
 
+      {/* whole bird bobs with the wingbeat — lift on the downstroke */}
+      <g style={{ animation: `doveBob ${flapDur} ease-in-out ${flapDelay} infinite` } as CSSProperties}>
+
       {/* far wing — behind the body, counter-flapping */}
       <g opacity=".92" transform="translate(-3 2)">
         <g
@@ -107,7 +110,9 @@ export function Dove({
       <circle cx="107.7" cy="37.5" r=".55" fill="#fff" />
       <circle cx="107" cy="38.2" r="2.4" fill="none" stroke="rgba(216,201,168,.65)" strokeWidth=".45" />
 
-      {/* near wing — grand, raised, spread primaries, flapping */}
+      {/* near wing — two articulated segments: the arm drives the beat,
+          the spread primaries lag a beat behind (phase-offset animation),
+          so the wing whips like muscle-and-feather instead of a paddle */}
       <g
         style={{
           transformBox: "fill-box",
@@ -115,14 +120,26 @@ export function Dove({
           animation: `flapWing ${flapDur} ease-in-out ${flapDelay} infinite`,
         } as CSSProperties}
       >
-        <path d="M52 22 C 40 12 28 5 14 2 C 26 10 38 18 53 27 Z" fill={url("wingNG")} />
-        <path d="M55 28 C 42 21 30 17 17 16 C 29 23 43 28 57 32 Z" fill={url("wingNG")} />
-        <path d="M58 33 C 46 29 34 28 24 30 C 35 34 48 36 60 37 Z" fill={url("wingNG")} opacity=".95" />
+        {/* outer primaries — delayed ~15% of the beat for the whip lag */}
+        <g
+          style={{
+            transformBox: "fill-box",
+            transformOrigin: "88% 90%",
+            animation: `flapOuter ${flapDur} ease-in-out calc(${flapDelay} + ${flapDur} * 0.15) infinite`,
+          } as CSSProperties}
+        >
+          <path d="M52 22 C 40 12 28 5 14 2 C 26 10 38 18 53 27 Z" fill={url("wingNG")} />
+          <path d="M55 28 C 42 21 30 17 17 16 C 29 23 43 28 57 32 Z" fill={url("wingNG")} />
+          <path d="M58 33 C 46 29 34 28 24 30 C 35 34 48 36 60 37 Z" fill={url("wingNG")} opacity=".95" />
+        </g>
+        {/* the arm + coverts mass */}
         <path d="M80 50 C 72 38 62 22 50 12 C 53 20 54 24 51 26 C 58 26 62 30 59 34 C 65 33 69 36 66 40 C 72 41 76 44 73 47 C 76 48 78 49 80 50 Z" fill={url("wingNG")} />
         <path d="M73 45 C 62 34 52 22 44 12" stroke="rgba(160,150,125,.5)" strokeWidth=".8" fill="none" />
         <path d="M67 41 C 56 33 45 26 34 21" stroke="rgba(160,150,125,.4)" strokeWidth=".6" fill="none" />
         <path d="M62 37 C 52 33 42 31 32 31" stroke="rgba(160,150,125,.3)" strokeWidth=".5" fill="none" />
         <path d="M80 50 C 72 43 66 36 62 28 C 68 32 74 40 82 48 Z" fill="#ffffff" opacity=".9" />
+      </g>
+
       </g>
     </svg>
   );

@@ -50,11 +50,28 @@ function spawn(parent: HTMLElement, css: Partial<CSSStyleDeclaration>) {
   return el;
 }
 
-/** Four-point sparkle star as an SVG string (rotates on Y for a 3D glint). */
+/** Layered four-point sparkle: main star + 45°-rotated under-flare +
+ *  hot core. The layering is what makes it read as a lens glint
+ *  rather than a flat shape. */
 function starSVG(size: number, color: string) {
   return `<svg viewBox="0 0 10 10" width="${size}" height="${size}" style="display:block;overflow:visible">
+    <path d="M5 0 L6.1 3.9 L10 5 L6.1 6.1 L5 10 L3.9 6.1 L0 5 L3.9 3.9 Z" fill="${color}" opacity=".55" transform="rotate(45 5 5) scale(.62)" transform-origin="5 5"/>
     <path d="M5 0 L6.1 3.9 L10 5 L6.1 6.1 L5 10 L3.9 6.1 L0 5 L3.9 3.9 Z" fill="${color}"/>
+    <circle cx="5" cy="5" r="1.1" fill="#fff"/>
   </svg>`;
+}
+
+/** A glowing mote with a comet trail. The wrapper is rotated to the
+ *  particle's flight direction so the trail streams behind it; the
+ *  core is a hot white center bleeding into the particle color —
+ *  bloom by gradient, not by filter (cheap on the GPU). */
+function cometHTML(size: number, color: string, angleDeg: number) {
+  const trailLen = size * 7;
+  const trailH = Math.max(1.2, size * 0.45);
+  return `<div style="position:relative;transform:rotate(${angleDeg}deg)">
+    <div data-trail style="position:absolute;left:${-trailLen + size * 0.4}px;top:50%;transform:translateY(-50%);transform-origin:100% 50%;width:${trailLen}px;height:${trailH}px;border-radius:${trailH}px;background:linear-gradient(90deg,transparent, ${color});opacity:.85"></div>
+    <div style="position:relative;width:${size}px;height:${size}px;margin-left:${-size / 2}px;border-radius:50%;background:radial-gradient(circle at 38% 38%, #fff, ${color} 55%, transparent 78%);box-shadow:0 0 ${size + 6}px ${color},0 0 ${size * 2.4}px ${color}66"></div>
+  </div>`;
 }
 
 /** Soft white down-feather shed by the doves mid-flight. */
@@ -289,7 +306,7 @@ export function playSealBurst3D({ layer, x, y, seal, doves, reduced }: SealBurst
       );
   }
 
-  // ══ 2c. PIXIE DUST — 3D explosion with flicker + floaty death ══
+  // ══ 2c. PIXIE DUST — comet-trailed motes + lens-glint stars in 3D ══
   const R = Math.hypot(window.innerWidth, vh) / 2 + 80;
   for (let i = 0; i < 110; i += 1) {
     const far = i >= 46; // wave 2: rides the shockwave, slower, farther
@@ -299,21 +316,18 @@ export function playSealBurst3D({ layer, x, y, seal, doves, reduced }: SealBurst
     const depth = rnd(-420, 520);
     const depthBlur = Math.min(4, Math.abs(depth) / 160);
 
-    const p = spawn(root, isStar ? {} : {
-      width: `${size}px`,
-      height: `${size}px`,
-      borderRadius: "50%",
-      background: color,
-      boxShadow: `0 0 ${size + 4}px ${color}`,
-    });
-    if (isStar) {
-      p.innerHTML = starSVG(size * 2.4, color);
-      p.style.filter = `drop-shadow(0 0 5px ${color}) blur(${depthBlur * 0.6}px)`;
-    } else if (depthBlur > 0.8) {
-      p.style.filter = `blur(${depthBlur}px)`; // depth of field
-    }
-
     const a = rnd(0, Math.PI * 2);
+    const p = spawn(root, {});
+    if (isStar) {
+      p.innerHTML = starSVG(size * 2.6, color);
+      p.style.filter = `drop-shadow(0 0 5px ${color}) blur(${depthBlur * 0.6}px)`;
+    } else {
+      // trail streams opposite the flight direction
+      p.innerHTML = cometHTML(size, color, (a * 180) / Math.PI);
+      if (depthBlur > 0.8) p.style.filter = `blur(${depthBlur}px)`; // depth of field
+    }
+    const trail = p.querySelector<HTMLElement>("[data-trail]");
+
     const d = far ? rnd(R * 0.4, R * 1.05) : rnd(60, R * 0.45);
     const tx = Math.cos(a) * d;
     const ty = Math.sin(a) * d - (far ? 90 : 40); // biased upward
@@ -339,6 +353,17 @@ export function playSealBurst3D({ layer, x, y, seal, doves, reduced }: SealBurst
         },
         t0 + burstDur * 0.82,
       );
+
+    // The comet trail: long while the mote races outward, collapsing
+    // into the particle as it decelerates — how streaks behave.
+    if (trail) {
+      tl.fromTo(
+        trail,
+        { scaleX: 0.15, opacity: 0.9 },
+        { scaleX: 1, duration: burstDur * 0.3, ease: "power2.out" },
+        t0,
+      ).to(trail, { scaleX: 0.05, opacity: 0, duration: burstDur * 0.6, ease: "power1.in" }, t0 + burstDur * 0.35);
+    }
   }
 
   // ══ 3. THE RISING HELIX — a spiral of dust climbing out of the seal ══

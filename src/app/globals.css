@@ -387,6 +387,18 @@ html { scrollbar-width: thin; scrollbar-color: #b8935a #14121e; }
   0%, 100% { transform: rotate(16deg); }
   50% { transform: rotate(-44deg); }
 }
+/* Outer primaries lag a beat behind the arm — the whip that makes a
+   wingbeat read as muscle and feather rather than a hinged paddle. */
+@keyframes flapOuter {
+  0%, 100% { transform: rotate(9deg); }
+  55% { transform: rotate(-26deg); }
+}
+/* The body rises on the downstroke and sinks on the up — flight, not
+   hovering. Runs at the same period as the wingbeat. */
+@keyframes doveBob {
+  0%, 100% { transform: translateY(1.6px); }
+  55% { transform: translateY(-2.2px); }
+}
 @keyframes pixie {
   0% { transform: translate(0, 0) scale(1) rotate(0deg); opacity: 1; }
   60% { opacity: 0.95; }

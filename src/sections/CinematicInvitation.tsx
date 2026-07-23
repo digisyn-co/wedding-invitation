@@ -2,9 +2,13 @@
 
 import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { playSealBurst3D, playCameraDive } from "@/animations/sealBurst3D";
+
+gsap.registerPlugin(ScrollTrigger);
 import { CinematicPreloader } from "@/components/CinematicPreloader";
 import { GoldenCenterpiece } from "@/components/GoldenCenterpiece";
+import { WeddingRing3D } from "@/components/WeddingRing3D";
 import { unlock, setMuted, playSwell } from "@/lib/sealAudio";
 import { AnimatedCharacter } from "@/components/AnimatedCharacter";
 import { EtherealScene } from "@/components/EtherealScene";
@@ -73,6 +77,7 @@ export function CinematicInvitation() {
   const [booted, setBooted] = useState(false);
   const [sceneEntered, setSceneEntered] = useState(false);
   const [soundOn, setSoundOn] = useState(false);
+  const [ringBreak, setRingBreak] = useState(false);
 
   const lightRef = useRef<HTMLDivElement>(null);
   const bloomRef = useRef<HTMLDivElement>(null);
@@ -133,10 +138,12 @@ export function CinematicInvitation() {
           if (!e.isIntersecting) return;
           const el = e.target as HTMLElement;
           const dl = el.getAttribute("data-reveal-delay") || "0";
-          el.style.transition = `opacity 2.4s ${ease} ${dl}ms, transform 2.6s ${ease} ${dl}ms, filter 2.2s ease ${dl}ms`;
+          el.style.transition = `opacity 2.4s ${ease} ${dl}ms, transform 2.6s ${ease} ${dl}ms, filter 2.2s ease ${dl}ms, clip-path 2.2s ${ease} ${dl}ms`;
           el.style.opacity = "1";
           el.style.transform = "none";
           el.style.filter = "blur(0)";
+          if (el.getAttribute("data-reveal-style") === "mask")
+            el.style.clipPath = "inset(0 0 0 0)"; // gold-curtain wipe
           io.unobserve(el);
         });
       },
@@ -146,7 +153,17 @@ export function CinematicInvitation() {
       document.querySelectorAll<HTMLElement>("[data-reveal]:not([data-obs])").forEach((el) => {
         el.setAttribute("data-obs", "1");
         el.style.filter = "blur(7px)";
-        el.style.transform = "translateY(58px) scale(.965)";
+        // Each reveal style is a different curtain: flip rises out of
+        // perspective, mask wipes open, default drifts up from below.
+        const styleType = el.getAttribute("data-reveal-style");
+        if (styleType === "flip") {
+          el.style.transform = "perspective(900px) translateY(58px) rotateX(24deg) scale(.96)";
+        } else if (styleType === "mask") {
+          el.style.transform = "translateY(26px)";
+          el.style.clipPath = "inset(0 100% 0 0)";
+        } else {
+          el.style.transform = "translateY(58px) scale(.965)";
+        }
         io.observe(el);
       });
     });
@@ -327,6 +344,73 @@ export function CinematicInvitation() {
     };
   }, []);
 
+  // Scroll storytelling: sections don't just arrive — they LEAVE.
+  // As each scene scrolls past, it drifts up, softens, and dims
+  // (scrubbed, so it tracks the finger/wheel), which makes the next
+  // scene feel like it emerges through the last one's afterglow.
+  useEffect(() => {
+    if (!sceneEntered) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const tweens: gsap.core.Tween[] = [];
+    document.querySelectorAll<HTMLElement>(".snap-sect").forEach((sec) => {
+      tweens.push(
+        gsap.fromTo(
+          sec,
+          { opacity: 1, yPercent: 0, filter: "blur(0px)" },
+          {
+            opacity: 0.28,
+            yPercent: -7,
+            filter: "blur(5px)",
+            ease: "none",
+            scrollTrigger: { trigger: sec, start: "bottom 60%", end: "bottom 8%", scrub: 0.8 },
+          },
+        ),
+      );
+    });
+    return () => {
+      tweens.forEach((t) => {
+        t.scrollTrigger?.kill();
+        t.kill();
+      });
+    };
+  }, [sceneEntered]);
+
+  // Arrival-scene pointer parallax: crest and seal-stage drift on
+  // separate depth planes as the cursor moves — the scene has air in
+  // it before you even click. Desktop (hover-capable) only.
+  useEffect(() => {
+    if (!booted || sceneEntered) return;
+    if (!window.matchMedia("(hover: hover)").matches) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const overlay = overlayRef.current;
+    const card = cardRef.current;
+    const stage = overlay?.querySelector<HTMLElement>("[data-seal-stage]");
+    if (!overlay || !card || !stage) return;
+
+    let raf = 0;
+    let tx = 0, ty = 0, cx = 0, cy = 0;
+    const onMove = (e: MouseEvent) => {
+      tx = e.clientX / window.innerWidth - 0.5;
+      ty = e.clientY / window.innerHeight - 0.5;
+      if (!raf) raf = requestAnimationFrame(step);
+    };
+    const step = () => {
+      raf = 0;
+      cx += (tx - cx) * 0.08;
+      cy += (ty - cy) * 0.08;
+      card.style.translate = `${(-cx * 18).toFixed(1)}px ${(-cy * 12).toFixed(1)}px`;
+      stage.style.translate = `${(-cx * 34).toFixed(1)}px ${(-cy * 22).toFixed(1)}px`;
+      if (Math.abs(tx - cx) + Math.abs(ty - cy) > 0.001) raf = requestAnimationFrame(step);
+    };
+    window.addEventListener("mousemove", onMove);
+    return () => {
+      window.removeEventListener("mousemove", onMove);
+      if (raf) cancelAnimationFrame(raf);
+      card.style.translate = "";
+      stage.style.translate = "";
+    };
+  }, [booted, sceneEntered]);
+
   // Fire the 3D seal-break the moment the FX layer + doves are mounted,
   // then — as the shards clear — the camera dives THROUGH the broken
   // seal into the hero (the zoom-through transition).
@@ -368,6 +452,7 @@ export function CinematicInvitation() {
     opening.current = true;
     unlock(); // user gesture — safe moment to arm WebAudio
     playSwell(); // golden shimmer + bells (audible only when sound is on)
+    setRingBreak(true); // the ring joins the choreography
     const seal = sealRef.current, card = cardRef.current, bloom = bloomRef.current;
 
     // Mount the 3D FX layer anchored to the seal's center — the GSAP
@@ -533,10 +618,14 @@ export function CinematicInvitation() {
           <img src="/assets/logo.webp" alt="Helson and Luna monogram" style={{ display: "block", width: "100%", height: "auto", filter: "drop-shadow(0 26px 50px rgba(0,0,0,.55))" }} />
         </div>
 
-        <button onClick={enter} ref={sealRef} style={{ position: "relative", zIndex: 3, marginTop: 14, width: 92, height: 92, border: "none", cursor: "pointer", borderRadius: "50%", background: "radial-gradient(circle at 38% 32%, #f4e6c0, #c9a35b 55%, #9a7636 100%)", animation: "sealGlow 3.4s ease-in-out infinite", transition: "transform 1s cubic-bezier(.19,1,.22,1),opacity .8s ease", display: "flex", alignItems: "center", justifyContent: "center" }}>
-          <span style={{ fontFamily: "'Cormorant Garamond',serif", fontWeight: 600, fontSize: 34, letterSpacing: ".02em", color: "#6b4f22", textShadow: "0 1px 1px rgba(255,255,255,.4)" }}>H<span style={{ fontSize: 22 }}>&amp;</span>L</span>
-          <span style={{ position: "absolute", inset: 6, borderRadius: "50%", border: "1px solid rgba(107,79,34,.35)" }} />
-        </button>
+        {/* seal stage: the 3D ring halos the seal; both leave together */}
+        <div data-seal-stage style={{ position: "relative", zIndex: 3, marginTop: 14, width: 92, height: 92 }}>
+          {booted && <WeddingRing3D breaking={ringBreak} />}
+          <button onClick={enter} ref={sealRef} style={{ position: "relative", zIndex: 3, width: 92, height: 92, border: "none", cursor: "pointer", borderRadius: "50%", background: "radial-gradient(circle at 38% 32%, #f4e6c0, #c9a35b 55%, #9a7636 100%)", animation: "sealGlow 3.4s ease-in-out infinite", transition: "transform 1s cubic-bezier(.19,1,.22,1),opacity .8s ease", display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <span style={{ fontFamily: "'Cormorant Garamond',serif", fontWeight: 600, fontSize: 34, letterSpacing: ".02em", color: "#6b4f22", textShadow: "0 1px 1px rgba(255,255,255,.4)" }}>H<span style={{ fontSize: 22 }}>&amp;</span>L</span>
+            <span style={{ position: "absolute", inset: 6, borderRadius: "50%", border: "1px solid rgba(107,79,34,.35)" }} />
+          </button>
+        </div>
 
         <p style={{ zIndex: 3, marginTop: 34, fontFamily: "'Jost',sans-serif", fontWeight: 300, fontSize: 12, letterSpacing: ".5em", textTransform: "uppercase", color: "rgba(233,221,196,.82)", animation: "floaty 4s ease-in-out infinite" }}>Click the Seal to Begin</p>
       </div>
@@ -671,7 +760,7 @@ export function CinematicInvitation() {
           <h2 data-reveal data-reveal-delay="120" className="gold-shimmer" style={{ ...reveal(), margin: "0 0 56px", fontFamily: "'Pinyon Script',cursive", fontSize: "clamp(38px,7vw,80px)", ...goldText }}>Wedding Details</h2>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(240px,1fr))", gap: 26 }}>
             {details.map((d) => (
-              <div key={d.label} data-reveal data-reveal-delay={String(d.delay)} className="lux-card" style={{ ...reveal(), position: "relative", padding: "44px 26px 38px", borderRadius: 6, background: "linear-gradient(180deg,#fbf8f3,#f3ede4)", boxShadow: "0 20px 46px rgba(120,105,80,.16),inset 0 0 0 1px rgba(216,189,133,.35),inset 0 0 0 6px rgba(255,255,255,.5)" }}>
+              <div key={d.label} data-reveal data-reveal-style="flip" data-reveal-delay={String(d.delay)} className="lux-card" style={{ ...reveal(), position: "relative", padding: "44px 26px 38px", borderRadius: 6, background: "linear-gradient(180deg,#fbf8f3,#f3ede4)", boxShadow: "0 20px 46px rgba(120,105,80,.16),inset 0 0 0 1px rgba(216,189,133,.35),inset 0 0 0 6px rgba(255,255,255,.5)" }}>
                 <div style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 26, color: "#c9a35b", marginBottom: 14 }}>{d.icon}</div>
                 <div style={{ width: 34, height: 1, background: "#d8bd85", margin: "0 auto 18px" }} />
                 <div style={{ fontSize: 10, letterSpacing: ".4em", textTransform: "uppercase", color: "#a99a80", marginBottom: 10 }}>{d.label}</div>
@@ -693,7 +782,7 @@ export function CinematicInvitation() {
             <p style={{ fontFamily: "'Cormorant Garamond',serif", fontWeight: 300, fontSize: 18, lineHeight: 1.75, color: "#4e4a68", maxWidth: "42ch" }}>Follow the golden path to an evening of candlelight and quiet wonder. Ceremony at half past three, followed by dinner beneath the stars.</p>
             <a href="https://maps.google.com/?q=Diversion+21+Iloilo+City" target="_blank" rel="noopener" className="lux-btn" style={{ display: "inline-flex", alignItems: "center", gap: 10, marginTop: 30, padding: "14px 30px", borderRadius: 100, border: "1px solid rgba(201,163,91,.7)", fontSize: 11, letterSpacing: ".32em", textTransform: "uppercase", color: "#a9853f" }}>Open in Maps →</a>
           </div>
-          <div data-reveal data-reveal-delay="200" style={{ ...reveal(), flex: "1 1 320px", minWidth: 300 }}>
+          <div data-reveal data-reveal-style="mask" data-reveal-delay="200" style={{ ...reveal(), flex: "1 1 320px", minWidth: 300 }}>
             <div style={{ position: "relative", borderRadius: 8, overflow: "hidden", boxShadow: "0 30px 60px rgba(90,84,130,.26),inset 0 0 0 1px rgba(216,189,133,.4),inset 0 0 0 7px rgba(255,255,255,.55)", background: "linear-gradient(160deg,#eef0f5,#e4e6f0)" }}>
               <svg viewBox="0 0 400 300" style={{ display: "block", width: "100%", height: "auto" }}>
                 <rect width="400" height="300" fill="#eceef4" />
