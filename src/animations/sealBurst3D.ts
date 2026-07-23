@@ -66,6 +66,94 @@ function featherSVG() {
   </svg>`;
 }
 
+export interface CameraDiveOptions {
+  /** The fixed arrival overlay that the camera dives "through". */
+  overlay: HTMLElement;
+  /** Hero section that emerges on the far side of the dive. */
+  hero: HTMLElement | null;
+  /** FX layer for the light streaks (same layer as the burst). */
+  layer: HTMLElement;
+  /** Seal center in viewport coords — the vanishing point. */
+  x: number;
+  y: number;
+  reduced: boolean;
+}
+
+/**
+ * The zoom-through: instead of politely fading, the whole arrival
+ * scene accelerates PAST the camera — scaling from the seal's exact
+ * position with a blur ramp while thin gold light-streaks (warp
+ * lines) tear radially outward — and the hero emerges on the far
+ * side, settling from oversized/blurred to crisp. The signature move
+ * of cinematic award sites: a camera dive, not a crossfade.
+ */
+export function playCameraDive({ overlay, hero, layer, x, y, reduced }: CameraDiveOptions) {
+  const tl = gsap.timeline();
+
+  if (reduced) {
+    tl.to(overlay, { opacity: 0, duration: 0.8, ease: "power1.inOut" });
+    if (hero) tl.fromTo(hero, { opacity: 0 }, { opacity: 1, duration: 0.8 }, 0.4);
+    tl.set(overlay, { pointerEvents: "none" }, 0);
+    return tl;
+  }
+
+  // Light streaks: thin gold lines tearing outward from the seal —
+  // the "warp" that sells the acceleration.
+  const root = anchor(layer, x, y);
+  tl.eventCallback("onComplete", () => root.remove());
+  tl.eventCallback("onInterrupt", () => root.remove());
+  for (let i = 0; i < 16; i += 1) {
+    const angle = (i / 16) * 360 + rnd(-8, 8);
+    const streak = spawn(root, {
+      width: `${rnd(120, 340)}px`,
+      height: `${rnd(1, 2.5)}px`,
+      background:
+        "linear-gradient(90deg, transparent, rgba(246,236,196,.95) 30%, rgba(233,210,154,.6) 70%, transparent)",
+      transformOrigin: "0% 50%",
+      borderRadius: "2px",
+      boxShadow: "0 0 8px rgba(233,210,154,.8)",
+    });
+    const t0 = 0.06 + rnd(0, 0.22);
+    tl.set(streak, { rotation: angle, scaleX: 0, opacity: 0, x: rnd(20, 60) * Math.cos((angle * Math.PI) / 180), y: rnd(20, 60) * Math.sin((angle * Math.PI) / 180) }, t0)
+      .to(streak, { scaleX: rnd(2.4, 4.2), opacity: 1, duration: 0.34, ease: "power4.in" }, t0)
+      .to(streak, { scaleX: rnd(5, 7.5), opacity: 0, duration: 0.3, ease: "power2.out" }, t0 + 0.34);
+  }
+
+  // The dive itself: origin pinned to the seal so we fall INTO it.
+  // Deliberately budget-conscious: the overlay hosts a full-viewport
+  // iframe, so the scale is capped and opacity dies early — the
+  // acceleration is sold by the streaks + blur ramp, not raw scale
+  // (scale 8 + blur 16 rasterizes a monster layer and starves the
+  // rAF ticker on weaker GPUs).
+  const ox = (x / window.innerWidth) * 100;
+  const oy = (y / window.innerHeight) * 100;
+  tl.set(overlay, { transformOrigin: `${ox}% ${oy}%`, willChange: "transform, opacity" }, 0)
+    .to(overlay, { scale: 1.9, filter: "blur(2px)", duration: 0.5, ease: "power2.in" }, 0.05)
+    .to(overlay, {
+      scale: 4.2,
+      opacity: 0,
+      filter: "blur(6px)",
+      duration: 0.85,
+      ease: "power3.in",
+    }, 0.55)
+    .set(overlay, { pointerEvents: "none" }, 0.55);
+
+  // Emerging on the far side: the hero settles from oversized + soft
+  // to crisp — we arrive somewhere, we don't just land on a page.
+  if (hero) {
+    tl.fromTo(
+      hero,
+      { scale: 1.14, opacity: 0.3, filter: "blur(8px)", transformOrigin: "50% 42%" },
+      // clearProps must stay scoped: "all" would wipe the section's
+      // React-inlined layout styles (flex, background, padding).
+      { scale: 1, opacity: 1, filter: "blur(0px)", duration: 1.3, ease: "expo.out", clearProps: "transform,filter,opacity" },
+      1.0,
+    );
+  }
+
+  return tl;
+}
+
 /**
  * The signature seal-break moment, rebuilt in true 3D:
  *

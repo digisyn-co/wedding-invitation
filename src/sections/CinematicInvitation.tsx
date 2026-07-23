@@ -1,7 +1,11 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
-import { playSealBurst3D } from "@/animations/sealBurst3D";
+import gsap from "gsap";
+import { playSealBurst3D, playCameraDive } from "@/animations/sealBurst3D";
+import { CinematicPreloader } from "@/components/CinematicPreloader";
+import { GoldenCenterpiece } from "@/components/GoldenCenterpiece";
+import { unlock, setMuted, playSwell } from "@/lib/sealAudio";
 import { AnimatedCharacter } from "@/components/AnimatedCharacter";
 import { EtherealScene } from "@/components/EtherealScene";
 import { StoryEmblem } from "@/components/StoryEmblem";
@@ -66,6 +70,9 @@ const HERO_PETALS = [
 export function CinematicInvitation() {
   const [fx, setFx] = useState<Particles | null>(null);
   const [burst, setBurst] = useState<SealBurst | null>(null);
+  const [booted, setBooted] = useState(false);
+  const [sceneEntered, setSceneEntered] = useState(false);
+  const [soundOn, setSoundOn] = useState(false);
 
   const lightRef = useRef<HTMLDivElement>(null);
   const bloomRef = useRef<HTMLDivElement>(null);
@@ -320,7 +327,9 @@ export function CinematicInvitation() {
     };
   }, []);
 
-  // Fire the 3D seal-break the moment the FX layer + doves are mounted.
+  // Fire the 3D seal-break the moment the FX layer + doves are mounted,
+  // then — as the shards clear — the camera dives THROUGH the broken
+  // seal into the hero (the zoom-through transition).
   useEffect(() => {
     const layer = fxLayerRef.current;
     if (!burst || !layer) return;
@@ -334,12 +343,31 @@ export function CinematicInvitation() {
       doves,
       reduced,
     });
-    return () => { tl.kill(); };
+    let dive: gsap.core.Timeline | null = null;
+    const diveCall = gsap.delayedCall(reduced ? 0.3 : 1.2, () => {
+      const overlay = overlayRef.current;
+      if (!overlay) return;
+      dive = playCameraDive({
+        overlay,
+        hero: document.getElementById("hero"),
+        layer,
+        x: burst.x,
+        y: burst.y,
+        reduced,
+      });
+    });
+    return () => {
+      tl.kill();
+      diveCall.kill();
+      dive?.kill();
+    };
   }, [burst]);
 
   const enter = () => {
     if (entered.current || opening.current) return;
     opening.current = true;
+    unlock(); // user gesture — safe moment to arm WebAudio
+    playSwell(); // golden shimmer + bells (audible only when sound is on)
     const seal = sealRef.current, card = cardRef.current, bloom = bloomRef.current;
 
     // Mount the 3D FX layer anchored to the seal's center — the GSAP
@@ -360,8 +388,8 @@ export function CinematicInvitation() {
     const overlay = overlayRef.current, butter = butterRef.current, montage = montageRef.current, nav = navRef.current;
     setTimeout(() => { if (card) { card.style.transition = "transform 2.4s cubic-bezier(.16,.84,.28,1), opacity 1.6s ease"; card.style.transform = "translateY(-70px) scale(1.12)"; } }, 420);
     setTimeout(() => { if (bloom) { bloom.style.transition = "opacity 1s ease"; bloom.style.opacity = ".9"; } }, 1300);
+    // (the overlay itself is flown by playCameraDive — no CSS fade here)
     setTimeout(() => {
-      if (overlay) { overlay.style.transition = "opacity 1.8s ease, transform 2.2s cubic-bezier(.16,.84,.28,1), filter 1.8s ease"; overlay.style.opacity = "0"; overlay.style.transform = "scale(1.16)"; overlay.style.filter = "blur(4px)"; overlay.style.pointerEvents = "none"; }
       if (butter) butter.style.opacity = "1";
       if (montage) { montage.style.display = "block"; void montage.offsetWidth; }
     }, 1500);
@@ -369,11 +397,17 @@ export function CinematicInvitation() {
     setTimeout(() => { if (montage) montage.style.opacity = "0"; }, 3700);
     setTimeout(() => {
       entered.current = true;
+      setSceneEntered(true); // wakes the golden centerpiece
       document.body.style.overflow = "";
       window.scrollTo(0, 0);
       if (overlay) overlay.style.display = "none";
       if (montage) montage.style.display = "none";
       if (nav) { nav.style.opacity = "1"; nav.style.pointerEvents = "auto"; }
+      // Safety: if the emerge tween was starved (weak GPU / throttled
+      // rAF), never leave the hero frozen mid-transform. Scoped — NOT
+      // "all", which would erase the section's inline layout styles.
+      const hero = document.getElementById("hero");
+      if (hero) gsap.set(hero, { clearProps: "transform,filter,opacity" });
     }, 4400);
   };
 
@@ -385,8 +419,48 @@ export function CinematicInvitation() {
   // static portrait/story/detail data is memoized to keep identity stable
   const details = useMemo(() => DETAILS, []);
 
+  const toggleSound = () => {
+    unlock();
+    setSoundOn((prev) => {
+      setMuted(prev); // prev===true means we're turning it OFF
+      return !prev;
+    });
+  };
+
   return (
     <div style={{ position: "relative" }}>
+      {/* cinematic arrival loader — 00 → 100 over black, then reveal */}
+      {!booted && <CinematicPreloader onDone={() => setBooted(true)} />}
+
+      {/* the persistent golden centerpiece behind every scene */}
+      <GoldenCenterpiece active={sceneEntered} />
+
+      {/* SOUND — bottom-left, in the reference sites' whispered style */}
+      <button
+        onClick={toggleSound}
+        aria-pressed={soundOn}
+        aria-label={soundOn ? "Turn sound off" : "Turn sound on"}
+        style={{ position: "fixed", left: 22, bottom: 20, zIndex: 92, display: "flex", alignItems: "center", gap: 10, background: "none", border: "none", cursor: "pointer", padding: 6 }}
+      >
+        <span style={{ display: "flex", alignItems: "flex-end", gap: 2.5, height: 12 }} aria-hidden="true">
+          {[7, 11, 5].map((h, i) => (
+            <span
+              key={i}
+              style={{
+                width: 2,
+                height: h,
+                background: soundOn ? "#e9d29a" : "#6a6580",
+                transition: "background .4s ease",
+                animation: soundOn ? `floaty ${1 + i * 0.3}s ease-in-out infinite` : "none",
+              }}
+            />
+          ))}
+        </span>
+        <span style={{ fontFamily: "'Jost',sans-serif", fontWeight: 300, fontSize: 10, letterSpacing: ".42em", textTransform: "uppercase", color: soundOn ? "#e9d29a" : "#8a86a4", transition: "color .4s ease" }}>
+          Sound
+        </span>
+      </button>
+
       {/* silk background */}
       <div style={{ position: "fixed", inset: "-8%", zIndex: -2, background: "url('/assets/silk.jpg') center/cover no-repeat", filter: "saturate(1.04) brightness(1.02)", animation: "drape 30s ease-in-out infinite", transformOrigin: "60% 40%" }} />
       <div style={{ position: "fixed", inset: 0, zIndex: -1, pointerEvents: "none", background: "radial-gradient(120% 80% at 50% 0%, rgba(246,243,238,.35), transparent 60%)" }} />
