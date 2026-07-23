@@ -420,7 +420,7 @@ export function CinematicInvitation() {
       {/* NAV */}
       <nav ref={navRef} style={{ position: "fixed", top: 0, left: 0, right: 0, zIndex: 55, display: "flex", alignItems: "center", justifyContent: "space-between", padding: "22px clamp(20px,5vw,64px)", opacity: 0, transition: "opacity 1.2s ease", pointerEvents: "none", background: "linear-gradient(180deg,rgba(20,18,30,.34),transparent)" }}>
         <a href="#hero" style={{ display: "flex", alignItems: "center" }}>
-          <img src="/assets/logo.webp" alt="H & L" style={{ display: "block", height: 32, width: "auto" }} />
+          <img src="/assets/HL.png" alt="H & L" style={{ display: "block", height: 36, width: "auto" }} />
         </a>
         <div style={{ display: "flex", gap: "clamp(16px,2.4vw,34px)", alignItems: "center" }}>
           <span className="nav-mid" style={{ display: "flex", gap: "clamp(16px,2.4vw,34px)", alignItems: "center" }}>
