@@ -28,6 +28,17 @@ const goldText: CSSProperties = {
   WebkitTextFillColor: "transparent",
 };
 
+/* Deeper gold ramp for headings that sit on LIGHT scenes — the airy
+   gradient above disappears against cream; this one keeps its shape,
+   with a white edge-light for engraved legibility. */
+const goldTextDark: CSSProperties = {
+  background: "linear-gradient(120deg,#a97f3d 0%,#8a6428 38%,#c9a35b 58%,#a97f3d 100%)",
+  WebkitBackgroundClip: "text",
+  backgroundClip: "text",
+  WebkitTextFillColor: "transparent",
+  filter: "drop-shadow(0 1px 0 rgba(255,255,255,.55))",
+};
+
 interface Dust { top: string; left: string; size: string; o: string; dy: string; dx: string; dur: string; delay: string }
 interface Spark { top: string; left: string; size: string; dur: string; delay: string }
 interface Star { top: string; left: string; size: string; dur: string; delay: string }
@@ -756,18 +767,18 @@ export function CinematicInvitation() {
       <section id="details" className="snap-sect" style={{ position: "relative", padding: "clamp(90px,14vh,160px) 24px", background: "radial-gradient(120% 80% at 50% 0%, rgba(244,239,232,.74) 0%, rgba(236,231,226,.6) 55%, rgba(230,223,218,.5) 100%)", overflow: "hidden" }}>
         {/* bridge: dusk melting into daylight — kept short so the
             section label never sinks into the dark band on phones */}
-        <div aria-hidden style={{ position: "absolute", top: 0, left: 0, right: 0, height: 96, zIndex: 1, pointerEvents: "none", background: "linear-gradient(180deg, rgba(23,20,34,.8), transparent)" }} />
+        <div aria-hidden style={{ position: "absolute", top: 0, left: 0, right: 0, height: 60, zIndex: 1, pointerEvents: "none", background: "linear-gradient(180deg, rgba(23,20,34,.8), transparent)" }} />
         <div style={{ position: "relative", zIndex: 2, maxWidth: 1040, margin: "0 auto", textAlign: "center" }}>
-          <div data-reveal style={{ ...reveal(), fontSize: 11, letterSpacing: ".56em", textTransform: "uppercase", color: "#b3a184", textShadow: "0 1px 10px rgba(20,18,30,.45)", marginBottom: 14 }}>The Celebration</div>
-          <h2 data-reveal data-reveal-delay="120" className="gold-shimmer" style={{ ...reveal(), margin: "0 0 56px", fontFamily: "'Pinyon Script',cursive", fontSize: "clamp(38px,7vw,80px)", ...goldText }}>Wedding Details</h2>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(240px,1fr))", gap: 26 }}>
+          <div data-reveal style={{ ...reveal(), fontSize: 11, letterSpacing: ".56em", textTransform: "uppercase", color: "#7c6a4d", textShadow: "0 1px 6px rgba(255,255,255,.5)", marginBottom: 14 }}>The Celebration</div>
+          <h2 data-reveal data-reveal-delay="120" className="gold-shimmer details-title" style={{ ...reveal(), margin: "0 0 56px", fontFamily: "'Pinyon Script',cursive", fontSize: "clamp(38px,7vw,80px)", ...goldTextDark }}>Wedding Details</h2>
+          <div className="details-grid" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(240px,1fr))", gap: 26 }}>
             {details.map((d) => (
               <div key={d.label} data-reveal data-reveal-style="flip" data-reveal-delay={String(d.delay)} className="lux-card" style={{ ...reveal(), position: "relative", padding: "44px 26px 38px", borderRadius: 6, background: "linear-gradient(180deg,#fbf8f3,#f3ede4)", boxShadow: "0 20px 46px rgba(120,105,80,.16),inset 0 0 0 1px rgba(216,189,133,.35),inset 0 0 0 6px rgba(255,255,255,.5)" }}>
-                <div style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 26, color: "#c9a35b", marginBottom: 14 }}>{d.icon}</div>
-                <div style={{ width: 34, height: 1, background: "#d8bd85", margin: "0 auto 18px" }} />
-                <div style={{ fontSize: 10, letterSpacing: ".4em", textTransform: "uppercase", color: "#a99a80", marginBottom: 10 }}>{d.label}</div>
-                <div style={{ fontFamily: "'Cormorant Garamond',serif", fontWeight: 500, fontSize: 24, color: "#4a4468", lineHeight: 1.3 }}>{d.title}</div>
-                <div style={{ fontFamily: "'Cormorant Garamond',serif", fontWeight: 300, fontSize: 17, color: "#7a7392", marginTop: 6 }}>{d.sub}</div>
+                <div className="det-icon" style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 26, color: "#c9a35b", marginBottom: 14 }}>{d.icon}</div>
+                <div className="det-divider" style={{ width: 34, height: 1, background: "#d8bd85", margin: "0 auto 18px" }} />
+                <div className="det-label" style={{ fontSize: 10, letterSpacing: ".4em", textTransform: "uppercase", color: "#a99a80", marginBottom: 10 }}>{d.label}</div>
+                <div className="det-title" style={{ fontFamily: "'Cormorant Garamond',serif", fontWeight: 500, fontSize: 24, color: "#4a4468", lineHeight: 1.3 }}>{d.title}</div>
+                <div className="det-sub" style={{ fontFamily: "'Cormorant Garamond',serif", fontWeight: 300, fontSize: 17, color: "#7a7392", marginTop: 6 }}>{d.sub}</div>
               </div>
             ))}
           </div>
