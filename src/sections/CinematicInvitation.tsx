@@ -89,6 +89,12 @@ export function CinematicInvitation() {
   const [sceneEntered, setSceneEntered] = useState(false);
   const [soundOn, setSoundOn] = useState(false);
   const [ringBreak, setRingBreak] = useState(false);
+  // Ambient video: desktop only — phones pay dearly for a live iframe
+  // (decode + compositing) and it wrecks both load time and the burst.
+  const [showVideo, setShowVideo] = useState(false);
+  useEffect(() => {
+    if (window.matchMedia("(hover: hover) and (pointer: fine)").matches) setShowVideo(true);
+  }, []);
 
   const lightRef = useRef<HTMLDivElement>(null);
   const bloomRef = useRef<HTMLDivElement>(null);
@@ -464,6 +470,9 @@ export function CinematicInvitation() {
     unlock(); // user gesture — safe moment to arm WebAudio
     playSwell(); // golden shimmer + bells (audible only when sound is on)
     setRingBreak(true); // the ring joins the choreography
+    // Free the video's decoder + compositor layer right away — the
+    // burst needs every frame, and the flash covers its exit.
+    setTimeout(() => setShowVideo(false), 450);
     const seal = sealRef.current, card = cardRef.current, bloom = bloomRef.current;
 
     // Mount the 3D FX layer anchored to the seal's center — the GSAP
@@ -608,6 +617,7 @@ export function CinematicInvitation() {
         {/* Ambient video backdrop — cover-fit 16:9, muted autoplay loop.
             The 100vw/56.25vw + min-width:177.78vh/min-height:100vh pair
             fills any viewport while keeping the video's aspect ratio. */}
+        {showVideo && (
         <div aria-hidden style={{ position: "absolute", inset: 0, zIndex: 0, overflow: "hidden" }}>
           <iframe
             title="Ambient background video"
@@ -617,6 +627,7 @@ export function CinematicInvitation() {
             style={{ position: "absolute", top: "50%", left: "50%", width: "100vw", height: "56.25vw", minWidth: "177.78vh", minHeight: "100vh", transform: "translate(-50%,-50%)", border: 0, pointerEvents: "none" }}
           />
         </div>
+        )}
         {/* Twilight scrim over the video so the crest/seal stay legible. */}
         <div aria-hidden style={{ position: "absolute", inset: 0, zIndex: 1, pointerEvents: "none", background: "radial-gradient(120% 90% at 50% 22%, rgba(42,39,64,.5) 0%, rgba(26,23,40,.68) 45%, rgba(16,14,24,.86) 100%)" }} />
         <div style={{ position: "absolute", top: "-14%", left: "50%", transform: "translateX(-50%)", zIndex: 2, width: "52vw", height: "52vw", maxWidth: 640, maxHeight: 640, borderRadius: "50%", background: "radial-gradient(circle, rgba(240,236,224,.16), rgba(200,196,224,.05) 42%, transparent 68%)", filter: "blur(2px)" }} />
