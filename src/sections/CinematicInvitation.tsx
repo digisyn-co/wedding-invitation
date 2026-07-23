@@ -706,29 +706,29 @@ export function CinematicInvitation() {
           <span key={i} style={{ position: "absolute", top: s.top, left: s.left, width: s.size, height: s.size, pointerEvents: "none", background: "radial-gradient(circle,#f6eccf,rgba(216,189,133,0))", borderRadius: "50%", boxShadow: "0 0 8px 2px rgba(216,189,133,.6)", animation: `sparkle ${s.dur} ease-in-out ${s.delay} infinite` }} />
         ))}
 
-        <div data-reveal style={{ opacity: 0, position: "relative", zIndex: 2, display: "flex", flexDirection: "column", alignItems: "center", gap: 16, marginBottom: 14 }}>
-          <span style={{ width: 1, height: 52, background: "linear-gradient(180deg,transparent,#d8bd85)" }} />
+        <div data-reveal className="couple-head" style={{ opacity: 0, position: "relative", zIndex: 2, display: "flex", flexDirection: "column", alignItems: "center", gap: 16, marginBottom: 14 }}>
+          <span className="couple-line" style={{ width: 1, height: 52, background: "linear-gradient(180deg,transparent,#d8bd85)" }} />
           <span style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 22, color: "#e9d29a", transform: "rotate(45deg)", display: "inline-block", textShadow: "0 0 18px rgba(216,189,133,.7)" }}>✦</span>
           <span style={{ fontSize: 11, letterSpacing: ".62em", textTransform: "uppercase", color: "#c7bfe0" }}>Two Hearts · One Light</span>
         </div>
-        <h2 data-reveal data-reveal-delay="140" style={{ opacity: 0, position: "relative", zIndex: 2, margin: "0 0 60px", fontFamily: "'Cormorant Garamond',serif", fontWeight: 300, fontStyle: "italic", fontSize: "clamp(26px,3.6vw,44px)", color: "#efe7d2", maxWidth: "18ch", lineHeight: 1.3 }}>Woven together by destiny, and sealed in gold.</h2>
+        <h2 data-reveal data-reveal-delay="140" className="couple-quote" style={{ opacity: 0, position: "relative", zIndex: 2, margin: "0 0 60px", fontFamily: "'Cormorant Garamond',serif", fontWeight: 300, fontStyle: "italic", fontSize: "clamp(26px,3.6vw,44px)", color: "#efe7d2", maxWidth: "18ch", lineHeight: 1.3 }}>Woven together by destiny, and sealed in gold.</h2>
 
         <div style={{ position: "relative", zIndex: 2, display: "flex", flexDirection: "column", alignItems: "center", maxWidth: 760, width: "100%" }}>
-          <div style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 22, color: "#d8bd85", marginBottom: 14, textShadow: "0 0 14px rgba(216,189,133,.6)" }}>♛</div>
+          <div className="couple-crown" style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 22, color: "#d8bd85", marginBottom: 14, textShadow: "0 0 14px rgba(216,189,133,.6)" }}>♛</div>
           {/* the couple within a majestic moving celestial scene */}
           <div data-reveal data-reveal-delay="120" style={{ opacity: 0, position: "relative", width: "min(94vw,760px)", aspectRatio: "16/11", borderRadius: 14, overflow: "hidden", boxShadow: "0 0 0 1px rgba(216,189,133,.5),0 0 0 7px rgba(255,255,255,.05),0 40px 90px rgba(0,0,0,.55),0 0 70px rgba(216,189,133,.2)" }}>
             <EtherealScene />
           </div>
-          <div data-reveal data-reveal-delay="240" style={{ opacity: 0, marginTop: 28, fontFamily: "'Pinyon Script',cursive", fontSize: "clamp(46px,10vw,78px)", lineHeight: 0.9, background: "linear-gradient(120deg,#c9a35b,#f6ecc4,#c9a35b)", backgroundSize: "200% 100%", WebkitBackgroundClip: "text", backgroundClip: "text", WebkitTextFillColor: "transparent", animation: "shimmer 5s linear infinite" }}>Helson &amp; Luna</div>
+          <div data-reveal data-reveal-delay="240" className="couple-names" style={{ opacity: 0, marginTop: 28, fontFamily: "'Pinyon Script',cursive", fontSize: "clamp(46px,10vw,78px)", lineHeight: 0.9, background: "linear-gradient(120deg,#c9a35b,#f6ecc4,#c9a35b)", backgroundSize: "200% 100%", WebkitBackgroundClip: "text", backgroundClip: "text", WebkitTextFillColor: "transparent", animation: "shimmer 5s linear infinite" }}>Helson &amp; Luna</div>
           <div data-reveal data-reveal-delay="300" style={{ opacity: 0, fontSize: 10, letterSpacing: ".44em", textTransform: "uppercase", color: "#b7aecf", marginTop: 8 }}>The Groom &amp; The Bride</div>
         </div>
 
-        <div data-reveal data-reveal-delay="240" style={{ opacity: 0, position: "relative", zIndex: 2, display: "flex", alignItems: "center", gap: 16, margin: "64px 0 22px", color: "#d8bd85" }}>
+        <div data-reveal data-reveal-delay="240" className="couple-div" style={{ opacity: 0, position: "relative", zIndex: 2, display: "flex", alignItems: "center", gap: 16, margin: "64px 0 22px", color: "#d8bd85" }}>
           <span style={{ width: 60, height: 1, background: "linear-gradient(90deg,transparent,#c9a35b)" }} />
           <span style={{ transform: "rotate(45deg)", textShadow: "0 0 14px rgba(216,189,133,.7)" }}>✦</span>
           <span style={{ width: 60, height: 1, background: "linear-gradient(270deg,transparent,#c9a35b)" }} />
         </div>
-        <p data-reveal data-reveal-delay="240" style={{ opacity: 0, position: "relative", zIndex: 2, maxWidth: "52ch", margin: "0 auto", fontFamily: "'Cormorant Garamond',serif", fontWeight: 300, fontStyle: "italic", fontSize: "clamp(19px,2.4vw,25px)", lineHeight: 1.75, color: "#e2dac6" }}>Under a lilac sky they found one another — and in every quiet moment since, chose each other again. Now they invite you to witness the promise they were always meant to make.</p>
+        <p data-reveal data-reveal-delay="240" className="couple-text" style={{ opacity: 0, position: "relative", zIndex: 2, maxWidth: "52ch", margin: "0 auto", fontFamily: "'Cormorant Garamond',serif", fontWeight: 300, fontStyle: "italic", fontSize: "clamp(19px,2.4vw,25px)", lineHeight: 1.75, color: "#e2dac6" }}>Under a lilac sky they found one another — and in every quiet moment since, chose each other again. Now they invite you to witness the promise they were always meant to make.</p>
       </section>
 
       {/* SCENE 5 — LOVE STORY */}

@@ -391,6 +391,19 @@ html { scrollbar-width: thin; scrollbar-color: #b8935a #14121e; }
   .details-grid .det-sub { font-size: 12.5px !important; margin-top: 4px !important; }
 }
 
+/* --- Couple scene: compressed on phones so the header, portrait,
+       names, and vow paragraph share ONE screen --- */
+@media (max-width: 640px) {
+  #couple { padding: 60px 18px 40px !important; }
+  #couple .couple-head { gap: 8px !important; margin-bottom: 8px !important; }
+  #couple .couple-line { height: 22px !important; }
+  #couple .couple-quote { margin-bottom: 18px !important; font-size: 19px !important; }
+  #couple .couple-crown { font-size: 16px !important; margin-bottom: 8px !important; }
+  #couple .couple-names { margin-top: 14px !important; font-size: 40px !important; }
+  #couple .couple-div { margin: 16px 0 10px !important; }
+  #couple .couple-text { font-size: 14.5px !important; line-height: 1.55 !important; max-width: 36ch !important; }
+}
+
 /* --- Seal-break doves + pixie dust (arrival scene) --- */
 @keyframes doveFly {
   0% { transform: translate(0, 0) scale(0.5) rotate(var(--dr, 0deg)); opacity: 0; }
