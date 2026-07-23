@@ -105,6 +105,8 @@ export function CinematicInvitation() {
   const sealRef = useRef<HTMLButtonElement>(null);
   const fxLayerRef = useRef<HTMLDivElement>(null);
   const storyRef = useRef<HTMLElement>(null);
+  const growFxRef = useRef<HTMLDivElement>(null);
+  const flightFxRef = useRef<HTMLDivElement>(null);
   const progRef = useRef<HTMLDivElement>(null);
   const counterRef = useRef<HTMLSpanElement>(null);
 
@@ -206,6 +208,7 @@ export function CinematicInvitation() {
     };
     window.addEventListener("mousemove", mm);
 
+    const reducedFx = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const storyScroll = () => {
       const sec = storyRef.current;
       if (!sec) return;
@@ -231,6 +234,60 @@ export function CinematicInvitation() {
       });
       if (progRef.current) progRef.current.style.height = (p * 100).toFixed(1) + "%";
       if (counterRef.current) counterRef.current.textContent = ("0" + Math.min(n, Math.max(1, Math.floor(pos) + 1))).slice(-2);
+
+      // ── Chapter-transition set-pieces, scrubbed by the same scroll ──
+      // Chapters sit centered at pos = i + 0.5, so the gap between
+      // chapter k and k+1 spans pos k+0.6 … k+1.4 — exactly where the
+      // outgoing text has faded and the stage is empty.
+      const clamp01 = (v: number) => Math.min(Math.max(v, 0), 1);
+      const bell = (t: number) => Math.sin(Math.PI * t);
+
+      const grow = growFxRef.current;
+      if (grow && !reducedFx) {
+        const t = clamp01((pos - 1.6) / 0.8); // between ch2 and ch3
+        grow.style.opacity = t > 0 && t < 1 ? bell(t).toFixed(3) : "0";
+        const path = grow.querySelector<SVGPathElement>("[data-grow-path]");
+        if (path) path.style.strokeDashoffset = String(1 - t);
+        grow.querySelectorAll<SVGGElement>("[data-grow-stage]").forEach((g, k) => {
+          const st = clamp01(t * 4.8 - k * 1.05); // stages light up in turn
+          g.style.opacity = st.toFixed(3);
+          // position via the SVG transform ATTRIBUTE — a CSS transform
+          // would override (and erase) each stage's base placement
+          const bx = g.getAttribute("data-bx") ?? "0";
+          const by = Number(g.getAttribute("data-by") ?? 0);
+          g.setAttribute("transform", `translate(${bx} ${(by + (1 - st) * 14).toFixed(1)})`);
+        });
+      }
+
+      const flight = flightFxRef.current;
+      if (flight && !reducedFx) {
+        const t = clamp01((pos - 2.6) / 0.8); // between ch3 and ch4
+        flight.style.opacity = t > 0 && t < 1 ? bell(t).toFixed(3) : "0";
+        if (t > 0 && t < 1) {
+          const route = flight.querySelector<SVGPathElement>("[data-flight-route]");
+          const plane = flight.querySelector<SVGGElement>("[data-flight-plane]");
+          const shadow = flight.querySelector<SVGPathElement>("[data-flight-shadow]");
+          const pulse = flight.querySelector<SVGCircleElement>("[data-flight-pulse]");
+          // quadratic bezier: PH (445,90) → ctrl (250,150) → Perth (330,334)
+          const ft = t * t * (3 - 2 * t); // smoothstep — gentle take-off/landing
+          const mt = 1 - ft;
+          const x = mt * mt * 445 + 2 * mt * ft * 250 + ft * ft * 330;
+          const y = mt * mt * 90 + 2 * mt * ft * 150 + ft * ft * 334;
+          const dx = 2 * mt * (250 - 445) + 2 * ft * (330 - 250);
+          const dy = 2 * mt * (150 - 90) + 2 * ft * (334 - 150);
+          const deg = (Math.atan2(dy, dx) * 180) / Math.PI + 90;
+          const alt = bell(ft); // climbs, cruises, descends
+          const s = 0.85 + alt * 0.45;
+          if (route) route.style.strokeDashoffset = String(1 - ft);
+          if (plane) plane.setAttribute("transform", `translate(${x.toFixed(1)} ${(y - alt * 16).toFixed(1)}) rotate(${deg.toFixed(1)}) scale(${s.toFixed(3)})`);
+          if (shadow) shadow.setAttribute("transform", `translate(${(x + alt * 9).toFixed(1)} ${(y + alt * 12).toFixed(1)}) rotate(${deg.toFixed(1)}) scale(${(s * 0.9).toFixed(3)} ${(s * 0.55).toFixed(3)})`);
+          if (pulse) {
+            const pr = 4 + ((p * 40) % 10);
+            pulse.setAttribute("r", pr.toFixed(1));
+            pulse.style.opacity = String(Math.max(0, 1 - (pr - 4) / 10));
+          }
+        }
+      }
     };
     let raf = 0;
     const onScroll = () => {
@@ -740,6 +797,76 @@ export function CinematicInvitation() {
           {fx?.sparkles.map((s, i) => (
             <span key={i} style={{ position: "absolute", top: s.top, left: s.left, width: s.size, height: s.size, pointerEvents: "none", background: "radial-gradient(circle,#f6eccf,rgba(216,189,133,0))", borderRadius: "50%", boxShadow: "0 0 8px 2px rgba(216,189,133,.55)", animation: `sparkle ${s.dur} ease-in-out ${s.delay} infinite` }} />
           ))}
+
+          {/* ── Chapter 2 → 3: a life growing up — silhouettes light up
+                 along a golden path as the scroll carries the story ── */}
+          <div ref={growFxRef} aria-hidden style={{ position: "absolute", inset: 0, zIndex: 4, display: "flex", alignItems: "center", justifyContent: "center", opacity: 0, pointerEvents: "none" }}>
+            <svg viewBox="0 0 640 220" style={{ width: "min(88vw,560px)", overflow: "visible", filter: "drop-shadow(0 0 14px rgba(233,210,154,.45))" }}>
+              <path data-grow-path d="M40 178 C 200 150 440 150 600 178" fill="none" stroke="#d8bd85" strokeWidth="1.4" strokeDasharray="1 6" strokeLinecap="round" pathLength={1} strokeDashoffset={1} />
+              {/* baby, crawling */}
+              <g data-grow-stage data-bx="70" data-by="148" transform="translate(70 148)" fill="#efdcaa" opacity="0">
+                <ellipse cx="0" cy="16" rx="20" ry="10" />
+                <circle cx="20" cy="6" r="10" />
+                <ellipse cx="-14" cy="24" rx="6" ry="4" />
+                <ellipse cx="10" cy="25" rx="6" ry="4" />
+              </g>
+              {/* toddler, first steps */}
+              <g data-grow-stage data-bx="225" data-by="122" transform="translate(225 122)" fill="#efdcaa" opacity="0">
+                <circle cx="0" cy="-10" r="11" />
+                <path d="M-8 0 C -9 14 9 14 8 0 L 7 24 L 3 24 L 1 12 L -1 12 L -3 24 L -7 24 Z" />
+                <path d="M-8 4 L -16 12 M8 4 L 16 10" stroke="#efdcaa" strokeWidth="4" strokeLinecap="round" fill="none" />
+              </g>
+              {/* child, running with a kite */}
+              <g data-grow-stage data-bx="380" data-by="108" transform="translate(380 108)" fill="#efdcaa" opacity="0">
+                <circle cx="0" cy="-18" r="10" />
+                <path d="M-6 -8 C -8 6 8 6 6 -8 L 14 26 L 9 28 L 2 8 L -6 28 L -11 26 Z" />
+                <path d="M-6 -4 L -18 2 M6 -6 L 20 -14" stroke="#efdcaa" strokeWidth="3.5" strokeLinecap="round" fill="none" />
+                <path d="M20 -14 L 38 -46" stroke="#d8bd85" strokeWidth="1" fill="none" />
+                <path d="M38 -58 L 46 -46 L 38 -34 L 30 -46 Z" fill="none" stroke="#e9d29a" strokeWidth="1.4" />
+              </g>
+              {/* grown, stepping into the story */}
+              <g data-grow-stage data-bx="540" data-by="92" transform="translate(540 92)" fill="#efdcaa" opacity="0">
+                <circle cx="0" cy="-30" r="11" />
+                <path d="M-8 -18 C -10 2 10 2 8 -18 L 10 16 L 5 42 L 0 42 L 2 18 L -2 18 L -5 42 L -10 42 L -10 16 Z" />
+                <path d="M-8 -14 L -15 6 M8 -14 L 15 6" stroke="#efdcaa" strokeWidth="4.5" strokeLinecap="round" fill="none" />
+              </g>
+            </svg>
+          </div>
+
+          {/* ── Chapter 3 → 4: the flight — Philippines to Perth on a
+                 perspective-tilted night chart, plane banking along the
+                 route with its shadow far below ── */}
+          <div ref={flightFxRef} aria-hidden style={{ position: "absolute", inset: 0, zIndex: 4, display: "flex", alignItems: "center", justifyContent: "center", opacity: 0, pointerEvents: "none", perspective: "900px" }}>
+            <svg viewBox="0 0 600 400" style={{ width: "min(92vw,620px)", overflow: "visible", transform: "rotateX(26deg)", transformStyle: "preserve-3d", filter: "drop-shadow(0 18px 40px rgba(0,0,0,.4))" }}>
+              <rect x="30" y="20" width="540" height="360" rx="14" fill="rgba(18,16,32,.55)" stroke="rgba(216,189,133,.3)" strokeWidth="1" />
+              {/* faint graticule */}
+              <path d="M30 110 H570 M30 200 H570 M30 290 H570 M150 20 V380 M300 20 V380 M450 20 V380" stroke="rgba(216,189,133,.08)" strokeWidth="1" />
+              {/* Philippine archipelago, abstracted */}
+              <g fill="rgba(216,189,133,.14)" stroke="rgba(233,210,154,.35)" strokeWidth=".8">
+                <ellipse cx="447" cy="72" rx="9" ry="16" transform="rotate(12 447 72)" />
+                <ellipse cx="436" cy="102" rx="5" ry="8" />
+                <ellipse cx="454" cy="112" rx="6" ry="7" />
+                <ellipse cx="446" cy="132" rx="10" ry="11" />
+              </g>
+              {/* Australia's west, abstracted */}
+              <path d="M310 330 C 330 296 372 284 412 292 C 452 300 474 330 468 352 C 430 368 350 366 316 352 C 306 346 304 338 310 330 Z" fill="rgba(216,189,133,.12)" stroke="rgba(233,210,154,.3)" strokeWidth=".8" />
+              {/* markers + labels */}
+              <circle cx="445" cy="90" r="4" fill="#f6ecc4" />
+              <circle data-flight-pulse cx="445" cy="90" r="4" fill="none" stroke="#f6ecc4" strokeWidth="1" />
+              <text x="462" y="86" fill="#d8c9a3" fontSize="12" letterSpacing="2.5" fontFamily="Jost,sans-serif">PHILIPPINES</text>
+              <circle cx="330" cy="334" r="4" fill="#f6ecc4" />
+              <text x="230" y="360" fill="#d8c9a3" fontSize="12" letterSpacing="2.5" fontFamily="Jost,sans-serif">PERTH · AUSTRALIA</text>
+              {/* the route, drawn on as the plane flies it */}
+              <path data-flight-route d="M445 90 Q 250 150 330 334" fill="none" stroke="#e9d29a" strokeWidth="1.6" strokeDasharray="1" strokeDashoffset="1" pathLength={1} strokeLinecap="round" style={{ filter: "drop-shadow(0 0 5px rgba(233,210,154,.8))" }} />
+              {/* ground shadow, flattened + offset by altitude */}
+              <path data-flight-shadow d="M0,-22 C2.5,-14 2.5,-4 2,2 L18,10 L18,14 L2,9 L1.6,16 L7,20 L7,23 L0,21 L-7,23 L-7,20 L-1.6,16 L-2,9 L-18,14 L-18,10 L-2,2 C-2.5,-4 -2.5,-14 0,-22 Z" fill="rgba(0,0,0,.35)" />
+              {/* the plane, nose-up artwork rotated to the route tangent */}
+              <g data-flight-plane>
+                <path d="M0,-22 C2.5,-14 2.5,-4 2,2 L18,10 L18,14 L2,9 L1.6,16 L7,20 L7,23 L0,21 L-7,23 L-7,20 L-1.6,16 L-2,9 L-18,14 L-18,10 L-2,2 C-2.5,-4 -2.5,-14 0,-22 Z" fill="#f3ead6" stroke="#c9a35b" strokeWidth=".6" />
+                <path d="M0,-16 L0,-2" stroke="#c9a35b" strokeWidth="1" opacity=".55" />
+              </g>
+            </svg>
+          </div>
 
           <div style={{ position: "absolute", top: "clamp(30px,5vh,54px)", left: 0, right: 0, textAlign: "center", zIndex: 6, pointerEvents: "none" }}>
             <div className="gold-shimmer" style={{ fontFamily: "'Pinyon Script',cursive", fontSize: "clamp(38px,5vw,62px)", lineHeight: 0.9, ...goldText }}>Our Story</div>
