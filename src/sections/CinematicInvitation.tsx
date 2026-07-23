@@ -619,8 +619,10 @@ export function CinematicInvitation() {
         </div>
 
         {/* seal stage: the 3D ring halos the seal; both leave together */}
+        {/* ring mounts immediately (hidden under the preloader) so
+            three.js is loaded and warm before the user can click */}
         <div data-seal-stage style={{ position: "relative", zIndex: 3, marginTop: 14, width: 92, height: 92 }}>
-          {booted && <WeddingRing3D breaking={ringBreak} />}
+          <WeddingRing3D breaking={ringBreak} />
           <button onClick={enter} ref={sealRef} style={{ position: "relative", zIndex: 3, width: 92, height: 92, border: "none", cursor: "pointer", borderRadius: "50%", background: "radial-gradient(circle at 38% 32%, #f4e6c0, #c9a35b 55%, #9a7636 100%)", animation: "sealGlow 3.4s ease-in-out infinite", transition: "transform 1s cubic-bezier(.19,1,.22,1),opacity .8s ease", display: "flex", alignItems: "center", justifyContent: "center" }}>
             <span style={{ fontFamily: "'Cormorant Garamond',serif", fontWeight: 600, fontSize: 34, letterSpacing: ".02em", color: "#6b4f22", textShadow: "0 1px 1px rgba(255,255,255,.4)" }}>H<span style={{ fontSize: 22 }}>&amp;</span>L</span>
             <span style={{ position: "absolute", inset: 6, borderRadius: "50%", border: "1px solid rgba(107,79,34,.35)" }} />

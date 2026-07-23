@@ -19,6 +19,7 @@ import gsap from "gsap";
 export function WeddingRing3D({ breaking }: { breaking: boolean }) {
   const mountRef = useRef<HTMLDivElement>(null);
   const apiRef = useRef<{ breakFly: () => void } | null>(null);
+  const breakingRef = useRef(breaking);
 
   useEffect(() => {
     let disposed = false;
@@ -33,7 +34,12 @@ export function WeddingRing3D({ breaking }: { breaking: boolean }) {
       const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
       const SIZE = 320;
 
-      const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+      let renderer: InstanceType<typeof THREE.WebGLRenderer>;
+      try {
+        renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+      } catch {
+        return; // WebGL unavailable — the scene degrades gracefully without the ring
+      }
       renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
       renderer.setSize(SIZE, SIZE);
       renderer.toneMapping = THREE.ACESFilmicToneMapping;
@@ -119,6 +125,11 @@ export function WeddingRing3D({ breaking }: { breaking: boolean }) {
         },
       };
 
+      // If the seal was already broken while three.js was still on the
+      // wire (fast click / slow network), join the choreography late
+      // rather than never.
+      if (breakingRef.current) apiRef.current.breakFly();
+
       cleanup = () => {
         cancelAnimationFrame(raf);
         pmrem.dispose();
@@ -139,6 +150,7 @@ export function WeddingRing3D({ breaking }: { breaking: boolean }) {
   }, []);
 
   useEffect(() => {
+    breakingRef.current = breaking;
     if (breaking) apiRef.current?.breakFly();
   }, [breaking]);
 
