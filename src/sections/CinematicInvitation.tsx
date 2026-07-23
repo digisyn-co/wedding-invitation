@@ -9,6 +9,7 @@ gsap.registerPlugin(ScrollTrigger);
 import { CinematicPreloader } from "@/components/CinematicPreloader";
 import { GoldenCenterpiece } from "@/components/GoldenCenterpiece";
 import { EtherealBackdrop } from "@/components/EtherealBackdrop";
+import { StoryFlight3D, type StoryFlightHandle } from "@/components/StoryFlight3D";
 import { WeddingRing3D } from "@/components/WeddingRing3D";
 import { unlock, setMuted, playSwell } from "@/lib/sealAudio";
 import { AnimatedCharacter } from "@/components/AnimatedCharacter";
@@ -107,6 +108,7 @@ export function CinematicInvitation() {
   const storyRef = useRef<HTMLElement>(null);
   const growFxRef = useRef<HTMLDivElement>(null);
   const flightFxRef = useRef<HTMLDivElement>(null);
+  const storyFlightRef = useRef<StoryFlightHandle>(null);
   const progRef = useRef<HTMLDivElement>(null);
   const counterRef = useRef<HTMLSpanElement>(null);
 
@@ -219,10 +221,20 @@ export function CinematicInvitation() {
       const els = sec.querySelectorAll<HTMLElement>("[data-ch]");
       const n = els.length || 4;
       const pos = p * n;
+      // While a between-chapter set-piece (growing-up / flight) holds
+      // the stage, chapter text yields — dimmed so the story beat is
+      // unmistakably the subject.
+      const growT = Math.min(Math.max((pos - 1.5) / 1.0, 0), 1);
+      const flightT = Math.min(Math.max((pos - 2.5) / 1.0, 0), 1);
+      const setpiece = Math.max(
+        growT > 0 && growT < 1 ? Math.sin(Math.PI * growT) : 0,
+        flightT > 0 && flightT < 1 ? Math.sin(Math.PI * flightT) : 0,
+      );
+      const yield_ = 1 - 0.8 * setpiece;
       els.forEach((el, i) => {
         const d = pos - 0.5 - i;
         const dist = Math.abs(d);
-        const op = Math.max(0, 1 - dist * 1.35);
+        const op = Math.max(0, 1 - dist * 1.35) * yield_;
         el.style.opacity = op.toFixed(3);
         el.style.transform = `translate(-50%,-50%) translateY(${(d * -64).toFixed(1)}px) scale(${(1 - Math.min(dist, 1) * 0.12).toFixed(3)})`;
         el.style.filter = `blur(${(Math.min(dist, 1) * 9).toFixed(2)}px)`;
@@ -244,48 +256,38 @@ export function CinematicInvitation() {
 
       const grow = growFxRef.current;
       if (grow && !reducedFx) {
-        const t = clamp01((pos - 1.6) / 0.8); // between ch2 and ch3
-        grow.style.opacity = t > 0 && t < 1 ? bell(t).toFixed(3) : "0";
+        const t = clamp01((pos - 1.5) / 1.0); // the FULL ch2→ch3 gap — a story beat of its own
+        const go = Math.min(clamp01((t - 0.04) / 0.08), clamp01((1 - t) / 0.08));
+        grow.style.opacity = t > 0 && t < 1 ? go.toFixed(3) : "0";
         const path = grow.querySelector<SVGPathElement>("[data-grow-path]");
         if (path) path.style.strokeDashoffset = String(1 - t);
+        const caps = grow.querySelectorAll<SVGTextElement>("[data-grow-cap]");
         grow.querySelectorAll<SVGGElement>("[data-grow-stage]").forEach((g, k) => {
-          const st = clamp01(t * 4.8 - k * 1.05); // stages light up in turn
+          // one life stage per scroll beat: stage k owns t ∈ [k/4.6, …]
+          const st = clamp01(t * 4.6 - k - 0.15);
           g.style.opacity = st.toFixed(3);
           // position via the SVG transform ATTRIBUTE — a CSS transform
           // would override (and erase) each stage's base placement
           const bx = g.getAttribute("data-bx") ?? "0";
           const by = Number(g.getAttribute("data-by") ?? 0);
           g.setAttribute("transform", `translate(${bx} ${(by + (1 - st) * 14).toFixed(1)})`);
+          const cap = caps[k];
+          if (cap) cap.style.opacity = (st * 0.85).toFixed(3);
         });
       }
 
       const flight = flightFxRef.current;
       if (flight && !reducedFx) {
-        const t = clamp01((pos - 2.6) / 0.8); // between ch3 and ch4
-        flight.style.opacity = t > 0 && t < 1 ? bell(t).toFixed(3) : "0";
-        if (t > 0 && t < 1) {
-          const route = flight.querySelector<SVGPathElement>("[data-flight-route]");
-          const plane = flight.querySelector<SVGGElement>("[data-flight-plane]");
-          const shadow = flight.querySelector<SVGPathElement>("[data-flight-shadow]");
-          const pulse = flight.querySelector<SVGCircleElement>("[data-flight-pulse]");
-          // quadratic bezier: PH (445,90) → ctrl (250,150) → Perth (330,334)
-          const ft = t * t * (3 - 2 * t); // smoothstep — gentle take-off/landing
-          const mt = 1 - ft;
-          const x = mt * mt * 445 + 2 * mt * ft * 250 + ft * ft * 330;
-          const y = mt * mt * 90 + 2 * mt * ft * 150 + ft * ft * 334;
-          const dx = 2 * mt * (250 - 445) + 2 * ft * (330 - 250);
-          const dy = 2 * mt * (150 - 90) + 2 * ft * (334 - 150);
-          const deg = (Math.atan2(dy, dx) * 180) / Math.PI + 90;
-          const alt = bell(ft); // climbs, cruises, descends
-          const s = 0.85 + alt * 0.45;
-          if (route) route.style.strokeDashoffset = String(1 - ft);
-          if (plane) plane.setAttribute("transform", `translate(${x.toFixed(1)} ${(y - alt * 16).toFixed(1)}) rotate(${deg.toFixed(1)}) scale(${s.toFixed(3)})`);
-          if (shadow) shadow.setAttribute("transform", `translate(${(x + alt * 9).toFixed(1)} ${(y + alt * 12).toFixed(1)}) rotate(${deg.toFixed(1)}) scale(${(s * 0.9).toFixed(3)} ${(s * 0.55).toFixed(3)})`);
-          if (pulse) {
-            const pr = 4 + ((p * 40) % 10);
-            pulse.setAttribute("r", pr.toFixed(1));
-            pulse.style.opacity = String(Math.max(0, 1 - (pr - 4) / 10));
-          }
+        const t = clamp01((pos - 2.5) / 1.0); // the FULL ch3→ch4 gap — the journey itself
+        // fade the edges only — the flight owns the whole gap
+        const fo = Math.min(clamp01(t / 0.08), clamp01((1 - t) / 0.06));
+        flight.style.opacity = t > 0 && t < 1 ? fo.toFixed(3) : "0";
+        if (t >= 0 && t <= 1) {
+          storyFlightRef.current?.update(t);
+          const la = flight.querySelector<HTMLElement>("[data-flight-label-a]");
+          const lb = flight.querySelector<HTMLElement>("[data-flight-label-b]");
+          if (la) la.style.opacity = String(bell(clamp01(t / 0.3)) * 0.9); // departure card
+          if (lb) lb.style.opacity = String(clamp01((t - 0.74) / 0.14) * 0.9); // arrival card
         }
       }
     };
@@ -329,6 +331,12 @@ export function CinematicInvitation() {
         const t = story.offsetTop;
         const total = story.offsetHeight - vh;
         for (let k = 0; k < 4; k++) stops.add(Math.min(t + ((k + 0.5) / 4) * total, maxY));
+        // The growing-up sequence (ch2→3) and the flight (ch3→4) are
+        // stories of their own: intermediate stops so each wheel
+        // gesture advances one beat instead of skipping the whole arc.
+        [1.75, 2.0, 2.25, 2.75, 3.0, 3.25].forEach((pp) =>
+          stops.add(Math.min(t + (pp / 4) * total, maxY)),
+        );
       }
       return [...stops].sort((a, b) => a - b);
     };
@@ -791,7 +799,7 @@ export function CinematicInvitation() {
       </section>
 
       {/* SCENE 5 — LOVE STORY */}
-      <section id="story" ref={storyRef} style={{ position: "relative", height: "520vh", background: "linear-gradient(180deg,rgba(22,20,34,.62) 0%,rgba(26,23,42,.78) 50%,rgba(22,20,34,.62) 100%)" }}>
+      <section id="story" ref={storyRef} style={{ position: "relative", height: "680vh", background: "linear-gradient(180deg,rgba(22,20,34,.62) 0%,rgba(26,23,42,.78) 50%,rgba(22,20,34,.62) 100%)" }}>
         <div style={{ position: "sticky", top: 0, height: "100vh", overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center" }}>
           <div style={{ position: "absolute", top: "-14%", left: "50%", transform: "translateX(-50%)", width: "74vw", height: "74vw", maxWidth: 940, maxHeight: 940, borderRadius: "50%", background: "radial-gradient(circle,rgba(216,189,133,.15),rgba(200,196,224,.05) 44%,transparent 68%)", pointerEvents: "none" }} />
           {fx?.sparkles.map((s, i) => (
@@ -830,42 +838,27 @@ export function CinematicInvitation() {
                 <path d="M-8 -18 C -10 2 10 2 8 -18 L 10 16 L 5 42 L 0 42 L 2 18 L -2 18 L -5 42 L -10 42 L -10 16 Z" />
                 <path d="M-8 -14 L -15 6 M8 -14 L 15 6" stroke="#efdcaa" strokeWidth="4.5" strokeLinecap="round" fill="none" />
               </g>
+              {/* stage captions — the story under each figure */}
+              <g fill="#cbbf9d" fontSize="10.5" fontFamily="Jost,sans-serif" letterSpacing="2.6" textAnchor="middle" style={{ textTransform: "uppercase" } as CSSProperties}>
+                <text data-grow-cap x="70" y="205" opacity="0">A NEW LIGHT</text>
+                <text data-grow-cap x="225" y="205" opacity="0">FIRST STEPS</text>
+                <text data-grow-cap x="380" y="205" opacity="0">WILD &amp; WONDER</text>
+                <text data-grow-cap x="540" y="205" opacity="0">GROWN FOR LOVE</text>
+              </g>
             </svg>
           </div>
 
-          {/* ── Chapter 3 → 4: the flight — Philippines to Perth on a
-                 perspective-tilted night chart, plane banking along the
-                 route with its shadow far below ── */}
-          <div ref={flightFxRef} aria-hidden style={{ position: "absolute", inset: 0, zIndex: 4, display: "flex", alignItems: "center", justifyContent: "center", opacity: 0, pointerEvents: "none", perspective: "900px" }}>
-            <svg viewBox="0 0 600 400" style={{ width: "min(92vw,620px)", overflow: "visible", transform: "rotateX(26deg)", transformStyle: "preserve-3d", filter: "drop-shadow(0 18px 40px rgba(0,0,0,.4))" }}>
-              <rect x="30" y="20" width="540" height="360" rx="14" fill="rgba(18,16,32,.55)" stroke="rgba(216,189,133,.3)" strokeWidth="1" />
-              {/* faint graticule */}
-              <path d="M30 110 H570 M30 200 H570 M30 290 H570 M150 20 V380 M300 20 V380 M450 20 V380" stroke="rgba(216,189,133,.08)" strokeWidth="1" />
-              {/* Philippine archipelago, abstracted */}
-              <g fill="rgba(216,189,133,.14)" stroke="rgba(233,210,154,.35)" strokeWidth=".8">
-                <ellipse cx="447" cy="72" rx="9" ry="16" transform="rotate(12 447 72)" />
-                <ellipse cx="436" cy="102" rx="5" ry="8" />
-                <ellipse cx="454" cy="112" rx="6" ry="7" />
-                <ellipse cx="446" cy="132" rx="10" ry="11" />
-              </g>
-              {/* Australia's west, abstracted */}
-              <path d="M310 330 C 330 296 372 284 412 292 C 452 300 474 330 468 352 C 430 368 350 366 316 352 C 306 346 304 338 310 330 Z" fill="rgba(216,189,133,.12)" stroke="rgba(233,210,154,.3)" strokeWidth=".8" />
-              {/* markers + labels */}
-              <circle cx="445" cy="90" r="4" fill="#f6ecc4" />
-              <circle data-flight-pulse cx="445" cy="90" r="4" fill="none" stroke="#f6ecc4" strokeWidth="1" />
-              <text x="462" y="86" fill="#d8c9a3" fontSize="12" letterSpacing="2.5" fontFamily="Jost,sans-serif">PHILIPPINES</text>
-              <circle cx="330" cy="334" r="4" fill="#f6ecc4" />
-              <text x="230" y="360" fill="#d8c9a3" fontSize="12" letterSpacing="2.5" fontFamily="Jost,sans-serif">PERTH · AUSTRALIA</text>
-              {/* the route, drawn on as the plane flies it */}
-              <path data-flight-route d="M445 90 Q 250 150 330 334" fill="none" stroke="#e9d29a" strokeWidth="1.6" strokeDasharray="1" strokeDashoffset="1" pathLength={1} strokeLinecap="round" style={{ filter: "drop-shadow(0 0 5px rgba(233,210,154,.8))" }} />
-              {/* ground shadow, flattened + offset by altitude */}
-              <path data-flight-shadow d="M0,-22 C2.5,-14 2.5,-4 2,2 L18,10 L18,14 L2,9 L1.6,16 L7,20 L7,23 L0,21 L-7,23 L-7,20 L-1.6,16 L-2,9 L-18,14 L-18,10 L-2,2 C-2.5,-4 -2.5,-14 0,-22 Z" fill="rgba(0,0,0,.35)" />
-              {/* the plane, nose-up artwork rotated to the route tangent */}
-              <g data-flight-plane>
-                <path d="M0,-22 C2.5,-14 2.5,-4 2,2 L18,10 L18,14 L2,9 L1.6,16 L7,20 L7,23 L0,21 L-7,23 L-7,20 L-1.6,16 L-2,9 L-18,14 L-18,10 L-2,2 C-2.5,-4 -2.5,-14 0,-22 Z" fill="#f3ead6" stroke="#c9a35b" strokeWidth=".6" />
-                <path d="M0,-16 L0,-2" stroke="#c9a35b" strokeWidth="1" opacity=".55" />
-              </g>
-            </svg>
+          {/* ── Chapter 3 → 4: a real 3D airliner — takes off from
+                 center, banks out the right edge, transits unseen,
+                 re-enters left and lands as Chapter 4 arrives ── */}
+          <div ref={flightFxRef} aria-hidden style={{ position: "absolute", inset: 0, zIndex: 4, opacity: 0, pointerEvents: "none" }}>
+            <StoryFlight3D ref={storyFlightRef} />
+            <div data-flight-label-a style={{ position: "absolute", left: "50%", top: "72%", transform: "translateX(-50%)", opacity: 0, fontFamily: "'Jost',sans-serif", fontWeight: 300, fontSize: 11, letterSpacing: ".5em", textTransform: "uppercase", color: "#d8c9a3", textShadow: "0 0 14px rgba(233,210,154,.5)" }}>
+              Philippines · Departure
+            </div>
+            <div data-flight-label-b style={{ position: "absolute", left: "50%", top: "72%", transform: "translateX(-50%)", opacity: 0, fontFamily: "'Jost',sans-serif", fontWeight: 300, fontSize: 11, letterSpacing: ".5em", textTransform: "uppercase", color: "#d8c9a3", textShadow: "0 0 14px rgba(233,210,154,.5)" }}>
+              Perth · Australia · Arrival
+            </div>
           </div>
 
           <div style={{ position: "absolute", top: "clamp(30px,5vh,54px)", left: 0, right: 0, textAlign: "center", zIndex: 6, pointerEvents: "none" }}>
