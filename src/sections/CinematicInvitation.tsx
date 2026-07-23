@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
+import { playSealBurst3D } from "@/animations/sealBurst3D";
 import { AnimatedCharacter } from "@/components/AnimatedCharacter";
 import { EtherealScene } from "@/components/EtherealScene";
 import { StoryEmblem } from "@/components/StoryEmblem";
@@ -25,8 +26,7 @@ interface Star { top: string; left: string; size: string; dur: string; delay: st
 interface Fly { top: string; left: string; fx: string; fy: string; dur: string; delay: string }
 interface Bfly { top: string; left: string; fx: string; fy: string; fr: string; scale: string; dur: string; delay: string; flap: string }
 interface Particles { dust: Dust[]; sparkles: Spark[]; stars: Star[]; fireflies: Fly[]; butterflies: Bfly[] }
-interface PixieBit { px: string; py: string; pr: string; size: number; c: string; dur: string; delay: string; star: boolean }
-interface SealBurst { x: number; y: number; r: number; bits: PixieBit[] }
+interface SealBurst { x: number; y: number; r: number }
 
 const rnd = (a: number, b: number) => a + Math.random() * (b - a);
 
@@ -75,6 +75,7 @@ export function CinematicInvitation() {
   const overlayRef = useRef<HTMLDivElement>(null);
   const cardRef = useRef<HTMLDivElement>(null);
   const sealRef = useRef<HTMLButtonElement>(null);
+  const fxLayerRef = useRef<HTMLDivElement>(null);
   const storyRef = useRef<HTMLElement>(null);
   const progRef = useRef<HTMLDivElement>(null);
   const counterRef = useRef<HTMLSpanElement>(null);
@@ -319,47 +320,44 @@ export function CinematicInvitation() {
     };
   }, []);
 
+  // Fire the 3D seal-break the moment the FX layer + doves are mounted.
+  useEffect(() => {
+    const layer = fxLayerRef.current;
+    if (!burst || !layer) return;
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const doves = Array.from(layer.querySelectorAll<HTMLElement>("[data-dove]"));
+    const tl = playSealBurst3D({
+      layer,
+      x: burst.x,
+      y: burst.y,
+      seal: sealRef.current,
+      doves,
+      reduced,
+    });
+    return () => { tl.kill(); };
+  }, [burst]);
+
   const enter = () => {
     if (entered.current || opening.current) return;
     opening.current = true;
     const seal = sealRef.current, card = cardRef.current, bloom = bloomRef.current;
 
-    // Doves + exploding pixie dust, anchored to the seal's center.
-    // (Overlay is fixed inset:0, so viewport coords map directly.)
+    // Mount the 3D FX layer anchored to the seal's center — the GSAP
+    // sequence itself launches from the effect watching `burst`, once
+    // the layer + doves exist in the DOM. (Overlay is fixed inset:0,
+    // so viewport coords map directly.)
     if (seal) {
       const r = seal.getBoundingClientRect();
-      const colors = ["#f6ecc4", "#e9d29a", "#c7c2dd", "#ffffff", "#f2d8d7"];
       // Reach: past every screen corner, so the dust engulfs the viewport.
       const R = Math.hypot(window.innerWidth, window.innerHeight) / 2 + 80;
-      setBurst({
-        x: r.left + r.width / 2,
-        y: r.top + r.height / 2,
-        r: R,
-        bits: Array.from({ length: 110 }, (_, i) => {
-          const far = i >= 48; // wave 2 — slower, farther, rides the shockwave
-          const a = rnd(0, Math.PI * 2);
-          const d = far ? rnd(R * 0.4, R * 1.05) : rnd(60, R * 0.45);
-          return {
-            px: (Math.cos(a) * d).toFixed(0) + "px",
-            py: (Math.sin(a) * d - (far ? 90 : 40)).toFixed(0) + "px", // biased upward
-            pr: rnd(-320, 320).toFixed(0) + "deg",
-            size: +rnd(2.5, far ? 6 : 7.5).toFixed(1),
-            c: colors[i % colors.length],
-            dur: (far ? rnd(2.2, 3.8) : rnd(1.1, 1.9)).toFixed(2) + "s",
-            delay: (far ? rnd(0.3, 0.95) : rnd(0, 0.25)).toFixed(2) + "s",
-            star: i % 3 === 0,
-          };
-        }),
-      });
+      setBurst({ x: r.left + r.width / 2, y: r.top + r.height / 2, r: R });
+      // Hand the seal over to GSAP — kill the CSS glow loop AND the
+      // inline transition, which would otherwise smear every frame
+      // GSAP writes to transform/opacity.
+      seal.style.animation = "none";
+      seal.style.transition = "none";
     }
     const overlay = overlayRef.current, butter = butterRef.current, montage = montageRef.current, nav = navRef.current;
-    if (seal) {
-      seal.style.transition = "transform 1.4s cubic-bezier(.16,.84,.28,1), opacity 1.2s ease, filter 1.2s ease";
-      seal.style.animation = "none";
-      seal.style.transform = "scale(2.1) rotate(42deg)";
-      seal.style.opacity = "0";
-      seal.style.filter = "blur(6px)";
-    }
     setTimeout(() => { if (card) { card.style.transition = "transform 2.4s cubic-bezier(.16,.84,.28,1), opacity 1.6s ease"; card.style.transform = "translateY(-70px) scale(1.12)"; } }, 420);
     setTimeout(() => { if (bloom) { bloom.style.transition = "opacity 1s ease"; bloom.style.opacity = ".9"; } }, 1300);
     setTimeout(() => {
@@ -467,36 +465,33 @@ export function CinematicInvitation() {
         <p style={{ zIndex: 3, marginTop: 34, fontFamily: "'Jost',sans-serif", fontWeight: 300, fontSize: 12, letterSpacing: ".5em", textTransform: "uppercase", color: "rgba(233,221,196,.82)", animation: "floaty 4s ease-in-out infinite" }}>Click the Seal to Begin</p>
       </div>
 
-      {/* Seal-break magic: two doves ascend + pixie dust explodes.
-          Fixed layer ABOVE the memory montage (z 82) so the doves soar
-          over the flashing memories; every piece self-fades (forwards),
-          and the layer ignores pointer events. */}
+      {/* Seal-break magic, in true 3D: the GSAP sequence (sealBurst3D)
+          spawns tumbling wax shards, a depth-aware pixie-dust explosion,
+          a rising dust helix, banking doves and fluttering feathers into
+          this fixed layer. `perspective` here is what gives every
+          translateZ/rotateX its dimensionality. Fixed ABOVE the memory
+          montage (z 82) so the doves soar over the flashing memories;
+          the golden veil + core flash stay as cheap CSS. */}
       {burst && (
-        <div style={{ position: "fixed", left: burst.x, top: burst.y, zIndex: 84, pointerEvents: "none" }} aria-hidden="true">
+        <div
+          ref={fxLayerRef}
+          style={{ position: "fixed", inset: 0, zIndex: 84, pointerEvents: "none", perspective: "1100px", overflow: "hidden" }}
+          aria-hidden="true"
+        >
             {/* full-screen golden veil, breathing out from the seal */}
-            <span style={{ position: "absolute", left: -burst.x, top: -burst.y, width: "100vw", height: "100vh", background: `radial-gradient(120% 120% at ${burst.x}px ${burst.y}px, rgba(246,236,196,.5), rgba(216,189,133,.22) 40%, transparent 75%)`, animation: "veilFlash 2.4s ease-out forwards", opacity: 0 }} />
-            {/* soft golden flash + expanding rings (near + shockwave to the screen edge) */}
-            <span style={{ position: "absolute", left: -80, top: -80, width: 160, height: 160, borderRadius: "50%", background: "radial-gradient(circle, rgba(255,251,240,.9), rgba(233,210,154,.4) 45%, transparent 70%)", animation: "burstGlow 1.4s ease-out forwards" }} />
-            <span style={{ position: "absolute", left: -90, top: -90, width: 180, height: 180, borderRadius: "50%", border: "1.5px solid rgba(246,236,196,.85)", boxShadow: "0 0 24px rgba(233,210,154,.7), inset 0 0 24px rgba(233,210,154,.5)", animation: "burstRing 1.2s cubic-bezier(.16,.84,.28,1) forwards" }} />
-            <span style={{ position: "absolute", left: -burst.r, top: -burst.r, width: burst.r * 2, height: burst.r * 2, borderRadius: "50%", border: "1px solid rgba(246,236,196,.55)", boxShadow: "0 0 40px rgba(233,210,154,.4)", animation: "burstRing 2.6s cubic-bezier(.16,.84,.28,1) .12s forwards", opacity: 0 }} />
+            <span style={{ position: "absolute", inset: 0, background: `radial-gradient(120% 120% at ${burst.x}px ${burst.y}px, rgba(246,236,196,.5), rgba(216,189,133,.22) 40%, transparent 75%)`, animation: "veilFlash 2.4s ease-out forwards", opacity: 0 }} />
+            {/* soft golden core flash at the moment of impact */}
+            <span style={{ position: "absolute", left: burst.x - 80, top: burst.y - 80, width: 160, height: 160, borderRadius: "50%", background: "radial-gradient(circle, rgba(255,251,240,.9), rgba(233,210,154,.4) 45%, transparent 70%)", animation: "burstGlow 1.4s ease-out forwards" }} />
 
-            {/* exploding pixie dust */}
-            {burst.bits.map((b, i) =>
-              b.star ? (
-                <svg key={i} viewBox="0 0 10 10" style={{ position: "absolute", left: -b.size, top: -b.size, width: b.size * 2, height: b.size * 2, ["--px" as string]: b.px, ["--py" as string]: b.py, ["--pr" as string]: b.pr, animation: `pixie ${b.dur} cubic-bezier(.16,.84,.4,1) ${b.delay} forwards`, filter: "drop-shadow(0 0 5px rgba(246,236,196,.9))" } as CSSProperties}>
-                  <path d="M5 0 L6.1 3.9 L10 5 L6.1 6.1 L5 10 L3.9 6.1 L0 5 L3.9 3.9 Z" fill={b.c} />
-                </svg>
-              ) : (
-                <span key={i} style={{ position: "absolute", left: -b.size / 2, top: -b.size / 2, width: b.size, height: b.size, borderRadius: "50%", background: b.c, boxShadow: `0 0 ${b.size + 3}px ${b.c}`, ["--px" as string]: b.px, ["--py" as string]: b.py, ["--pr" as string]: b.pr, animation: `pixie ${b.dur} cubic-bezier(.16,.84,.4,1) ${b.delay} forwards` } as CSSProperties} />
-              ),
-            )}
-
-            {/* two doves, ascending left and right */}
-            <span style={{ position: "absolute", left: -42, top: -30, ["--dx" as string]: "-150px", ["--dy" as string]: "-340px", ["--dr" as string]: "-6deg", ["--dr2" as string]: "-14deg", animation: "doveFly 3.4s cubic-bezier(.3,.6,.4,1) .15s forwards", opacity: 0 } as CSSProperties}>
-              <Dove flip />
+            {/* three doves — near pair + one far, all flown by GSAP motion paths */}
+            <span data-dove="near-left" style={{ position: "absolute", left: burst.x, top: burst.y, opacity: 0, willChange: "transform, opacity", transformStyle: "preserve-3d" }}>
+              <Dove flip flapDur=".36s" />
             </span>
-            <span style={{ position: "absolute", left: -42, top: -30, ["--dx" as string]: "150px", ["--dy" as string]: "-360px", ["--dr" as string]: "6deg", ["--dr2" as string]: "14deg", animation: "doveFly 3.6s cubic-bezier(.3,.6,.4,1) .3s forwards", opacity: 0 } as CSSProperties}>
-              <Dove flapDelay=".2s" />
+            <span data-dove="near-right" style={{ position: "absolute", left: burst.x, top: burst.y, opacity: 0, willChange: "transform, opacity", transformStyle: "preserve-3d" }}>
+              <Dove flapDelay=".18s" flapDur=".4s" />
+            </span>
+            <span data-dove="far-center" style={{ position: "absolute", left: burst.x, top: burst.y, opacity: 0, willChange: "transform, opacity", transformStyle: "preserve-3d" }}>
+              <Dove flapDelay=".09s" flapDur=".32s" />
             </span>
         </div>
       )}

@@ -10,7 +10,16 @@ import { useId, type CSSProperties } from "react";
  * mirrors it for the second dove. Gradient ids are namespaced with
  * useId so multiple doves can coexist.
  */
-export function Dove({ flip = false, flapDelay = "0s" }: { flip?: boolean; flapDelay?: string }) {
+export function Dove({
+  flip = false,
+  flapDelay = "0s",
+  flapDur = ".5s",
+}: {
+  flip?: boolean;
+  flapDelay?: string;
+  /** Wing-beat period — faster (e.g. ".36s") reads as an urgent takeoff. */
+  flapDur?: string;
+}) {
   const uid = useId().replace(/[:]/g, "");
   const g = (name: string) => `${name}-${uid}`;
   const url = (name: string) => `url(#${g(name)})`;
@@ -63,7 +72,7 @@ export function Dove({ flip = false, flapDelay = "0s" }: { flip?: boolean; flapD
           style={{
             transformBox: "fill-box",
             transformOrigin: "95% 95%",
-            animation: `flapWing .5s ease-in-out ${flapDelay} infinite reverse`,
+            animation: `flapWing ${flapDur} ease-in-out ${flapDelay} infinite reverse`,
           } as CSSProperties}
         >
           <path d="M80 46 C 74 34 64 20 50 10 C 53 18 54 22 51 24 C 58 24 62 28 59 32 C 65 31 69 34 66 38 C 71 38 75 42 72 44 C 75 45 78 46 80 46 Z" fill={url("wingFG")} />
@@ -103,7 +112,7 @@ export function Dove({ flip = false, flapDelay = "0s" }: { flip?: boolean; flapD
         style={{
           transformBox: "fill-box",
           transformOrigin: "97% 96%",
-          animation: `flapWing .5s ease-in-out ${flapDelay} infinite`,
+          animation: `flapWing ${flapDur} ease-in-out ${flapDelay} infinite`,
         } as CSSProperties}
       >
         <path d="M52 22 C 40 12 28 5 14 2 C 26 10 38 18 53 27 Z" fill={url("wingNG")} />
