@@ -12,11 +12,12 @@ import { EtherealBackdrop } from "@/components/EtherealBackdrop";
 import { StoryFlight3D, type StoryFlightHandle } from "@/components/StoryFlight3D";
 import { WeddingRing3D } from "@/components/WeddingRing3D";
 import { unlock, setMuted, playSwell } from "@/lib/sealAudio";
-import { AnimatedCharacter } from "@/components/AnimatedCharacter";
+import { WEDDING } from "@/lib/content";
 import { EtherealScene } from "@/components/EtherealScene";
 import { StoryEmblem } from "@/components/StoryEmblem";
 import { HeroCountdown } from "@/components/HeroCountdown";
 import { RsvpForm } from "@/components/RsvpForm";
+import { PortraitFrame } from "@/components/PortraitFrame";
 import { Dove } from "@/components/Dove";
 
 /* Ported 1:1 from the approved "Helson & Luna" cinematic design.
@@ -30,16 +31,6 @@ const goldText: CSSProperties = {
   WebkitTextFillColor: "transparent",
 };
 
-/* Deeper gold ramp for headings that sit on LIGHT scenes — the airy
-   gradient above disappears against cream; this one keeps its shape,
-   with a white edge-light for engraved legibility. */
-const goldTextDark: CSSProperties = {
-  background: "linear-gradient(120deg,#a97f3d 0%,#8a6428 38%,#c9a35b 58%,#a97f3d 100%)",
-  WebkitBackgroundClip: "text",
-  backgroundClip: "text",
-  WebkitTextFillColor: "transparent",
-  filter: "drop-shadow(0 1px 0 rgba(255,255,255,.55))",
-};
 
 interface Dust { top: string; left: string; size: string; o: string; dy: string; dx: string; dur: string; delay: string }
 interface Spark { top: string; left: string; size: string; dur: string; delay: string }
@@ -51,27 +42,64 @@ interface SealBurst { x: number; y: number; r: number }
 
 const rnd = (a: number, b: number) => a + Math.random() * (b - a);
 
-const STORY = [
-  { i: 0, slot: "story-1", no: "Chapter One", title: "The First Glance", body: "A crowded room, a fleeting look — and somehow the noise softened to a hush. Neither knew it yet, but the story had already begun." },
-  { i: 1, slot: "story-2", no: "Chapter Two", title: "A Thousand Letters", body: "Words became a bridge across the miles. Every note, every late-night call, drew two distant hearts a little closer to one home." },
-  { i: 2, slot: "story-3", no: "Chapter Three", title: "The Question", body: "Beneath a sky spilling with stars, one knee, one ring, one breathless yes. Forever, it turned out, was simply a matter of asking." },
-  { i: 3, slot: "story-4", no: "Chapter Four", title: "The Beginning", body: "And now, surrounded by the people they love most, they write the truest chapter of all — the one that never ends." },
-];
+const STORY = WEDDING.story.map((c, i) => ({ i, slot: `story-${i + 1}`, ...c }));
 
+/* The invitation suite — rendered as engraved editorial columns, not
+   dashboard cards. Icons are fine hairline SVG engravings (see
+   DetailIcon) rather than glyph characters. */
 const DETAILS = [
-  { icon: "✦", label: "The Date", title: "December 12", sub: "Saturday, 2026", delay: 120 },
-  { icon: "❋", label: "Ceremony", title: "3:30 in the afternoon", sub: "Vows & first light", delay: 220 },
-  { icon: "✿", label: "Reception", title: "Dinner & dancing", sub: "To follow, till late", delay: 320 },
-  { icon: "♛", label: "Dress Code", title: "Formal · Lilac & Gold", sub: "Dress to enchant", delay: 420 },
-];
+  { icon: "date", label: "The Date", title: "December 12", sub: "Saturday, 2026", delay: 120 },
+  { icon: "ceremony", label: "Ceremony", title: WEDDING.ceremony.time, sub: WEDDING.ceremony.note, delay: 220 },
+  { icon: "reception", label: "Reception", title: WEDDING.reception.time, sub: WEDDING.reception.note, delay: 320 },
+  { icon: "attire", label: "Dress Code", title: WEDDING.dressCode.title, sub: WEDDING.dressCode.note, delay: 420 },
+] as const;
 
-const MEMORIES = [
-  { slot: "memory-1", r: "-6deg", delay: "0s" },
-  { slot: "memory-2", r: "5deg", delay: ".34s" },
-  { slot: "memory-3", r: "-3deg", delay: ".68s" },
-  { slot: "memory-4", r: "7deg", delay: "1.02s" },
-  { slot: "memory-5", r: "-5deg", delay: "1.36s" },
-];
+/* Engraved-style hairline icons for the invitation suite — drawn, not
+   typed, so they render identically on every platform. */
+function DetailIcon({ kind }: { kind: "date" | "ceremony" | "reception" | "attire" }) {
+  const common = { fill: "none", stroke: "#a9853f", strokeWidth: 1.1, strokeLinecap: "round" as const, strokeLinejoin: "round" as const };
+  return (
+    <svg viewBox="0 0 44 44" width="34" height="34" aria-hidden="true" style={{ display: "block", margin: "0 auto" }}>
+      {kind === "date" && (
+        <g {...common}>
+          <rect x="8" y="11" width="28" height="25" rx="2" />
+          <path d="M8 18 H36 M15 7 v7 M29 7 v7" />
+          <path d="M22 24 l2.2 4.4 4.8.6-3.5 3.3.9 4.7-4.4-2.4-4.4 2.4.9-4.7-3.5-3.3 4.8-.6Z" strokeWidth={0.9} />
+        </g>
+      )}
+      {kind === "ceremony" && (
+        <g {...common}>
+          <path d="M22 6 C 15 13 13 19 13 25 a9 9 0 0 0 18 0 C 31 19 29 13 22 6 Z" />
+          <path d="M22 38 v-8 M17 38 h10" />
+        </g>
+      )}
+      {kind === "reception" && (
+        <g {...common}>
+          <path d="M14 7 c0 7 3 10 8 10 s8 -3 8 -10" />
+          <path d="M14 7 h16 M22 17 v14 M16 36 c2 -3 10 -3 12 0" />
+        </g>
+      )}
+      {kind === "attire" && (
+        <g {...common}>
+          <path d="M22 10 a3 3 0 1 0 -.01 0 Z" />
+          <path d="M22 13 c-6 4 -8 9 -8 14 l4 9 h8 l4 -9 c0 -5 -2 -10 -8 -14 Z" />
+          <path d="M17 20 c3 2 7 2 10 0" strokeWidth={0.9} />
+        </g>
+      )}
+    </svg>
+  );
+}
+
+/* Memory-montage frames: the flash of "photographs" during the seal
+   transition. Sourced from WEDDING.photos.montage (real artwork now,
+   real photos later) — rotation/delay choreography stays here. */
+const MEMORY_POSES = ["-6deg", "5deg", "-3deg", "7deg", "-5deg"] as const;
+const MEMORIES = WEDDING.photos.montage.map((src, i) => ({
+  slot: `memory-${i + 1}`,
+  src,
+  r: MEMORY_POSES[i % MEMORY_POSES.length],
+  delay: `${(i * 0.34).toFixed(2)}s`,
+}));
 
 // Petals drifting through the hero — deterministic (SSR-safe).
 const HERO_PETALS = [
@@ -157,6 +185,11 @@ export function CinematicInvitation() {
         es.forEach((e) => {
           if (!e.isIntersecting) return;
           const el = e.target as HTMLElement;
+          // Mask-revealed elements are clipped to a sliver, so their
+          // intersection RATIO can never reach the normal threshold —
+          // any visibility is enough for them (see clip note below).
+          const need = el.getAttribute("data-reveal-style") === "mask" ? 0.01 : 0.14;
+          if (e.intersectionRatio < need) return;
           const dl = el.getAttribute("data-reveal-delay") || "0";
           el.style.transition = `opacity 2.4s ${ease} ${dl}ms, transform 2.6s ${ease} ${dl}ms, filter 2.2s ease ${dl}ms, clip-path 2.2s ${ease} ${dl}ms`;
           el.style.opacity = "1";
@@ -167,11 +200,21 @@ export function CinematicInvitation() {
           io.unobserve(el);
         });
       },
-      { threshold: 0.14, rootMargin: "0px 0px -10% 0px" },
+      { threshold: [0.01, 0.14], rootMargin: "0px 0px -10% 0px" },
     );
+    const reducedReveal = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const obs = requestAnimationFrame(() => {
       document.querySelectorAll<HTMLElement>("[data-reveal]:not([data-obs])").forEach((el) => {
         el.setAttribute("data-obs", "1");
+        // Reduced motion: content is simply present — no observers,
+        // no entrance choreography, nothing withheld from the reader.
+        if (reducedReveal) {
+          el.style.opacity = "1";
+          el.style.transform = "none";
+          el.style.filter = "none";
+          el.style.clipPath = "none";
+          return;
+        }
         el.style.filter = "blur(7px)";
         // Each reveal style is a different curtain: flip rises out of
         // perspective, mask wipes open, default drifts up from below.
@@ -180,7 +223,10 @@ export function CinematicInvitation() {
           el.style.transform = "perspective(900px) translateY(58px) rotateX(24deg) scale(.96)";
         } else if (styleType === "mask") {
           el.style.transform = "translateY(26px)";
-          el.style.clipPath = "inset(0 100% 0 0)";
+          // NOT 100%: a fully-clipped element reports a zero-area
+          // intersection, so the observer would never fire for it.
+          // The 4% sliver is invisible anyway under opacity 0 + blur.
+          el.style.clipPath = "inset(0 96% 0 0)";
         } else {
           el.style.transform = "translateY(58px) scale(.965)";
         }
@@ -630,15 +676,15 @@ export function CinematicInvitation() {
       </button>
 
       {/* silk background */}
-      <div style={{ position: "fixed", inset: "-8%", zIndex: -2, background: "url('/assets/silk.jpg') center/cover no-repeat", filter: "saturate(1.04) brightness(1.02)", animation: "drape 30s ease-in-out infinite", transformOrigin: "60% 40%" }} />
-      <div style={{ position: "fixed", inset: 0, zIndex: -1, pointerEvents: "none", background: "radial-gradient(120% 80% at 50% 0%, rgba(246,243,238,.35), transparent 60%)" }} />
-      <div ref={lightRef} style={{ position: "fixed", inset: 0, zIndex: 60, pointerEvents: "none", mixBlendMode: "screen", background: "radial-gradient(720px circle at 50% 30%, rgba(215,189,133,.08), transparent 60%)" }} />
-      <div ref={bloomRef} style={{ position: "fixed", inset: 0, zIndex: 80, pointerEvents: "none", opacity: 0, background: "radial-gradient(circle at 50% 42%, rgba(255,251,240,.95), rgba(244,231,196,.5) 30%, transparent 70%)" }} />
+      <div aria-hidden style={{ position: "fixed", inset: "-8%", zIndex: -2, background: "url('/assets/silk.jpg') center/cover no-repeat", filter: "saturate(1.04) brightness(1.02)", animation: "drape 30s ease-in-out infinite", transformOrigin: "60% 40%" }} />
+      <div aria-hidden style={{ position: "fixed", inset: 0, zIndex: -1, pointerEvents: "none", background: "radial-gradient(120% 80% at 50% 0%, rgba(246,243,238,.35), transparent 60%)" }} />
+      <div ref={lightRef} aria-hidden style={{ position: "fixed", inset: 0, zIndex: 60, pointerEvents: "none", mixBlendMode: "screen", background: "radial-gradient(720px circle at 50% 30%, rgba(215,189,133,.08), transparent 60%)" }} />
+      <div ref={bloomRef} aria-hidden style={{ position: "fixed", inset: 0, zIndex: 80, pointerEvents: "none", opacity: 0, background: "radial-gradient(circle at 50% 42%, rgba(255,251,240,.95), rgba(244,231,196,.5) 30%, transparent 70%)" }} />
 
       {/* butterflies — screen-blended so they read as living light on
           the dark scenes but melt away over the cream cards instead of
           sitting on top of the text */}
-      <div ref={butterRef} style={{ position: "fixed", inset: 0, zIndex: 54, pointerEvents: "none", opacity: 0, transition: "opacity 1.6s ease", mixBlendMode: "screen" }}>
+      <div ref={butterRef} aria-hidden className="fx-ambient" style={{ position: "fixed", inset: 0, zIndex: 54, pointerEvents: "none", opacity: 0, transition: "opacity 1.6s ease", mixBlendMode: "screen" }}>
         {fx?.butterflies.map((b, i) => (
           <span key={i} style={{ position: "absolute", top: b.top, left: b.left, ["--fx" as string]: b.fx, ["--fy" as string]: b.fy, ["--fr" as string]: b.fr, animation: `bfly ${b.dur} ease-in-out ${b.delay} infinite` }}>
             <span style={{ display: "flex", alignItems: "center", perspective: "70px", transform: `scale(${b.scale})` }}>
@@ -651,18 +697,20 @@ export function CinematicInvitation() {
       </div>
 
       {/* memory montage */}
-      <div ref={montageRef} style={{ position: "fixed", inset: 0, zIndex: 82, pointerEvents: "none", display: "none", opacity: 1, transition: "opacity .8s ease", background: "radial-gradient(circle at 50% 50%, rgba(24,22,38,.34), rgba(16,14,24,.68) 80%)" }}>
+      <div ref={montageRef} aria-hidden style={{ position: "fixed", inset: 0, zIndex: 82, pointerEvents: "none", display: "none", opacity: 1, transition: "opacity .8s ease", background: "radial-gradient(circle at 50% 50%, rgba(24,22,38,.34), rgba(16,14,24,.68) 80%)" }}>
         {MEMORIES.map((m) => (
           <div key={m.slot} style={{ position: "absolute", left: "50%", top: "50%", ["--r" as string]: m.r, opacity: 0, width: "min(70vw,340px)", aspectRatio: "4/5", borderRadius: 6, overflow: "hidden", boxShadow: "0 30px 80px rgba(0,0,0,.6),0 0 0 2px rgba(216,189,133,.6),0 0 0 10px rgba(255,255,255,.06)", animation: `memflash .82s ease-out ${m.delay} both` }}>
-            <AnimatedCharacter variant="couple" />
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={m.src} alt="" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }} />
           </div>
         ))}
       </div>
 
       {/* NAV */}
-      <nav ref={navRef} style={{ position: "fixed", top: 0, left: 0, right: 0, zIndex: 55, display: "flex", alignItems: "center", justifyContent: "space-between", padding: "22px clamp(20px,5vw,64px)", opacity: 0, transition: "opacity 1.2s ease", pointerEvents: "none", background: "linear-gradient(180deg,rgba(20,18,30,.34),transparent)" }}>
-        <a href="#hero" style={{ display: "flex", alignItems: "center" }}>
-          <img src="/assets/HL.png" alt="H & L" style={{ display: "block", height: 36, width: "auto" }} />
+      <nav ref={navRef} aria-label="Invitation sections" style={{ position: "fixed", top: 0, left: 0, right: 0, zIndex: 55, display: "flex", alignItems: "center", justifyContent: "space-between", padding: "22px clamp(20px,5vw,64px)", opacity: 0, transition: "opacity 1.2s ease", pointerEvents: "none", background: "linear-gradient(180deg,rgba(20,18,30,.34),transparent)" }}>
+        <a href="#hero" aria-label="Back to top — Helson and Luna" style={{ display: "flex", alignItems: "center" }}>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={WEDDING.photos.monogram} alt="" style={{ display: "block", height: 36, width: "auto" }} />
         </a>
         <div style={{ display: "flex", gap: "clamp(16px,2.4vw,34px)", alignItems: "center" }}>
           <span className="nav-mid" style={{ display: "flex", gap: "clamp(16px,2.4vw,34px)", alignItems: "center" }}>
@@ -688,7 +736,7 @@ export function CinematicInvitation() {
         <div aria-hidden style={{ position: "absolute", inset: 0, zIndex: 1, pointerEvents: "none", background: "radial-gradient(120% 90% at 50% 22%, rgba(42,39,64,.28) 0%, rgba(26,23,40,.42) 45%, rgba(16,14,24,.62) 100%)" }} />
         <div style={{ position: "absolute", top: "-14%", left: "50%", transform: "translateX(-50%)", zIndex: 2, width: "52vw", height: "52vw", maxWidth: 640, maxHeight: 640, borderRadius: "50%", background: "radial-gradient(circle, rgba(240,236,224,.16), rgba(200,196,224,.05) 42%, transparent 68%)", filter: "blur(2px)" }} />
         {fx?.dust.map((p, i) => (
-          <span key={i} style={{ position: "absolute", top: p.top, left: p.left, width: p.size, height: p.size, borderRadius: "50%", background: "rgba(236,228,205,.9)", ["--o" as string]: p.o, ["--dy" as string]: p.dy, ["--dx" as string]: p.dx, animation: `dust ${p.dur} linear ${p.delay} infinite`, filter: "blur(.4px)" }} />
+          <span key={i} aria-hidden className="fx-ambient" style={{ position: "absolute", top: p.top, left: p.left, width: p.size, height: p.size, borderRadius: "50%", background: "rgba(236,228,205,.9)", ["--o" as string]: p.o, ["--dy" as string]: p.dy, ["--dx" as string]: p.dx, animation: `dust ${p.dur} linear ${p.delay} infinite`, filter: "blur(.4px)" }} />
         ))}
 
         <div ref={cardRef} style={{ position: "relative", zIndex: 2, width: "min(86vw,440px)", transition: "transform 1.4s cubic-bezier(.19,1,.22,1),opacity 1s ease" }}>
@@ -701,13 +749,13 @@ export function CinematicInvitation() {
             three.js is loaded and warm before the user can click */}
         <div data-seal-stage style={{ position: "relative", zIndex: 3, marginTop: 14, width: 92, height: 92 }}>
           <WeddingRing3D breaking={ringBreak} />
-          <button onClick={enter} ref={sealRef} style={{ position: "relative", zIndex: 3, width: 92, height: 92, border: "none", cursor: "pointer", borderRadius: "50%", background: "radial-gradient(circle at 38% 32%, #f4e6c0, #c9a35b 55%, #9a7636 100%)", animation: "sealGlow 3.4s ease-in-out infinite", transition: "transform 1s cubic-bezier(.19,1,.22,1),opacity .8s ease", display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <button onClick={enter} ref={sealRef} aria-label="Break the wax seal and open the invitation" style={{ position: "relative", zIndex: 3, width: 92, height: 92, border: "none", cursor: "pointer", borderRadius: "50%", background: "radial-gradient(circle at 38% 32%, #f4e6c0, #c9a35b 55%, #9a7636 100%)", animation: "sealGlow 3.4s ease-in-out infinite", transition: "transform 1s cubic-bezier(.19,1,.22,1),opacity .8s ease", display: "flex", alignItems: "center", justifyContent: "center" }}>
             <span style={{ fontFamily: "'Cormorant Garamond',serif", fontWeight: 600, fontSize: 34, letterSpacing: ".02em", color: "#6b4f22", textShadow: "0 1px 1px rgba(255,255,255,.4)" }}>H<span style={{ fontSize: 22 }}>&amp;</span>L</span>
             <span style={{ position: "absolute", inset: 6, borderRadius: "50%", border: "1px solid rgba(107,79,34,.35)" }} />
           </button>
         </div>
 
-        <p style={{ zIndex: 3, marginTop: 34, fontFamily: "'Jost',sans-serif", fontWeight: 300, fontSize: 12, letterSpacing: ".5em", textTransform: "uppercase", color: "rgba(233,221,196,.82)", animation: "floaty 4s ease-in-out infinite" }}>Click the Seal to Begin</p>
+        <p style={{ zIndex: 3, marginTop: 34, fontFamily: "'Jost',sans-serif", fontWeight: 300, fontSize: 12, letterSpacing: ".5em", textTransform: "uppercase", color: "rgba(233,221,196,.82)", animation: "floaty 4s ease-in-out infinite" }}>Press the Seal to Begin</p>
       </div>
 
       {/* Seal-break magic, in true 3D: the GSAP sequence (sealBurst3D)
@@ -747,18 +795,19 @@ export function CinematicInvitation() {
         <div style={{ position: "absolute", bottom: "14%", right: "10%", width: 2, height: 120, background: "linear-gradient(180deg,transparent,rgba(216,189,133,.4),transparent)", animation: "floatySlow 11s ease-in-out infinite" }} />
         {/* petals drifting down through the hero */}
         {HERO_PETALS.map((p, i) => (
-          <span key={i} aria-hidden style={{ position: "absolute", top: 0, left: p.left, width: p.s, height: p.s * 0.72, borderRadius: "60% 60% 60% 0", background: p.c, opacity: 0, ["--px" as string]: p.px, ["--pr" as string]: p.pr, animation: `petalFall ${p.dur} linear ${p.delay} infinite`, pointerEvents: "none", filter: "drop-shadow(0 2px 3px rgba(90,84,130,.25))" } as CSSProperties} />
+          <span key={i} aria-hidden className="fx-ambient" style={{ position: "absolute", top: 0, left: p.left, width: p.s, height: p.s * 0.72, borderRadius: "60% 60% 60% 0", background: p.c, opacity: 0, ["--px" as string]: p.px, ["--pr" as string]: p.pr, animation: `petalFall ${p.dur} linear ${p.delay} infinite`, pointerEvents: "none", filter: "drop-shadow(0 2px 3px rgba(90,84,130,.25))" } as CSSProperties} />
         ))}
-        <div data-reveal style={{ ...reveal(), fontFamily: "'Jost',sans-serif", fontWeight: 300, fontSize: 12, letterSpacing: ".62em", textTransform: "uppercase", color: "#8a86a4", marginBottom: 26 }}>Together with their families</div>
-        <div data-reveal data-reveal-delay="150" style={{ ...reveal(), position: "relative", width: "min(82vw,420px)", marginBottom: -8, animation: "floatySlow 10s ease-in-out infinite" }}>
+        <div data-reveal className="hero-kicker" style={{ ...reveal(), fontFamily: "'Jost',sans-serif", fontWeight: 300, fontSize: 12, letterSpacing: ".62em", textTransform: "uppercase", color: "#6d6887", marginBottom: 26 }}>{WEDDING.invitationLine}</div>
+        <div data-reveal data-reveal-delay="150" className="hero-crest" style={{ ...reveal(), position: "relative", width: "min(76vw,38vh,380px)", marginBottom: -6, animation: "floatySlow 10s ease-in-out infinite" }}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/assets/logo.webp" alt="" style={{ display: "block", width: "100%", filter: "drop-shadow(0 22px 42px rgba(90,84,130,.34))" }} />
+          <img src={WEDDING.photos.crest} alt="" style={{ display: "block", width: "100%", filter: "drop-shadow(0 22px 42px rgba(90,84,130,.34))" }} />
         </div>
-        <h1 data-reveal data-reveal-delay="300" className="gold-shimmer" style={{ ...reveal(), margin: "22px 0 4px", fontFamily: "'Pinyon Script',cursive", fontWeight: 400, fontSize: "clamp(42px,12vw,138px)", lineHeight: 0.92, ...goldText }}>Helson &amp; Luna</h1>
-        <div data-reveal data-reveal-delay="450" style={{ ...reveal(), display: "flex", alignItems: "center", gap: 18, marginTop: 14, color: "#6d688a" }}>
-          <span style={{ width: 52, height: 1, background: "linear-gradient(90deg,transparent,#c9a35b)" }} />
-          <span style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 20, letterSpacing: ".36em", textTransform: "uppercase" }}>12 · 12 · 2026</span>
-          <span style={{ width: 52, height: 1, background: "linear-gradient(270deg,transparent,#c9a35b)" }} />
+        <h1 data-reveal data-reveal-delay="300" className="gold-shimmer" style={{ ...reveal(), margin: "20px 0 4px", fontFamily: "'Pinyon Script',cursive", fontWeight: 400, fontSize: "clamp(42px,11vw,126px)", lineHeight: 0.92, ...goldText }}>{WEDDING.couple.first} &amp; {WEDDING.couple.second}</h1>
+        <div data-reveal data-reveal-delay="420" style={{ ...reveal(), marginTop: 12, fontFamily: "'Cormorant Garamond',serif", fontWeight: 300, fontStyle: "italic", fontSize: "clamp(15px,2vw,20px)", letterSpacing: ".1em", color: "#5f5980" }}>{WEDDING.heroLine}</div>
+        <div data-reveal data-reveal-delay="480" className="hero-date" style={{ ...reveal(), display: "flex", alignItems: "center", gap: 18, marginTop: 16, color: "#4f4a6e" }}>
+          <span aria-hidden style={{ width: 52, height: 1, background: "linear-gradient(90deg,transparent,#c9a35b)" }} />
+          <span style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 20, letterSpacing: ".36em", textTransform: "uppercase" }}>{WEDDING.date.display}</span>
+          <span aria-hidden style={{ width: 52, height: 1, background: "linear-gradient(270deg,transparent,#c9a35b)" }} />
         </div>
         <HeroCountdown />
         <div style={scrollCue}>Scroll<span style={{ width: 1, height: 40, background: "linear-gradient(180deg,#c9a35b,transparent)", animation: "floaty 2.4s ease-in-out infinite" }} /></div>
@@ -774,28 +823,41 @@ export function CinematicInvitation() {
         ))}
 
         <div data-reveal className="couple-head" style={{ opacity: 0, position: "relative", zIndex: 2, display: "flex", flexDirection: "column", alignItems: "center", gap: 16, marginBottom: 14 }}>
-          <span className="couple-line" style={{ width: 1, height: 52, background: "linear-gradient(180deg,transparent,#d8bd85)" }} />
-          <span style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 22, color: "#e9d29a", transform: "rotate(45deg)", display: "inline-block", textShadow: "0 0 18px rgba(216,189,133,.7)" }}>✦</span>
+          <span aria-hidden className="couple-line" style={{ width: 1, height: 52, background: "linear-gradient(180deg,transparent,#d8bd85)" }} />
+          <span aria-hidden style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 22, color: "#e9d29a", transform: "rotate(45deg)", display: "inline-block", textShadow: "0 0 18px rgba(216,189,133,.7)" }}>✦</span>
           <span style={{ fontSize: 11, letterSpacing: ".62em", textTransform: "uppercase", color: "#c7bfe0" }}>Two Hearts · One Light</span>
         </div>
-        <h2 data-reveal data-reveal-delay="140" className="couple-quote" style={{ opacity: 0, position: "relative", zIndex: 2, margin: "0 0 60px", fontFamily: "'Cormorant Garamond',serif", fontWeight: 300, fontStyle: "italic", fontSize: "clamp(26px,3.6vw,44px)", color: "#efe7d2", maxWidth: "18ch", lineHeight: 1.3 }}>Woven together by destiny, and sealed in gold.</h2>
+        <h2 data-reveal data-reveal-delay="140" className="couple-quote" style={{ opacity: 0, position: "relative", zIndex: 2, margin: "0 0 60px", fontFamily: "'Cormorant Garamond',serif", fontWeight: 300, fontStyle: "italic", fontSize: "clamp(26px,3.6vw,44px)", color: "#efe7d2", maxWidth: "18ch", lineHeight: 1.3 }}>{WEDDING.coupleQuote}</h2>
 
-        <div style={{ position: "relative", zIndex: 2, display: "flex", flexDirection: "column", alignItems: "center", maxWidth: 760, width: "100%" }}>
-          <div className="couple-crown" style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 22, color: "#d8bd85", marginBottom: 14, textShadow: "0 0 14px rgba(216,189,133,.6)" }}>♛</div>
-          {/* the couple within a majestic moving celestial scene */}
-          <div data-reveal data-reveal-delay="120" className="couple-scene" style={{ opacity: 0, position: "relative", width: "min(94vw,760px)", aspectRatio: "16/11", borderRadius: 14, overflow: "hidden", boxShadow: "0 0 0 1px rgba(216,189,133,.5),0 0 0 7px rgba(255,255,255,.05),0 40px 90px rgba(0,0,0,.55),0 0 70px rgba(216,189,133,.2)" }}>
-            <EtherealScene />
+        {/* Editorial spread: two portrait plates flank the celestial
+            scene, hung at slightly different heights like frames in a
+            gallery. The plates hide below 960px, where the compressed
+            single-screen mobile composition takes over. */}
+        <div className="couple-spread" style={{ position: "relative", zIndex: 2, display: "flex", alignItems: "center", justifyContent: "center", gap: "clamp(22px,3.4vw,52px)", width: "100%", maxWidth: 1240 }}>
+          <div data-reveal data-reveal-delay="200" className="couple-portrait" style={{ opacity: 0, flex: "0 1 236px", alignSelf: "flex-start", marginTop: 26 }}>
+            <PortraitFrame src={WEDDING.photos.portraitFirst} initial={WEDDING.couple.first[0]} name={WEDDING.couple.first} role={WEDDING.couple.firstRole} tilt="-1.6deg" />
           </div>
-          <div data-reveal data-reveal-delay="240" className="couple-names" style={{ opacity: 0, marginTop: 28, fontFamily: "'Pinyon Script',cursive", fontSize: "clamp(46px,10vw,78px)", lineHeight: 0.9, background: "linear-gradient(120deg,#c9a35b,#f6ecc4,#c9a35b)", backgroundSize: "200% 100%", WebkitBackgroundClip: "text", backgroundClip: "text", WebkitTextFillColor: "transparent", animation: "shimmer 5s linear infinite" }}>Helson &amp; Luna</div>
-          <div data-reveal data-reveal-delay="300" style={{ opacity: 0, fontSize: 10, letterSpacing: ".44em", textTransform: "uppercase", color: "#b7aecf", marginTop: 8 }}>The Groom &amp; The Bride</div>
+
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", flex: "0 1 760px", minWidth: 0 }}>
+            {/* the couple within a majestic moving celestial scene */}
+            <div data-reveal data-reveal-delay="120" className="couple-scene" style={{ opacity: 0, position: "relative", width: "min(94vw,760px)", aspectRatio: "16/11", borderRadius: 14, overflow: "hidden", boxShadow: "0 0 0 1px rgba(216,189,133,.5),0 0 0 7px rgba(255,255,255,.05),0 40px 90px rgba(0,0,0,.55),0 0 70px rgba(216,189,133,.2)" }}>
+              <EtherealScene />
+            </div>
+            <div data-reveal data-reveal-delay="240" className="couple-names" style={{ opacity: 0, marginTop: 28, fontFamily: "'Pinyon Script',cursive", fontSize: "clamp(46px,10vw,78px)", lineHeight: 0.9, background: "linear-gradient(120deg,#c9a35b,#f6ecc4,#c9a35b)", backgroundSize: "200% 100%", WebkitBackgroundClip: "text", backgroundClip: "text", WebkitTextFillColor: "transparent", animation: "shimmer 5s linear infinite" }}>{WEDDING.couple.first} &amp; {WEDDING.couple.second}</div>
+            <div data-reveal data-reveal-delay="300" style={{ opacity: 0, fontSize: 10, letterSpacing: ".44em", textTransform: "uppercase", color: "#b7aecf", marginTop: 8 }}>{WEDDING.couple.firstRole} &amp; {WEDDING.couple.secondRole}</div>
+          </div>
+
+          <div data-reveal data-reveal-delay="280" className="couple-portrait" style={{ opacity: 0, flex: "0 1 236px", alignSelf: "flex-end", marginBottom: 26 }}>
+            <PortraitFrame src={WEDDING.photos.portraitSecond} initial={WEDDING.couple.second[0]} name={WEDDING.couple.second} role={WEDDING.couple.secondRole} tilt="1.6deg" />
+          </div>
         </div>
 
         <div data-reveal data-reveal-delay="240" className="couple-div" style={{ opacity: 0, position: "relative", zIndex: 2, display: "flex", alignItems: "center", gap: 16, margin: "64px 0 22px", color: "#d8bd85" }}>
-          <span style={{ width: 60, height: 1, background: "linear-gradient(90deg,transparent,#c9a35b)" }} />
-          <span style={{ transform: "rotate(45deg)", textShadow: "0 0 14px rgba(216,189,133,.7)" }}>✦</span>
-          <span style={{ width: 60, height: 1, background: "linear-gradient(270deg,transparent,#c9a35b)" }} />
+          <span aria-hidden style={{ width: 60, height: 1, background: "linear-gradient(90deg,transparent,#c9a35b)" }} />
+          <span aria-hidden style={{ transform: "rotate(45deg)", textShadow: "0 0 14px rgba(216,189,133,.7)" }}>✦</span>
+          <span aria-hidden style={{ width: 60, height: 1, background: "linear-gradient(270deg,transparent,#c9a35b)" }} />
         </div>
-        <p data-reveal data-reveal-delay="240" className="couple-text" style={{ opacity: 0, position: "relative", zIndex: 2, maxWidth: "52ch", margin: "0 auto", fontFamily: "'Cormorant Garamond',serif", fontWeight: 300, fontStyle: "italic", fontSize: "clamp(19px,2.4vw,25px)", lineHeight: 1.75, color: "#e2dac6" }}>Under a lilac sky they found one another — and in every quiet moment since, chose each other again. Now they invite you to witness the promise they were always meant to make.</p>
+        <p data-reveal data-reveal-delay="240" className="couple-text" style={{ opacity: 0, position: "relative", zIndex: 2, maxWidth: "52ch", margin: "0 auto", fontFamily: "'Cormorant Garamond',serif", fontWeight: 300, fontStyle: "italic", fontSize: "clamp(19px,2.4vw,25px)", lineHeight: 1.75, color: "#e2dac6" }}>{WEDDING.coupleVow}</p>
       </section>
 
       {/* SCENE 5 — LOVE STORY */}
@@ -840,10 +902,10 @@ export function CinematicInvitation() {
               </g>
               {/* stage captions — the story under each figure */}
               <g fill="#cbbf9d" fontSize="10.5" fontFamily="Jost,sans-serif" letterSpacing="2.6" textAnchor="middle" style={{ textTransform: "uppercase" } as CSSProperties}>
-                <text data-grow-cap x="70" y="205" opacity="0">A NEW LIGHT</text>
-                <text data-grow-cap x="225" y="205" opacity="0">FIRST STEPS</text>
-                <text data-grow-cap x="380" y="205" opacity="0">WILD &amp; WONDER</text>
-                <text data-grow-cap x="540" y="205" opacity="0">GROWN FOR LOVE</text>
+                <text data-grow-cap x="70" y="205" opacity="0">{WEDDING.growingUp[0]}</text>
+                <text data-grow-cap x="225" y="205" opacity="0">{WEDDING.growingUp[1]}</text>
+                <text data-grow-cap x="380" y="205" opacity="0">{WEDDING.growingUp[2]}</text>
+                <text data-grow-cap x="540" y="205" opacity="0">{WEDDING.growingUp[3]}</text>
               </g>
             </svg>
           </div>
@@ -854,16 +916,17 @@ export function CinematicInvitation() {
           <div ref={flightFxRef} aria-hidden style={{ position: "absolute", inset: 0, zIndex: 4, opacity: 0, pointerEvents: "none" }}>
             <StoryFlight3D ref={storyFlightRef} />
             <div data-flight-label-a style={{ position: "absolute", left: "50%", top: "72%", transform: "translateX(-50%)", opacity: 0, fontFamily: "'Jost',sans-serif", fontWeight: 300, fontSize: 11, letterSpacing: ".5em", textTransform: "uppercase", color: "#d8c9a3", textShadow: "0 0 14px rgba(233,210,154,.5)" }}>
-              Philippines · Departure
+              {WEDDING.flight.departure}
             </div>
             <div data-flight-label-b style={{ position: "absolute", left: "50%", top: "72%", transform: "translateX(-50%)", opacity: 0, fontFamily: "'Jost',sans-serif", fontWeight: 300, fontSize: 11, letterSpacing: ".5em", textTransform: "uppercase", color: "#d8c9a3", textShadow: "0 0 14px rgba(233,210,154,.5)" }}>
-              Perth · Australia · Arrival
+              {WEDDING.flight.arrival}
             </div>
           </div>
 
           <div style={{ position: "absolute", top: "clamp(30px,5vh,54px)", left: 0, right: 0, textAlign: "center", zIndex: 6, pointerEvents: "none" }}>
-            <div className="gold-shimmer" style={{ fontFamily: "'Pinyon Script',cursive", fontSize: "clamp(38px,5vw,62px)", lineHeight: 0.9, ...goldText }}>Our Story</div>
-            <div style={{ marginTop: 8, fontFamily: "'Cormorant Garamond',serif", fontSize: 15, letterSpacing: ".4em", color: "#c7bfe0" }}><span ref={counterRef} style={{ color: "#e9d29a" }}>01</span> &nbsp;/&nbsp; 04</div>
+            <div style={{ fontSize: 10, letterSpacing: ".56em", textTransform: "uppercase", color: "#8f89ad", marginBottom: 10 }}>{WEDDING.couple.first} &amp; {WEDDING.couple.second}</div>
+            <h2 className="gold-shimmer" style={{ margin: 0, fontFamily: "'Cormorant Garamond',serif", fontWeight: 300, fontSize: "clamp(30px,4.2vw,52px)", letterSpacing: ".14em", lineHeight: 1, ...goldText }}>Our Story</h2>
+            <div style={{ marginTop: 10, fontFamily: "'Cormorant Garamond',serif", fontSize: 15, letterSpacing: ".4em", color: "#c7bfe0" }}><span ref={counterRef} style={{ color: "#e9d29a" }}>01</span> &nbsp;/&nbsp; 04</div>
           </div>
 
           <div style={{ position: "absolute", left: "clamp(16px,5vw,64px)", top: "22%", bottom: "22%", width: 1, background: "rgba(216,189,133,.22)", zIndex: 6 }}>
@@ -890,20 +953,29 @@ export function CinematicInvitation() {
         {/* bridge: dusk melting into daylight — kept short so the
             section label never sinks into the dark band on phones */}
         <div aria-hidden style={{ position: "absolute", top: 0, left: 0, right: 0, height: 60, zIndex: 1, pointerEvents: "none", background: "linear-gradient(180deg, rgba(23,20,34,.8), transparent)" }} />
-        <div style={{ position: "relative", zIndex: 2, maxWidth: 1040, margin: "0 auto", textAlign: "center" }}>
-          <div data-reveal style={{ ...reveal(), fontSize: 11, letterSpacing: ".56em", textTransform: "uppercase", color: "#7c6a4d", textShadow: "0 1px 6px rgba(255,255,255,.5)", marginBottom: 14 }}>The Celebration</div>
-          <h2 data-reveal data-reveal-delay="120" className="gold-shimmer details-title" style={{ ...reveal(), margin: "0 0 56px", fontFamily: "'Pinyon Script',cursive", fontSize: "clamp(38px,7vw,80px)", ...goldTextDark }}>Wedding Details</h2>
-          <div className="details-grid" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(240px,1fr))", gap: 26 }}>
-            {details.map((d) => (
-              <div key={d.label} data-reveal data-reveal-style="flip" data-reveal-delay={String(d.delay)} className="lux-card" style={{ ...reveal(), position: "relative", padding: "44px 26px 38px", borderRadius: 6, background: "linear-gradient(180deg,#fbf8f3,#f3ede4)", boxShadow: "0 20px 46px rgba(120,105,80,.16),inset 0 0 0 1px rgba(216,189,133,.35),inset 0 0 0 6px rgba(255,255,255,.5)" }}>
-                <div className="det-icon" style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 26, color: "#c9a35b", marginBottom: 14 }}>{d.icon}</div>
-                <div className="det-divider" style={{ width: 34, height: 1, background: "#d8bd85", margin: "0 auto 18px" }} />
-                <div className="det-label" style={{ fontSize: 10, letterSpacing: ".4em", textTransform: "uppercase", color: "#a99a80", marginBottom: 10 }}>{d.label}</div>
-                <div className="det-title" style={{ fontFamily: "'Cormorant Garamond',serif", fontWeight: 500, fontSize: 24, color: "#4a4468", lineHeight: 1.3 }}>{d.title}</div>
-                <div className="det-sub" style={{ fontFamily: "'Cormorant Garamond',serif", fontWeight: 300, fontSize: 17, color: "#7a7392", marginTop: 6 }}>{d.sub}</div>
-              </div>
-            ))}
+        <div style={{ position: "relative", zIndex: 2, maxWidth: 980, margin: "0 auto", textAlign: "center" }}>
+          <div data-reveal style={{ ...reveal(), fontSize: 11, letterSpacing: ".56em", textTransform: "uppercase", color: "#7c6a4d", textShadow: "0 1px 6px rgba(255,255,255,.5)", marginBottom: 18 }}>The Celebration</div>
+          <h2 data-reveal data-reveal-delay="120" className="details-title" style={{ ...reveal(), margin: "0 auto 10px", fontFamily: "'Cormorant Garamond',serif", fontWeight: 300, fontSize: "clamp(34px,5.6vw,64px)", letterSpacing: ".08em", color: "#3d3860", lineHeight: 1.04 }}>Wedding Details</h2>
+          <div data-reveal data-reveal-delay="180" className="details-date" style={{ ...reveal(), display: "flex", alignItems: "center", justifyContent: "center", gap: 16, margin: "0 0 54px", color: "#7c6a4d" }}>
+            <span aria-hidden style={{ width: 44, height: 1, background: "linear-gradient(90deg,transparent,#c9a35b)" }} />
+            <span style={{ fontFamily: "'Cormorant Garamond',serif", fontStyle: "italic", fontWeight: 300, fontSize: "clamp(15px,2vw,19px)", letterSpacing: ".08em" }}>{WEDDING.date.long}, {WEDDING.date.year.toLowerCase()}</span>
+            <span aria-hidden style={{ width: 44, height: 1, background: "linear-gradient(270deg,transparent,#c9a35b)" }} />
           </div>
+          {/* The suite: an engraved sheet — one plate, four columns
+              divided by hairlines, like a letterpress invitation. */}
+          <div data-reveal data-reveal-style="flip" data-reveal-delay="220" className="details-suite" style={{ ...reveal(), position: "relative", background: "linear-gradient(180deg,#fcfaf5,#f4efe6)", boxShadow: "0 30px 70px rgba(120,105,80,.18),inset 0 0 0 1px rgba(216,189,133,.45)", padding: "10px" }}>
+            <div className="details-grid" style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", border: "1px solid rgba(216,189,133,.35)" }}>
+              {details.map((d, i) => (
+                <div key={d.label} className="det-col" style={{ position: "relative", padding: "clamp(28px,3.4vw,46px) clamp(14px,2vw,28px)", borderLeft: i > 0 ? "1px solid rgba(216,189,133,.32)" : "none" }}>
+                  <div className="det-icon" style={{ marginBottom: 16, opacity: 0.9 }}><DetailIcon kind={d.icon} /></div>
+                  <div className="det-label" style={{ fontSize: 10, letterSpacing: ".4em", textTransform: "uppercase", color: "#a99a80", marginBottom: 12 }}>{d.label}</div>
+                  <div className="det-title" style={{ fontFamily: "'Cormorant Garamond',serif", fontWeight: 500, fontSize: "clamp(18px,1.8vw,23px)", color: "#4a4468", lineHeight: 1.3 }}>{d.title}</div>
+                  <div className="det-sub" style={{ fontFamily: "'Cormorant Garamond',serif", fontWeight: 300, fontStyle: "italic", fontSize: "clamp(14px,1.4vw,17px)", color: "#7a7392", marginTop: 6 }}>{d.sub}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+          <p data-reveal data-reveal-delay="300" className="details-note" style={{ ...reveal(), margin: "34px auto 0", maxWidth: "52ch", fontFamily: "'Cormorant Garamond',serif", fontWeight: 300, fontStyle: "italic", fontSize: "clamp(15px,1.8vw,18px)", lineHeight: 1.7, color: "#6d6788" }}>{WEDDING.venue.arrivalNote}</p>
         </div>
       </section>
 
@@ -912,21 +984,45 @@ export function CinematicInvitation() {
         <div style={{ maxWidth: 1000, margin: "0 auto", display: "flex", flexWrap: "wrap", gap: "clamp(30px,5vw,68px)", alignItems: "center", justifyContent: "center" }}>
           <div data-reveal style={{ ...reveal(), flex: "1 1 300px", minWidth: 280 }}>
             <div style={{ fontSize: 11, letterSpacing: ".56em", textTransform: "uppercase", color: "#6a6486", marginBottom: 16 }}>The Venue</div>
-            <h2 style={{ margin: "0 0 8px", fontFamily: "'Cormorant Garamond',serif", fontWeight: 400, fontSize: "clamp(34px,5vw,58px)", color: "#3d3860", lineHeight: 1.05 }}>Diversion 21</h2>
-            <div style={{ fontFamily: "'Cormorant Garamond',serif", fontWeight: 300, fontStyle: "italic", fontSize: 22, color: "#574f74", marginBottom: 26 }}>Iloilo City, Philippines</div>
-            <p style={{ fontFamily: "'Cormorant Garamond',serif", fontWeight: 300, fontSize: 18, lineHeight: 1.75, color: "#4e4a68", maxWidth: "42ch" }}>Follow the golden path to an evening of candlelight and quiet wonder. Ceremony at half past three, followed by dinner beneath the stars.</p>
-            <a href="https://maps.google.com/?q=Diversion+21+Iloilo+City" target="_blank" rel="noopener" className="lux-btn" style={{ display: "inline-flex", alignItems: "center", gap: 10, marginTop: 30, padding: "14px 30px", borderRadius: 100, border: "1px solid rgba(201,163,91,.7)", fontSize: 11, letterSpacing: ".32em", textTransform: "uppercase", color: "#a9853f" }}>Open in Maps →</a>
+            <h2 style={{ margin: "0 0 8px", fontFamily: "'Cormorant Garamond',serif", fontWeight: 400, fontSize: "clamp(34px,5vw,58px)", color: "#3d3860", lineHeight: 1.05 }}>{WEDDING.venue.name}</h2>
+            <div style={{ fontFamily: "'Cormorant Garamond',serif", fontWeight: 300, fontStyle: "italic", fontSize: 22, color: "#574f74", marginBottom: 26 }}>{WEDDING.venue.city}</div>
+            <p style={{ fontFamily: "'Cormorant Garamond',serif", fontWeight: 300, fontSize: 18, lineHeight: 1.75, color: "#4e4a68", maxWidth: "42ch" }}>{WEDDING.venue.description}</p>
+            <div className="venue-arrival" style={{ display: "flex", gap: 14, alignItems: "flex-start", marginTop: 24, maxWidth: "44ch" }}>
+              <span aria-hidden style={{ flexShrink: 0, marginTop: 9, width: 26, height: 1, background: "#c9a35b" }} />
+              <p style={{ margin: 0, fontFamily: "'Cormorant Garamond',serif", fontWeight: 300, fontStyle: "italic", fontSize: 16, lineHeight: 1.65, color: "#6d6788" }}>{WEDDING.venue.arrivalNote}</p>
+            </div>
+            <a href={WEDDING.venue.mapsUrl} target="_blank" rel="noopener" className="lux-btn" style={{ display: "inline-flex", alignItems: "center", gap: 10, marginTop: 28, padding: "14px 30px", borderRadius: 100, border: "1px solid rgba(201,163,91,.7)", fontSize: 11, letterSpacing: ".32em", textTransform: "uppercase", color: "#a9853f" }}>Directions →</a>
           </div>
           <div data-reveal data-reveal-style="mask" data-reveal-delay="200" style={{ ...reveal(), flex: "1 1 320px", minWidth: 300 }}>
             <div style={{ position: "relative", borderRadius: 8, overflow: "hidden", boxShadow: "0 30px 60px rgba(90,84,130,.26),inset 0 0 0 1px rgba(216,189,133,.4),inset 0 0 0 7px rgba(255,255,255,.55)", background: "linear-gradient(160deg,#eef0f5,#e4e6f0)" }}>
-              <svg viewBox="0 0 400 300" style={{ display: "block", width: "100%", height: "auto" }}>
+              {/* An engraved, brand-matched plan of the journey — an
+                  atlas plate rather than an embedded map product. */}
+              <svg viewBox="0 0 400 300" style={{ display: "block", width: "100%", height: "auto" }} role="img" aria-label={`Stylized map showing the golden route to ${WEDDING.venue.name}, ${WEDDING.venue.city}`}>
                 <rect width="400" height="300" fill="#eceef4" />
+                {/* city blocks */}
                 <path d="M0 210 H400 M0 150 H400 M120 0 V300 M260 0 V300" stroke="#d7d9e6" strokeWidth="6" fill="none" />
+                <path d="M0 96 H400 M60 0 V300 M330 0 V300 M0 258 H400" stroke="#dfe1ec" strokeWidth="2.5" fill="none" />
+                {/* a river of lilac light */}
+                <path d="M-10 288 C 90 268 150 292 230 276 S 360 286 410 270" stroke="#cfd3ea" strokeWidth="10" fill="none" opacity=".6" />
+                {/* hairline inner frame */}
+                <rect x="10" y="10" width="380" height="280" fill="none" stroke="rgba(201,163,91,.45)" strokeWidth="1" />
+                {/* the golden route */}
                 <path d="M40 260 C110 220 120 150 200 140 S300 90 350 50" stroke="#c9a35b" strokeWidth="3" fill="none" strokeDasharray="7 9" strokeLinecap="round" style={{ strokeDashoffset: 520, animation: "dash 3.6s ease-out forwards .3s" }} />
                 <circle cx="40" cy="260" r="7" fill="#b8935a" />
+                <text x="54" y="272" fontFamily="Jost,sans-serif" fontSize="9" letterSpacing="2.4" fill="#8a84a5" style={{ textTransform: "uppercase" }}>You</text>
+                {/* destination pin + halo */}
+                <circle cx="350" cy="62" r="20" fill="none" stroke="rgba(201,163,91,.5)" strokeWidth="1" strokeDasharray="2 4" />
                 <g transform="translate(350 50)">
                   <path d="M0 -4 C10 -4 14 4 8 12 L0 24 L-8 12 C-14 4 -10 -4 0 -4 Z" fill="#c9a35b" />
                   <circle cx="0" cy="6" r="4.5" fill="#fbf6ea" />
+                </g>
+                <text x="350" y="98" textAnchor="middle" fontFamily="'Cormorant Garamond',serif" fontSize="15" fontStyle="italic" fill="#574f74">{WEDDING.venue.name}</text>
+                {/* compass rose */}
+                <g transform="translate(44 52)" stroke="#a9a3c0" strokeWidth="1" fill="none">
+                  <circle r="13" />
+                  <path d="M0 -19 L3.5 -3 L0 3 L-3.5 -3 Z" fill="#c9a35b" stroke="none" />
+                  <path d="M0 19 V13 M-19 0 H-13 M19 0 H13" />
+                  <text y="-24" textAnchor="middle" fontFamily="Jost,sans-serif" fontSize="9" letterSpacing="2" fill="#8a84a5" stroke="none">N</text>
                 </g>
               </svg>
             </div>
@@ -948,13 +1044,17 @@ export function CinematicInvitation() {
           <span key={i} style={{ position: "absolute", top: s.top, left: s.left, width: s.size, height: s.size, borderRadius: "50%", background: "#f3ecd8", animation: `twinkle ${s.dur} ease-in-out ${s.delay} infinite` }} />
         ))}
         {fx?.fireflies.map((f, i) => (
-          <span key={i} style={{ position: "absolute", top: f.top, left: f.left, width: 5, height: 5, borderRadius: "50%", background: "#f0d99a", boxShadow: "0 0 10px 3px rgba(240,217,154,.7)", ["--fx" as string]: f.fx, ["--fy" as string]: f.fy, animation: `firefly ${f.dur} ease-in-out ${f.delay} infinite` }} />
+          <span key={i} aria-hidden className="fx-ambient" style={{ position: "absolute", top: f.top, left: f.left, width: 5, height: 5, borderRadius: "50%", background: "#f0d99a", boxShadow: "0 0 10px 3px rgba(240,217,154,.7)", ["--fx" as string]: f.fx, ["--fy" as string]: f.fy, animation: `firefly ${f.dur} ease-in-out ${f.delay} infinite` }} />
         ))}
         <div data-reveal style={{ opacity: 0, transform: "translateY(38px)", position: "relative", zIndex: 2 }}>
-          <div style={{ fontFamily: "'Cormorant Garamond',serif", fontWeight: 300, fontStyle: "italic", fontSize: "clamp(24px,4vw,40px)", lineHeight: 1.6, color: "#e6dcc4", maxWidth: "20ch", margin: "0 auto" }}>&ldquo;And in the hush of the stars, forever began.&rdquo;</div>
-          <div style={{ margin: "44px auto 0", width: 60, height: 1, background: "linear-gradient(90deg,transparent,#c9a35b,transparent)" }} />
-          <div className="gold-shimmer" style={{ marginTop: 44, fontFamily: "'Pinyon Script',cursive", fontSize: "clamp(42px,10vw,110px)", ...goldText }}>Helson &amp; Luna</div>
-          <div style={{ marginTop: 14, fontSize: 11, letterSpacing: ".5em", textTransform: "uppercase", color: "#a49f8a" }}>12 December 2026 · Iloilo City</div>
+          {/* the crest returns for the farewell — the artifact closes
+              the way it opened, sealed with the same mark */}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={WEDDING.photos.monogram} alt="" aria-hidden="true" style={{ display: "block", width: "clamp(54px,8vw,84px)", height: "auto", margin: "0 auto 34px", opacity: 0.9, filter: "drop-shadow(0 10px 30px rgba(0,0,0,.5))" }} />
+          <blockquote style={{ margin: "0 auto", fontFamily: "'Cormorant Garamond',serif", fontWeight: 300, fontStyle: "italic", fontSize: "clamp(24px,4vw,40px)", lineHeight: 1.6, color: "#e6dcc4", maxWidth: "20ch" }}>&ldquo;{WEDDING.closingQuote}&rdquo;</blockquote>
+          <div aria-hidden style={{ margin: "44px auto 0", width: 60, height: 1, background: "linear-gradient(90deg,transparent,#c9a35b,transparent)" }} />
+          <div className="gold-shimmer" style={{ marginTop: 44, fontFamily: "'Pinyon Script',cursive", fontSize: "clamp(42px,10vw,110px)", ...goldText }}>{WEDDING.couple.first} &amp; {WEDDING.couple.second}</div>
+          <div style={{ marginTop: 14, fontSize: 11, letterSpacing: ".5em", textTransform: "uppercase", color: "#a49f8a" }}>{WEDDING.date.shortLine}</div>
         </div>
       </section>
     </div>

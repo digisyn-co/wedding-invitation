@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import gsap from "gsap";
+import { WEDDING } from "@/lib/content";
 
 /**
  * Cinematic arrival loader in the style of lastdanceforglory.world:
@@ -38,14 +39,14 @@ export function CinematicPreloader({ onDone }: { onDone: () => void }) {
       // the counter: slow start, confident finish — never linear
       .to(state, {
         v: 100,
-        duration: 2.3,
+        duration: 2.1,
         ease: "power2.inOut",
         onUpdate: () => {
           num.textContent = String(Math.round(state.v)).padStart(state.v < 99.5 ? 2 : 3, "0");
         },
       }, 0.25)
       // the hairline rule draws in underneath as it counts
-      .fromTo(line, { scaleX: 0 }, { scaleX: 1, duration: 2.3, ease: "power2.inOut" }, 0.25)
+      .fromTo(line, { scaleX: 0 }, { scaleX: 1, duration: 2.1, ease: "power2.inOut" }, 0.25)
       // hold the "100" for a breath…
       .to(num, { opacity: 1, duration: 0.35 }, ">")
       // …then the veil breathes out and the envelope scene is revealed
@@ -82,13 +83,27 @@ export function CinematicPreloader({ onDone }: { onDone: () => void }) {
         style={{
           fontFamily: "'Jost',sans-serif",
           fontWeight: 300,
-          fontSize: 11,
-          letterSpacing: ".52em",
+          fontSize: 10,
+          letterSpacing: ".58em",
           textTransform: "uppercase",
-          color: "#8f8aa8",
+          color: "#6f6a89",
         }}
       >
-        A Celebration Is Loading
+        The Wedding of
+      </div>
+      <div
+        style={{
+          marginTop: -6,
+          fontFamily: "'Cormorant Garamond',serif",
+          fontWeight: 300,
+          fontSize: "clamp(19px,3vw,26px)",
+          letterSpacing: ".34em",
+          textTransform: "uppercase",
+          color: "#c9bfa4",
+          textIndent: ".34em",
+        }}
+      >
+        {WEDDING.couple.first} &amp; {WEDDING.couple.second}
       </div>
       <div
         ref={numRef}
@@ -113,6 +128,18 @@ export function CinematicPreloader({ onDone }: { onDone: () => void }) {
           transform: "scaleX(0)",
         }}
       />
+      <div
+        style={{
+          fontFamily: "'Cormorant Garamond',serif",
+          fontWeight: 300,
+          fontStyle: "italic",
+          fontSize: 13,
+          letterSpacing: ".22em",
+          color: "#575271",
+        }}
+      >
+        {WEDDING.date.display}
+      </div>
     </div>
   );
 }

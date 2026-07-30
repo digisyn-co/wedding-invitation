@@ -1,89 +1,101 @@
 # Helson & Luna — Cinematic Wedding Invitation
 
-A luxury, cinematic digital wedding invitation. Milestone 1 delivers the
-opening experience: the ambient scene, the signature wax-seal break, and
-the invitation reveal.
+A couture, cinematic single-page wedding invitation: procedural WebGL
+night sky, a 3D gold ring, the signature wax-seal break, a scroll-driven
+love story (with a real 3D airliner crossing from the Philippines to
+Perth), an engraved invitation suite, and a concierge RSVP.
 
 ## Stack
 
-Next.js 15 (App Router) · React 19 · TypeScript · Tailwind CSS v4 · GSAP ·
-Motion (Framer Motion) · tsParticles · Howler.js — see the brief for the
-full intended stack (Three.js/R3F, Lenis, RHF+Zod, Playwright/Vitest are
-installed/ready but not yet wired into a feature).
+Next.js 15 (App Router) · React 19 · TypeScript (strict) · Tailwind v4
+(tokens) · GSAP 3 + ScrollTrigger · Three.js (lazy-loaded) · WebAudio
+(synthesized — no audio files).
 
 ## Getting started
 
 ```bash
 npm install
 npm run dev        # http://localhost:3000
-npm run lint
-npm run typecheck
-npm run build
+npm run lint && npm run typecheck && npm run build
 ```
+
+## Editing the wedding content
+
+**Everything editable lives in `src/lib/content.ts`** — names, dates,
+ceremony/reception times, dress code, venue + arrival guidance, story
+chapters, flight labels, RSVP deadline, and photo paths. Edit that one
+file; the hero, countdown, details, venue, RSVP, closing scene, and
+page metadata all update together. Entries marked `[PLACEHOLDER]` are
+awaiting confirmation from the couple.
+
+## Adding the couple's photographs
+
+Drop files into `public/assets/` and point the paths in
+`WEDDING.photos` (in `src/lib/content.ts`) at them. The layouts are
+final — photographs drop into place without any redesign:
+
+| Slot             | Suggested file                 | Aspect | Minimum size |
+| ---------------- | ------------------------------ | ------ | ------------ |
+| `portraitFirst`  | `/assets/portrait-helson.jpg`  | 3:4    | 900×1200     |
+| `portraitSecond` | `/assets/portrait-luna.jpg`    | 3:4    | 900×1200     |
+| `portraitCouple` | `/assets/portrait-couple.jpg`  | 16:11  | 1520×1045    |
+| `venuePhoto`     | `/assets/venue.jpg`            | 16:9   | 1600×900     |
+| `montage[]`      | any 4:5 portrait crops         | 4:5    | 800×1000     |
+
+Until real portraits arrive, the portrait plates render an engraved
+ivory placeholder (initial + botanical flourish) and the montage uses
+the approved invitation artwork.
+
+## RSVP delivery (environment variables)
+
+Replies POST to `/api/rsvp`, which delivers via whichever provider is
+configured — see `.env.example`. **No secrets ever live in the client
+bundle or this repository.**
+
+- `RSVP_WEBHOOK_URL` — any JSON webhook (Formspree, Zapier, Make,
+  Google Apps Script, …), or
+- `RESEND_API_KEY` + `RSVP_EMAIL_TO` (+ optional `RSVP_EMAIL_FROM`) —
+  emails each reply via Resend.
+
+With neither set (local preview) replies are accepted and logged
+server-side so the experience stays demonstrable. Configure the
+variables in Vercel → Project → Settings → Environment Variables.
 
 ## Structure
 
 ```
 src/
-  app/            # App Router entry (layout, page, globals.css)
-  components/     # Presentational building blocks (WaxSeal, GoldFrame,
-                  # FloralWreath, ParticleField, MoonlightGlow, SoundToggle)
-  sections/       # Page sections (OpeningScene, InvitationReveal)
-  animations/     # Orchestration logic (sealTimeline.ts — the GSAP
-                  # timeline that drives the whole break/open sequence)
-  hooks/          # useReducedMotion, useSound
-  lib/            # Shared utilities (cn helper)
-public/
-  assets/         # Static images (empty — add real photos here)
-  sounds/         # Ambient score (empty — see Audio below)
+  app/            # layout (fonts/metadata), page, globals.css, api/rsvp
+  lib/            # content.ts (ALL editable content), sealAudio.ts
+  sections/       # CinematicInvitation.tsx — the orchestrator
+  components/     # Preloader, backdrop, 3D ring, 3D flight, portrait
+                  # plates, countdown, RSVP form, doves, emblems…
+  animations/     # sealBurst3D.ts — the signature break + camera dive
+scripts/
+  shoot.mjs       # Playwright visual-QA harness (desktop/phone,
+                  # animated + reduced-motion passes)
 ```
 
-## What's built (Milestone 1)
-
-- Dark ambient opening scene: drifting particles, moonlight glow, envelope
-  with ribbon and wax seal, "Click the Wax Seal" prompt.
-- The signature interaction: compress → crack → wax shards + gold dust
-  burst → seal falls away → ribbon unties → envelope opens → invitation
-  rises and unfolds → florals bloom → gold foil catches the light →
-  camera pushes in → monogram reveals letter by letter.
-- Invitation content: "H & L" monogram, foil-gradient couple names, tagline,
-  date — all placeholder copy per the reference image (Helson & Luna,
-  12.17.2026), styled in a lavender/gold/blush palette pulled from it.
-- Respects `prefers-reduced-motion` (skips straight to a simple-fade
-  revealed state) and is responsive down to small phones.
-
-Fonts are self-hosted via `@fontsource` (Cormorant Garamond, Parisienne,
-Jost) rather than `next/font/google`, so the build has no dependency on
-reaching Google's font CDN.
-
-## Known gaps / next milestones
-
-- **Real content**: swap the placeholder names/date/tagline in
-  `src/sections/InvitationReveal.tsx`.
-- **Audio**: `useSound` is wired up but ships with no track. Drop an
-  ambient/orchestral loop into `public/sounds/` and pass its path into
-  `useSound()` in `OpeningScene.tsx`.
-- **Florals/seal emblem** are stylized SVG (paper-cut roses, engraved
-  sprig) rather than photoreal — matches the "handmade" direction but can
-  be swapped for illustrated/photo assets in `public/assets/` if you want
-  to get closer to the reference photo.
-- **Gold frame corners** are subtle at small sizes — worth a contrast pass.
-- **RSVP flow, event details, gallery, countdown** — not started; the
-  `sections/` and `animations/` folders are set up to take them.
-- **Lenis smooth scroll** and **Three.js/R3F** are installed but unused —
-  intended for a scroll-driven section once there's more than one screen.
-- **Tests**: Playwright/Vitest aren't set up yet; add as features solidify
-  rather than testing placeholder content.
-
-## Git / deploy
-
-This folder has a fresh local git repo (from `create-next-app`) with no
-commits yet. Suggested first commit:
+## QA harness
 
 ```bash
-git add -A
-git commit -m "feat: opening scene and signature wax-seal interaction"
+npm run dev &
+node scripts/shoot.mjs            # all passes → /tmp/shots
+MODE=reduced node scripts/shoot.mjs   # crisp reduced-motion layouts only
 ```
 
-Push to GitHub, then import into Vercel — no special build config needed
-(`next build` / `next start` are the defaults).
+Clicks the seal, walks every scene at desktop + phone sizes, captures
+each beat, and asserts no page errors.
+
+## Notes for maintainers
+
+- The client reviews in Messenger's in-app webview (~720px tall):
+  RSVP, Details, Couple, and Hero are all composed to fit ONE screen
+  at 400×720. Test there before shipping mobile changes.
+- `prefers-reduced-motion` gets a designed still experience (ambient
+  ephemera removed, reveals instant, glide engine off) — not a broken
+  animation set.
+- Gotchas that have bitten before: scope GSAP `clearProps` (never
+  "all" — sections carry inline layout); drive SVG positioning via the
+  `transform` attribute, not CSS; mask-revealed elements must keep a
+  clip sliver ≥4% or IntersectionObserver never fires for them.
