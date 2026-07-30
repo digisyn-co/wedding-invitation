@@ -147,8 +147,11 @@ body {
   overflow-x: hidden;
 }
 
-/* Respect reduced-motion globally; components should also check
-   this via the useReducedMotion hook before running JS timelines. */
+/* Respect reduced-motion globally; components also check the media
+   query in JS before running GSAP timelines. The reduced experience
+   is a designed still: ambient ephemera (butterflies, petals, dust,
+   fireflies) are removed entirely rather than left frozen mid-air,
+   while stars and sparkles remain as a static night sky. */
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -158,11 +161,44 @@ body {
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
+  .fx-ambient {
+    display: none !important;
+  }
 }
 
 ::selection {
   background: var(--color-champagne-gold);
   color: var(--color-twilight-975);
+}
+
+/* ---------------------------------------------------------------
+   Craft details: film grain + visible focus.
+   ------------------------------------------------------------- */
+
+/* A whisper of film grain over the whole experience — one static
+   SVG-noise layer, no JS, no repaint cost. Sits above the scenes
+   but below the fixed overlays' pointer targets. */
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 96;
+  pointer-events: none;
+  opacity: 0.05;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='240' height='240' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 240px 240px;
+}
+
+/* Keyboard focus is jewelry too: a fine gold ring, never a default
+   blue halo, and only for keyboard (:focus-visible). */
+:focus {
+  outline: none;
+}
+:focus-visible {
+  outline: 1.5px solid rgba(233, 210, 154, 0.9);
+  outline-offset: 3px;
+  border-radius: 2px;
 }
 
 /* ---------------------------------------------------------------
@@ -380,15 +416,29 @@ html { scrollbar-width: thin; scrollbar-color: #b8935a #14121e; }
        and all four cards share ONE screen (!important beats the
        component's inline desktop styles only inside this query) --- */
 @media (max-width: 640px) {
-  #details { padding: 72px 16px 44px !important; }
-  #details .details-title { margin-bottom: 26px !important; }
-  .details-grid { grid-template-columns: 1fr 1fr !important; gap: 12px !important; }
-  .details-grid .lux-card { padding: 20px 10px 18px !important; }
-  .details-grid .det-icon { font-size: 18px !important; margin-bottom: 8px !important; }
-  .details-grid .det-divider { width: 26px !important; margin: 0 auto 10px !important; }
+  #details { padding: 64px 16px 40px !important; }
+  #details .details-title { margin-bottom: 6px !important; }
+  #details .details-date { margin-bottom: 24px !important; }
+  #details .details-note { margin-top: 18px !important; font-size: 13px !important; }
+  .details-suite { padding: 6px !important; }
+  /* The engraved sheet folds to 2×2 — hairlines redrawn for the fold. */
+  .details-grid { grid-template-columns: 1fr 1fr !important; }
+  .details-grid .det-col { padding: 18px 10px 16px !important; }
+  .details-grid .det-col:nth-child(3) { border-left: none !important; }
+  .details-grid .det-col:nth-child(n + 3) { border-top: 1px solid rgba(216, 189, 133, 0.32); }
+  .details-grid .det-icon { margin-bottom: 8px !important; }
+  .details-grid .det-icon svg { width: 24px; height: 24px; }
   .details-grid .det-label { font-size: 8px !important; letter-spacing: .3em !important; margin-bottom: 6px !important; }
-  .details-grid .det-title { font-size: 16px !important; line-height: 1.25 !important; }
+  .details-grid .det-title { font-size: 15px !important; line-height: 1.25 !important; }
   .details-grid .det-sub { font-size: 12.5px !important; margin-top: 4px !important; }
+}
+
+/* The editorial portrait plates flank the scene on wide screens only;
+   below 960px the compressed single-screen composition takes over. */
+@media (max-width: 960px) {
+  .couple-portrait {
+    display: none !important;
+  }
 }
 
 /* --- Couple scene: compressed on phones so the header, portrait,

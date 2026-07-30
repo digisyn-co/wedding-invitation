@@ -15,10 +15,17 @@ import "@fontsource/jost/500.css";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Helson & Luna — December 12, 2026",
+  title: "Helson & Luna — 12 · 12 · 2026",
   description:
-    "Together with their families, Helson and Luna request the honour of your presence — a love written among the stars.",
+    "Together with their families, Helson and Luna request the honour of your presence — a love written among the stars. Saturday, the twelfth of December 2026, Diversion 21, Iloilo City.",
   icons: { icon: "/assets/logo.webp" },
+  openGraph: {
+    title: "Helson & Luna — 12 · 12 · 2026",
+    description:
+      "You are invited. A love written among the stars — Saturday, the twelfth of December 2026, Iloilo City.",
+    images: [{ url: "/assets/invitation-crest.jpg", width: 1024, height: 1024, alt: "Helson & Luna wedding crest" }],
+    type: "website",
+  },
 };
 
 export const viewport: Viewport = {
