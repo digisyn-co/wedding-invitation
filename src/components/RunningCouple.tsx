@@ -1,83 +1,103 @@
 /**
- * The couple running hand-in-hand, side view, facing right — original
- * flat-style SVG matching the site's characters. A full run cycle:
- * alternating legs (legSwing, opposite phases), pumping arm, quick
- * body bob, her veil streaming and gown flowing behind. Motion classes
- * (rc-*) live in globals.css. Fills its sized wrapper (viewBox 220x140,
- * ground line at y≈118).
+ * The couple, hand-in-hand, walking into the light — drawn as elegant
+ * backlit SILHOUETTES (no faces, no cartoon proportions): deep
+ * ink-violet figures rimmed with a whisper of gold, her veil and gown
+ * streaming behind. Reuses the established motion rig (rc-* classes in
+ * globals.css): body bob, veil stream, gown flow, his striding legs.
+ * Fills its sized wrapper (viewBox 220x140, ground line at y≈118).
  */
+
+const INK = "#1c1930";
+const RIM = "rgba(233,210,154,.5)";
+
 export function RunningCouple() {
   return (
     <svg
       viewBox="0 0 220 140"
       preserveAspectRatio="xMidYMax meet"
-      style={{ position: "absolute", inset: 0, width: "100%", height: "100%", filter: "drop-shadow(0 10px 18px rgba(0,0,0,.35))" }}
+      style={{ position: "absolute", inset: 0, width: "100%", height: "100%", filter: "drop-shadow(0 10px 18px rgba(0,0,0,.4))" }}
       aria-hidden="true"
     >
-      {/* ══ bride (behind, left) ══ */}
+      {/* ══ bride (left) ══ */}
       <g className="rc-bob" style={{ animationDelay: "-.12s" }}>
-        {/* veil streaming behind */}
-        <path className="rc-veil" d="M84 26 C 62 30 46 44 36 64 C 50 58 68 46 86 38 Z" fill="rgba(255,251,242,.5)" />
-        {/* gown flowing, train kicked back */}
-        <path className="rc-gown" d="M92 58 C 103 64 106 82 112 96 C 118 110 112 118 96 118 C 74 118 52 114 44 104 C 56 98 64 84 68 72 C 74 60 85 55 92 58 Z" fill="#f6eee6" />
-        <path className="rc-gown" d="M50 104 C 62 100 70 90 74 80 C 70 94 64 104 54 108 Z" fill="#f2d8d7" opacity=".8" />
-        {/* front leg peeking beneath the hem */}
-        <g className="rc-leg" style={{ animationDelay: "-.1s" }}>
-          <path d="M98 106 L103 117" stroke="#ecc7ae" strokeWidth="5.5" strokeLinecap="round" />
-          <circle cx="103" cy="118" r="4" fill="#c9a35b" />
-        </g>
-        {/* bodice + waist ribbon */}
-        <path d="M88 50 C 97 52 101 62 98 73 C 91 77 83 74 81 66 C 81 57 84 52 88 50 Z" fill="#f2d8d7" />
-        <path d="M83 70 C 89 73 95 73 99 71 L 98 76 C 93 78 87 78 82 75 Z" fill="#c9a35b" opacity=".85" />
-        {/* back arm holding the dress */}
-        <path d="M84 58 C 79 64 75 70 73 78" stroke="#ecc7ae" strokeWidth="5" strokeLinecap="round" fill="none" />
-        {/* head: bun, floral crown, profile */}
-        <circle cx="92" cy="36" r="9.5" fill="#ecc7ae" />
-        <path d="M82 34 C 82 26 88 22 94 23 C 100 24 103 29 102 34 C 98 27 88 26 82 34 Z" fill="#5a4632" />
-        <circle cx="83" cy="28" r="4.6" fill="#5a4632" />
-        <circle cx="87" cy="24" r="1.5" fill="#f2d8d7" />
-        <circle cx="92" cy="22.6" r="1.5" fill="#e9d29a" />
-        <circle cx="97" cy="23.4" r="1.5" fill="#f2d8d7" />
-        <circle cx="96" cy="34.6" r="1.4" fill="#3a3550" />
-        <path d="M97 40 Q 99.5 41.5 101 40" stroke="#b06a6a" strokeWidth="1.2" fill="none" strokeLinecap="round" />
-        <circle cx="90" cy="39.5" r="1.8" fill="rgba(224,150,150,.5)" />
+        {/* veil streaming behind, translucent */}
+        <path
+          className="rc-veil"
+          d="M88 24 C 66 26 46 40 32 62 C 50 54 68 44 88 36 Z"
+          fill="rgba(246,238,224,.28)"
+        />
+        {/* the gown: one continuous line from bodice to a long train */}
+        <path
+          className="rc-gown"
+          d="M90 46
+             C 96 52 98 60 97 68
+             C 103 82 108 98 112 112
+             C 113 116 111 118 106 118
+             C 84 118 58 116 42 108
+             C 58 100 70 88 76 74
+             C 80 62 84 52 90 46 Z"
+          fill={INK}
+        />
+        {/* gold rim-light along the train's sweep */}
+        <path
+          className="rc-gown"
+          d="M42 108 C 58 100 70 88 76 74"
+          fill="none"
+          stroke={RIM}
+          strokeWidth="1.2"
+          strokeLinecap="round"
+        />
+        {/* torso + raised chin: slender, upright */}
+        <path
+          d="M86 44 C 84 36 86 30 90 27 C 95 24 100 27 101 32 C 102 37 100 41 96 44 C 100 52 99 60 96 66 C 90 68 85 64 84 56 C 84 51 85 47 86 44 Z"
+          fill={INK}
+        />
+        {/* low chignon + a breath of gold at the crown */}
+        <circle cx="87" cy="29" r="4.6" fill={INK} />
+        <path d="M84 24 C 88 20 96 20 99 26" fill="none" stroke={RIM} strokeWidth="1" strokeLinecap="round" />
         {/* front arm reaching to his hand */}
-        <path d="M95 56 C 103 64 111 72 118 79" stroke="#ecc7ae" strokeWidth="5" strokeLinecap="round" fill="none" />
+        <path d="M94 52 C 102 62 110 71 117 78" stroke={INK} strokeWidth="4.6" strokeLinecap="round" fill="none" />
       </g>
 
-      {/* joined hands, with a spark above */}
-      <circle cx="119" cy="80" r="3.6" fill="#ecc7ae" />
-      <circle cx="119" cy="76.5" r="1.3" fill="#f6ecc4" />
+      {/* joined hands — a single point of gold light */}
+      <circle cx="119" cy="80" r="3.2" fill={INK} />
+      <circle cx="119" cy="79" r="5.6" fill="none" stroke={RIM} strokeWidth="0.8" opacity="0.8" />
+      <circle cx="119" cy="76" r="1.2" fill="#f6ecc4" />
 
-      {/* ══ groom (front, right) ══ */}
+      {/* ══ groom (right) ══ */}
       <g className="rc-bob">
-        {/* back leg + swinging back arm */}
+        {/* back leg */}
         <g className="rc-leg rc-legB">
-          <path d="M140 84 L140 114" stroke="#2e2a40" strokeWidth="8" strokeLinecap="round" />
-          <ellipse cx="142" cy="116" rx="5" ry="3.4" fill="#241f38" />
+          <path d="M141 82 L139 114" stroke={INK} strokeWidth="7" strokeLinecap="round" />
+          <path d="M139 114 L146 116" stroke={INK} strokeWidth="5" strokeLinecap="round" />
         </g>
+        {/* back arm swinging */}
         <g className="rc-arm rc-armB">
-          <path d="M150 52 L158 74" stroke="#332e4a" strokeWidth="6" strokeLinecap="round" />
-          <circle cx="159" cy="77" r="3.4" fill="#ecc7ae" />
+          <path d="M150 50 L159 72" stroke={INK} strokeWidth="5" strokeLinecap="round" />
         </g>
-        {/* torso leaning into the run, lapel, shirt + bow tie */}
-        <path d="M147 42 C 158 47 158 64 152 82 C 147 86 139 85 136 80 C 139 66 141 51 147 42 Z" fill="#3a3550" />
-        <path d="M148 46 C 152 50 152 58 150 64" stroke="#4a4468" strokeWidth="1.4" fill="none" />
-        <path d="M148 44 L152 52 L147 56 Z" fill="#f6eee6" />
-        <path d="M147 45 L151 47 L147 49 Z" fill="#c9a35b" />
-        {/* front leg */}
+        {/* torso in tails, leaning into the stride */}
+        <path
+          d="M144 40
+             C 154 43 158 52 156 64
+             C 155 72 152 80 148 86
+             C 160 96 164 106 165 114
+             L 160 114
+             C 156 106 150 98 144 92
+             C 140 86 137 76 137 66
+             C 137 55 139 45 144 40 Z"
+          fill={INK}
+        />
+        {/* collar rim-light */}
+        <path d="M146 42 C 152 45 155 52 154 60" fill="none" stroke={RIM} strokeWidth="1" strokeLinecap="round" />
+        {/* head, slight bow toward her */}
+        <path d="M143 34 C 141 26 146 20 153 21 C 159 22 162 28 160 34 C 158 39 152 41 148 39 C 145 38 143 36 143 34 Z" fill={INK} />
+        {/* front leg striding */}
         <g className="rc-leg">
-          <path d="M142 84 L142 114" stroke="#3a3550" strokeWidth="8" strokeLinecap="round" />
-          <ellipse cx="144" cy="116" rx="5" ry="3.4" fill="#2b2640" />
+          <path d="M144 84 L146 114" stroke={INK} strokeWidth="7" strokeLinecap="round" />
+          <path d="M146 114 L153 116" stroke={INK} strokeWidth="5" strokeLinecap="round" />
         </g>
         {/* front arm back to her hand */}
-        <path d="M146 52 C 138 62 128 72 121 79" stroke="#3a3550" strokeWidth="6" strokeLinecap="round" fill="none" />
-        {/* head, profile */}
-        <circle cx="152" cy="32" r="10" fill="#ecc7ae" />
-        <path d="M141 30 C 141 20 149 15 157 18 C 163 21 165 28 163 33 C 159 24 147 23 141 30 Z" fill="#4a3826" />
-        <circle cx="156.5" cy="30.5" r="1.5" fill="#3a3550" />
-        <path d="M154.5 37 Q 157 38.6 159.5 37" stroke="#b06a6a" strokeWidth="1.2" fill="none" strokeLinecap="round" />
-        <circle cx="150" cy="36" r="1.9" fill="rgba(224,150,150,.5)" />
+        <path d="M146 50 C 138 61 128 72 121 79" stroke={INK} strokeWidth="5" strokeLinecap="round" fill="none" />
       </g>
     </svg>
   );

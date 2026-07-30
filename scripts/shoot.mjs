@@ -26,7 +26,7 @@ async function run(tag, viewport, isMobile, reducedMotion = "no-preference") {
   await page.screenshot({ timeout: 60000, path: `${OUT}/${tag}-1-arrival.png` });
 
   // wait for the arrival scene to be interactive, then click the seal
-  await page.getByText("Click the Seal", { exact: false }).waitFor({ state: "visible", timeout: 30000 });
+  await page.getByText("Press the Seal", { exact: false }).waitFor({ state: "visible", timeout: 30000 });
   await page.waitForTimeout(600);
   const seal = page.locator("button", { hasText: "H" }).first();
   await seal.click();

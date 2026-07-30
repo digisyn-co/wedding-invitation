@@ -3,7 +3,7 @@ const browser = await chromium.launch({ executablePath: "/opt/pw-browsers/chromi
 const ctx = await browser.newContext({ viewport: { width: 1440, height: 900 }, reducedMotion: "reduce" });
 const page = await ctx.newPage();
 await page.goto("http://localhost:3000", { waitUntil: "networkidle" });
-await page.getByText("Click the Seal", { exact: false }).waitFor({ state: "visible", timeout: 30000 });
+await page.getByText("Press the Seal", { exact: false }).waitFor({ state: "visible", timeout: 30000 });
 await page.locator("button", { hasText: "H" }).first().click();
 await page.waitForFunction(() => document.body.style.overflow !== "hidden", null, { timeout: 20000 }).catch(() => {});
 await page.evaluate(() => { const el = document.querySelector("#venue"); window.scrollTo({ top: el.offsetTop, behavior: "instant" }); });

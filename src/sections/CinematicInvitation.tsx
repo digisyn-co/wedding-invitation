@@ -13,7 +13,6 @@ import { StoryFlight3D, type StoryFlightHandle } from "@/components/StoryFlight3
 import { WeddingRing3D } from "@/components/WeddingRing3D";
 import { unlock, setMuted, playSwell } from "@/lib/sealAudio";
 import { WEDDING } from "@/lib/content";
-import { AnimatedCharacter } from "@/components/AnimatedCharacter";
 import { EtherealScene } from "@/components/EtherealScene";
 import { StoryEmblem } from "@/components/StoryEmblem";
 import { HeroCountdown } from "@/components/HeroCountdown";
@@ -91,13 +90,16 @@ function DetailIcon({ kind }: { kind: "date" | "ceremony" | "reception" | "attir
   );
 }
 
-const MEMORIES = [
-  { slot: "memory-1", r: "-6deg", delay: "0s" },
-  { slot: "memory-2", r: "5deg", delay: ".34s" },
-  { slot: "memory-3", r: "-3deg", delay: ".68s" },
-  { slot: "memory-4", r: "7deg", delay: "1.02s" },
-  { slot: "memory-5", r: "-5deg", delay: "1.36s" },
-];
+/* Memory-montage frames: the flash of "photographs" during the seal
+   transition. Sourced from WEDDING.photos.montage (real artwork now,
+   real photos later) — rotation/delay choreography stays here. */
+const MEMORY_POSES = ["-6deg", "5deg", "-3deg", "7deg", "-5deg"] as const;
+const MEMORIES = WEDDING.photos.montage.map((src, i) => ({
+  slot: `memory-${i + 1}`,
+  src,
+  r: MEMORY_POSES[i % MEMORY_POSES.length],
+  delay: `${(i * 0.34).toFixed(2)}s`,
+}));
 
 // Petals drifting through the hero — deterministic (SSR-safe).
 const HERO_PETALS = [
@@ -688,7 +690,8 @@ export function CinematicInvitation() {
       <div ref={montageRef} aria-hidden style={{ position: "fixed", inset: 0, zIndex: 82, pointerEvents: "none", display: "none", opacity: 1, transition: "opacity .8s ease", background: "radial-gradient(circle at 50% 50%, rgba(24,22,38,.34), rgba(16,14,24,.68) 80%)" }}>
         {MEMORIES.map((m) => (
           <div key={m.slot} style={{ position: "absolute", left: "50%", top: "50%", ["--r" as string]: m.r, opacity: 0, width: "min(70vw,340px)", aspectRatio: "4/5", borderRadius: 6, overflow: "hidden", boxShadow: "0 30px 80px rgba(0,0,0,.6),0 0 0 2px rgba(216,189,133,.6),0 0 0 10px rgba(255,255,255,.06)", animation: `memflash .82s ease-out ${m.delay} both` }}>
-            <AnimatedCharacter variant="couple" />
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={m.src} alt="" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }} />
           </div>
         ))}
       </div>
@@ -742,7 +745,7 @@ export function CinematicInvitation() {
           </button>
         </div>
 
-        <p style={{ zIndex: 3, marginTop: 34, fontFamily: "'Jost',sans-serif", fontWeight: 300, fontSize: 12, letterSpacing: ".5em", textTransform: "uppercase", color: "rgba(233,221,196,.82)", animation: "floaty 4s ease-in-out infinite" }}>Click the Seal to Begin</p>
+        <p style={{ zIndex: 3, marginTop: 34, fontFamily: "'Jost',sans-serif", fontWeight: 300, fontSize: 12, letterSpacing: ".5em", textTransform: "uppercase", color: "rgba(233,221,196,.82)", animation: "floaty 4s ease-in-out infinite" }}>Press the Seal to Begin</p>
       </div>
 
       {/* Seal-break magic, in true 3D: the GSAP sequence (sealBurst3D)

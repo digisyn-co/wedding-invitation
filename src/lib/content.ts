@@ -123,6 +123,16 @@ export const WEDDING = {
   photos: {
     crest: "/assets/logo.webp",
     monogram: "/assets/HL.png",
+    /**
+     * The memory-montage flash frames (4:5 portrait crops). Currently
+     * the approved invitation artwork renders; replace with real
+     * photographs of the couple as they arrive (any count works).
+     */
+    montage: [
+      "/assets/invitation-card.jpg",
+      "/assets/invitation-crest.jpg",
+      "/assets/invitation.jpg",
+    ] as readonly string[],
     portraitFirst: null as string | null,
     portraitSecond: null as string | null,
     portraitCouple: null as string | null,
