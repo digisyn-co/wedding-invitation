@@ -117,6 +117,22 @@ html {
   scroll-snap-align: none;
 }
 
+/* ---------------------------------------------------------------
+   Full-screen scenes: every section is EXACTLY one viewport tall —
+   one scroll gesture, one whole scene, nothing peeking through.
+   dvh tracks the real visible height on iOS/Android (URL bar,
+   in-app webviews); vh is the fallback for older engines.
+   ------------------------------------------------------------- */
+.scene {
+  height: 100vh;
+  overflow: hidden;
+}
+@supports (height: 100dvh) {
+  .scene {
+    height: 100dvh;
+  }
+}
+
 /* Soft gold light-bloom that washes over each section as you arrive. */
 .snap-sect::before {
   content: "";
@@ -444,6 +460,38 @@ html { scrollbar-width: thin; scrollbar-color: #b8935a #14121e; }
   #hero [role="timer"] { margin-top: 16px !important; }
 }
 
+/* --- Venue on phones: compact editorial column + smaller map plate
+       so the whole scene stays one screen down to 360×640 --- */
+@media (max-width: 640px) {
+  #venue { padding: 56px 20px 20px !important; }
+  #venue .venue-title { font-size: 28px !important; }
+  #venue .venue-city { font-size: 17px !important; margin-bottom: 12px !important; }
+  #venue .venue-desc { font-size: 14.5px !important; line-height: 1.55 !important; }
+  #venue .venue-arrival { margin-top: 12px !important; }
+  #venue .venue-arrival p { font-size: 13px !important; }
+  #venue .venue-btn { margin-top: 14px !important; padding: 11px 22px !important; }
+  #venue .venue-map { flex: 0 1 auto !important; min-width: 0 !important; width: min(78vw, 46vh) !important; }
+}
+
+/* --- Short viewports (≤700px tall — small Androids, in-app
+       webviews): tighten the light scenes so each stays one screen --- */
+@media (max-height: 700px) {
+  #details .details-title { font-size: clamp(28px, 5vw, 44px) !important; }
+  .details-grid .det-col { padding: 14px 10px 12px !important; }
+  .details-grid .det-icon svg { width: 22px; height: 22px; }
+  #details .details-note { font-size: 12.5px !important; }
+  #couple .couple-quote { font-size: 16px !important; margin-bottom: 8px !important; }
+  #couple .couple-text { font-size: 13px !important; line-height: 1.45 !important; }
+}
+
+/* Desktop laptops with modest height (≤840px): shave the couple
+       scene's last few pixels so it never clips */
+@media (min-width: 961px) and (max-height: 840px) {
+  #couple .couple-quote { font-size: 21px !important; margin-bottom: 10px !important; }
+  #couple .couple-scene { max-height: 33vh !important; }
+  #couple .couple-text { font-size: 15px !important; }
+}
+
 /* The editorial portrait plates flank the scene on wide screens only;
    below 960px the compressed single-screen composition takes over. */
 @media (max-width: 960px) {
@@ -462,7 +510,6 @@ html { scrollbar-width: thin; scrollbar-color: #b8935a #14121e; }
   #couple .couple-crown { font-size: 14px !important; margin-bottom: 5px !important; }
   #couple .couple-scene { width: min(82vw, 330px) !important; }
   #couple .couple-names { margin-top: 10px !important; font-size: 36px !important; }
-  #couple .couple-div { margin: 10px 0 8px !important; }
   #couple .couple-text { font-size: 14px !important; line-height: 1.5 !important; max-width: 38ch !important; }
 }
 

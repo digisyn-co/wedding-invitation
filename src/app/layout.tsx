@@ -32,6 +32,9 @@ export const viewport: Viewport = {
   themeColor: "#201d30",
   width: "device-width",
   initialScale: 1,
+  // Lets the experience extend under the iOS notch/home bar; the nav
+  // and sound toggle pad themselves with env(safe-area-inset-*).
+  viewportFit: "cover",
 };
 
 export default function RootLayout({

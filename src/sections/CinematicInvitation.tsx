@@ -427,6 +427,8 @@ export function CinematicInvitation() {
       touchStartY = e.touches[0].clientY;
     };
     const onTouchMove = (e: TouchEvent) => {
+      const t = e.target as HTMLElement | null;
+      if (t && t.closest("input,textarea,select")) return; // typing/keyboard — never trap
       if (!reducedMotion && document.body.style.overflow !== "hidden") e.preventDefault();
     };
     const onTouchEnd = (e: TouchEvent) => {
@@ -654,7 +656,7 @@ export function CinematicInvitation() {
         onClick={toggleSound}
         aria-pressed={soundOn}
         aria-label={soundOn ? "Turn sound off" : "Turn sound on"}
-        style={{ position: "fixed", left: 22, bottom: 20, zIndex: 92, display: "flex", alignItems: "center", gap: 10, background: "none", border: "none", cursor: "pointer", padding: 6 }}
+        style={{ position: "fixed", left: "calc(16px + env(safe-area-inset-left, 0px))", bottom: "calc(14px + env(safe-area-inset-bottom, 0px))", zIndex: 92, display: "flex", alignItems: "center", gap: 10, background: "none", border: "none", cursor: "pointer", padding: 6 }}
       >
         <span style={{ display: "flex", alignItems: "flex-end", gap: 2.5, height: 12 }} aria-hidden="true">
           {[7, 11, 5].map((h, i) => (
@@ -707,7 +709,7 @@ export function CinematicInvitation() {
       </div>
 
       {/* NAV */}
-      <nav ref={navRef} aria-label="Invitation sections" style={{ position: "fixed", top: 0, left: 0, right: 0, zIndex: 55, display: "flex", alignItems: "center", justifyContent: "space-between", padding: "22px clamp(20px,5vw,64px)", opacity: 0, transition: "opacity 1.2s ease", pointerEvents: "none", background: "linear-gradient(180deg,rgba(20,18,30,.34),transparent)" }}>
+      <nav ref={navRef} aria-label="Invitation sections" style={{ position: "fixed", top: 0, left: 0, right: 0, zIndex: 55, display: "flex", alignItems: "center", justifyContent: "space-between", padding: "calc(16px + env(safe-area-inset-top, 0px)) clamp(20px,5vw,64px) 16px", opacity: 0, transition: "opacity 1.2s ease", pointerEvents: "none", background: "linear-gradient(180deg,rgba(20,18,30,.34),transparent)" }}>
         <a href="#hero" aria-label="Back to top — Helson and Luna" style={{ display: "flex", alignItems: "center" }}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src={WEDDING.photos.monogram} alt="" style={{ display: "block", height: 36, width: "auto" }} />
@@ -790,7 +792,7 @@ export function CinematicInvitation() {
       )}
 
       {/* SCENE 3 — HERO */}
-      <section id="hero" className="snap-sect" style={{ position: "relative", minHeight: "100vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textAlign: "center", padding: "120px 24px 90px", background: "radial-gradient(130% 100% at 50% 0%, rgba(246,244,250,.62) 0%, rgba(226,225,239,.48) 42%, rgba(215,215,234,.4) 100%)", overflow: "hidden" }}>
+      <section id="hero" className="snap-sect scene" style={{ position: "relative", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textAlign: "center", padding: "clamp(70px,10vh,110px) 24px clamp(50px,8vh,80px)", background: "radial-gradient(130% 100% at 50% 0%, rgba(246,244,250,.62) 0%, rgba(226,225,239,.48) 42%, rgba(215,215,234,.4) 100%)", overflow: "hidden" }}>
         <div style={{ position: "absolute", top: "12%", left: "8%", width: 2, height: 150, background: "linear-gradient(180deg,transparent,rgba(216,189,133,.5),transparent)", animation: "floatySlow 9s ease-in-out infinite" }} />
         <div style={{ position: "absolute", bottom: "14%", right: "10%", width: 2, height: 120, background: "linear-gradient(180deg,transparent,rgba(216,189,133,.4),transparent)", animation: "floatySlow 11s ease-in-out infinite" }} />
         {/* petals drifting down through the hero */}
@@ -814,50 +816,43 @@ export function CinematicInvitation() {
       </section>
 
       {/* SCENE 4 — COUPLE */}
-      <section id="couple" className="snap-sect" style={{ position: "relative", padding: "clamp(96px,15vh,180px) 24px", background: "radial-gradient(100% 80% at 50% 8%, rgba(38,36,59,.9) 0%, rgba(30,28,48,.86) 45%, rgba(22,20,36,.92) 100%)", display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center", overflow: "hidden" }}>
-        {/* bridge: the hero's lavender light melts into this dusk */}
-        <div aria-hidden style={{ position: "absolute", top: 0, left: 0, right: 0, height: 130, zIndex: 1, pointerEvents: "none", background: "linear-gradient(180deg, rgba(224,223,239,.42), transparent)" }} />
+      <section id="couple" className="snap-sect scene" style={{ position: "relative", padding: "clamp(48px,7vh,72px) 24px clamp(14px,2.5vh,28px)", justifyContent: "center", background: "radial-gradient(100% 80% at 50% 8%, rgba(38,36,59,.9) 0%, rgba(30,28,48,.86) 45%, rgba(22,20,36,.92) 100%)", display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center", overflow: "hidden" }}>
         <div style={{ position: "absolute", top: "-6%", left: "50%", transform: "translateX(-50%)", width: "70vw", height: "70vw", maxWidth: 820, maxHeight: 820, borderRadius: "50%", background: "radial-gradient(circle, rgba(216,189,133,.16), rgba(200,196,224,.06) 44%, transparent 68%)", pointerEvents: "none" }} />
         {fx?.sparkles.map((s, i) => (
           <span key={i} style={{ position: "absolute", top: s.top, left: s.left, width: s.size, height: s.size, pointerEvents: "none", background: "radial-gradient(circle,#f6eccf,rgba(216,189,133,0))", borderRadius: "50%", boxShadow: "0 0 8px 2px rgba(216,189,133,.6)", animation: `sparkle ${s.dur} ease-in-out ${s.delay} infinite` }} />
         ))}
 
-        <div data-reveal className="couple-head" style={{ opacity: 0, position: "relative", zIndex: 2, display: "flex", flexDirection: "column", alignItems: "center", gap: 16, marginBottom: 14 }}>
-          <span aria-hidden className="couple-line" style={{ width: 1, height: 52, background: "linear-gradient(180deg,transparent,#d8bd85)" }} />
+        <div data-reveal className="couple-head" style={{ opacity: 0, position: "relative", zIndex: 2, display: "flex", flexDirection: "column", alignItems: "center", gap: "clamp(6px,1.2vh,12px)", marginBottom: "clamp(6px,1.2vh,12px)" }}>
+          <span aria-hidden className="couple-line" style={{ width: 1, height: "clamp(20px,4vh,36px)", background: "linear-gradient(180deg,transparent,#d8bd85)" }} />
           <span aria-hidden style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 22, color: "#e9d29a", transform: "rotate(45deg)", display: "inline-block", textShadow: "0 0 18px rgba(216,189,133,.7)" }}>✦</span>
           <span style={{ fontSize: 11, letterSpacing: ".62em", textTransform: "uppercase", color: "#c7bfe0" }}>Two Hearts · One Light</span>
         </div>
-        <h2 data-reveal data-reveal-delay="140" className="couple-quote" style={{ opacity: 0, position: "relative", zIndex: 2, margin: "0 0 60px", fontFamily: "'Cormorant Garamond',serif", fontWeight: 300, fontStyle: "italic", fontSize: "clamp(26px,3.6vw,44px)", color: "#efe7d2", maxWidth: "18ch", lineHeight: 1.3 }}>{WEDDING.coupleQuote}</h2>
+        <h2 data-reveal data-reveal-delay="140" className="couple-quote" style={{ opacity: 0, position: "relative", zIndex: 2, margin: "0 0 clamp(16px,3vh,34px)", fontFamily: "'Cormorant Garamond',serif", fontWeight: 300, fontStyle: "italic", fontSize: "clamp(24px,3.2vw,38px)", color: "#efe7d2", maxWidth: "18ch", lineHeight: 1.3 }}>{WEDDING.coupleQuote}</h2>
 
         {/* Editorial spread: two portrait plates flank the celestial
             scene, hung at slightly different heights like frames in a
             gallery. The plates hide below 960px, where the compressed
             single-screen mobile composition takes over. */}
         <div className="couple-spread" style={{ position: "relative", zIndex: 2, display: "flex", alignItems: "center", justifyContent: "center", gap: "clamp(22px,3.4vw,52px)", width: "100%", maxWidth: 1240 }}>
-          <div data-reveal data-reveal-delay="200" className="couple-portrait" style={{ opacity: 0, flex: "0 1 236px", alignSelf: "flex-start", marginTop: 26 }}>
+          <div data-reveal data-reveal-delay="200" className="couple-portrait" style={{ opacity: 0, flex: "0 1 min(236px,24vh)", alignSelf: "flex-start", marginTop: 18 }}>
             <PortraitFrame src={WEDDING.photos.portraitFirst} initial={WEDDING.couple.first[0]} name={WEDDING.couple.first} role={WEDDING.couple.firstRole} tilt="-1.6deg" />
           </div>
 
           <div style={{ display: "flex", flexDirection: "column", alignItems: "center", flex: "0 1 760px", minWidth: 0 }}>
             {/* the couple within a majestic moving celestial scene */}
-            <div data-reveal data-reveal-delay="120" className="couple-scene" style={{ opacity: 0, position: "relative", width: "min(94vw,760px)", aspectRatio: "16/11", borderRadius: 14, overflow: "hidden", boxShadow: "0 0 0 1px rgba(216,189,133,.5),0 0 0 7px rgba(255,255,255,.05),0 40px 90px rgba(0,0,0,.55),0 0 70px rgba(216,189,133,.2)" }}>
+            <div data-reveal data-reveal-delay="120" className="couple-scene" style={{ opacity: 0, position: "relative", width: "min(94vw,760px)", aspectRatio: "16/11", maxHeight: "min(36dvh,36vh)", borderRadius: 14, overflow: "hidden", boxShadow: "0 0 0 1px rgba(216,189,133,.5),0 0 0 7px rgba(255,255,255,.05),0 40px 90px rgba(0,0,0,.55),0 0 70px rgba(216,189,133,.2)" }}>
               <EtherealScene />
             </div>
-            <div data-reveal data-reveal-delay="240" className="couple-names" style={{ opacity: 0, marginTop: 28, fontFamily: "'Pinyon Script',cursive", fontSize: "clamp(46px,10vw,78px)", lineHeight: 0.9, background: "linear-gradient(120deg,#c9a35b,#f6ecc4,#c9a35b)", backgroundSize: "200% 100%", WebkitBackgroundClip: "text", backgroundClip: "text", WebkitTextFillColor: "transparent", animation: "shimmer 5s linear infinite" }}>{WEDDING.couple.first} &amp; {WEDDING.couple.second}</div>
+            <div data-reveal data-reveal-delay="240" className="couple-names" style={{ opacity: 0, marginTop: "clamp(10px,2vh,20px)", fontFamily: "'Pinyon Script',cursive", fontSize: "clamp(40px,8vw,62px)", lineHeight: 0.9, background: "linear-gradient(120deg,#c9a35b,#f6ecc4,#c9a35b)", backgroundSize: "200% 100%", WebkitBackgroundClip: "text", backgroundClip: "text", WebkitTextFillColor: "transparent", animation: "shimmer 5s linear infinite" }}>{WEDDING.couple.first} &amp; {WEDDING.couple.second}</div>
             <div data-reveal data-reveal-delay="300" style={{ opacity: 0, fontSize: 10, letterSpacing: ".44em", textTransform: "uppercase", color: "#b7aecf", marginTop: 8 }}>{WEDDING.couple.firstRole} &amp; {WEDDING.couple.secondRole}</div>
           </div>
 
-          <div data-reveal data-reveal-delay="280" className="couple-portrait" style={{ opacity: 0, flex: "0 1 236px", alignSelf: "flex-end", marginBottom: 26 }}>
+          <div data-reveal data-reveal-delay="280" className="couple-portrait" style={{ opacity: 0, flex: "0 1 min(236px,24vh)", alignSelf: "flex-end", marginBottom: 18 }}>
             <PortraitFrame src={WEDDING.photos.portraitSecond} initial={WEDDING.couple.second[0]} name={WEDDING.couple.second} role={WEDDING.couple.secondRole} tilt="1.6deg" />
           </div>
         </div>
 
-        <div data-reveal data-reveal-delay="240" className="couple-div" style={{ opacity: 0, position: "relative", zIndex: 2, display: "flex", alignItems: "center", gap: 16, margin: "64px 0 22px", color: "#d8bd85" }}>
-          <span aria-hidden style={{ width: 60, height: 1, background: "linear-gradient(90deg,transparent,#c9a35b)" }} />
-          <span aria-hidden style={{ transform: "rotate(45deg)", textShadow: "0 0 14px rgba(216,189,133,.7)" }}>✦</span>
-          <span aria-hidden style={{ width: 60, height: 1, background: "linear-gradient(270deg,transparent,#c9a35b)" }} />
-        </div>
-        <p data-reveal data-reveal-delay="240" className="couple-text" style={{ opacity: 0, position: "relative", zIndex: 2, maxWidth: "52ch", margin: "0 auto", fontFamily: "'Cormorant Garamond',serif", fontWeight: 300, fontStyle: "italic", fontSize: "clamp(19px,2.4vw,25px)", lineHeight: 1.75, color: "#e2dac6" }}>{WEDDING.coupleVow}</p>
+        <p data-reveal data-reveal-delay="240" className="couple-text" style={{ opacity: 0, position: "relative", zIndex: 2, maxWidth: "56ch", margin: "clamp(12px,2.2vh,24px) auto 0", fontFamily: "'Cormorant Garamond',serif", fontWeight: 300, fontStyle: "italic", fontSize: "clamp(16px,2vw,21px)", lineHeight: 1.65, color: "#e2dac6" }}>{WEDDING.coupleVow}</p>
       </section>
 
       {/* SCENE 5 — LOVE STORY */}
@@ -936,11 +931,11 @@ export function CinematicInvitation() {
           {STORY.map((c) => (
             <div key={c.i} data-ch={c.i} style={{ position: "absolute", left: "50%", top: "50%", transform: "translate(-50%,-50%)", width: "min(90vw,660px)", opacity: 0, textAlign: "center", willChange: "transform,opacity,filter" }}>
               <div style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 14, letterSpacing: ".52em", textTransform: "uppercase", color: "#d8bd85", marginBottom: 24, textShadow: "0 0 20px rgba(216,189,133,.4)" }}>{c.no}</div>
-              <div style={{ position: "relative", width: "min(56vw,214px)", aspectRatio: "4/5", margin: "0 auto 32px", borderRadius: "50%", overflow: "hidden", boxShadow: "0 0 0 2px rgba(216,189,133,.7),0 0 0 10px rgba(255,255,255,.05),0 26px 60px rgba(0,0,0,.5),0 0 56px rgba(216,189,133,.22)", animation: "floatySlow 12s ease-in-out infinite" }}>
+              <div style={{ position: "relative", width: "min(56vw,214px,26vh)", aspectRatio: "4/5", margin: "0 auto clamp(14px,3vh,32px)", borderRadius: "50%", overflow: "hidden", boxShadow: "0 0 0 2px rgba(216,189,133,.7),0 0 0 10px rgba(255,255,255,.05),0 26px 60px rgba(0,0,0,.5),0 0 56px rgba(216,189,133,.22)", animation: "floatySlow 12s ease-in-out infinite" }}>
                 <StoryEmblem chapter={c.i} />
               </div>
-              <h3 style={{ margin: "0 0 20px", fontFamily: "'Cormorant Garamond',serif", fontWeight: 300, fontStyle: "italic", fontSize: "clamp(34px,5.4vw,60px)", color: "#f2ead4", lineHeight: 1.08 }}>{c.title}</h3>
-              <p style={{ margin: "0 auto", maxWidth: "40ch", fontFamily: "'Cormorant Garamond',serif", fontWeight: 300, fontSize: "clamp(18px,2.3vw,23px)", lineHeight: 1.75, color: "#d6cebc" }}>{c.body}</p>
+              <h3 style={{ margin: "0 0 clamp(10px,2vh,20px)", fontFamily: "'Cormorant Garamond',serif", fontWeight: 300, fontStyle: "italic", fontSize: "clamp(30px,5vw,56px)", color: "#f2ead4", lineHeight: 1.08 }}>{c.title}</h3>
+              <p style={{ margin: "0 auto", maxWidth: "40ch", fontFamily: "'Cormorant Garamond',serif", fontWeight: 300, fontSize: "clamp(16px,2.1vw,21px)", lineHeight: 1.65, color: "#d6cebc" }}>{c.body}</p>
             </div>
           ))}
 
@@ -949,14 +944,11 @@ export function CinematicInvitation() {
       </section>
 
       {/* SCENE 6 — DETAILS */}
-      <section id="details" className="snap-sect" style={{ position: "relative", padding: "clamp(90px,14vh,160px) 24px", background: "radial-gradient(120% 80% at 50% 0%, rgba(244,239,232,.74) 0%, rgba(236,231,226,.6) 55%, rgba(230,223,218,.5) 100%)", overflow: "hidden" }}>
-        {/* bridge: dusk melting into daylight — kept short so the
-            section label never sinks into the dark band on phones */}
-        <div aria-hidden style={{ position: "absolute", top: 0, left: 0, right: 0, height: 60, zIndex: 1, pointerEvents: "none", background: "linear-gradient(180deg, rgba(23,20,34,.8), transparent)" }} />
+      <section id="details" className="snap-sect scene" style={{ position: "relative", display: "flex", flexDirection: "column", justifyContent: "center", padding: "clamp(64px,9vh,90px) 24px clamp(20px,4vh,44px)", background: "radial-gradient(120% 80% at 50% 0%, rgba(244,239,232,.74) 0%, rgba(236,231,226,.6) 55%, rgba(230,223,218,.5) 100%)", overflow: "hidden" }}>
         <div style={{ position: "relative", zIndex: 2, maxWidth: 980, margin: "0 auto", textAlign: "center" }}>
           <div data-reveal style={{ ...reveal(), fontSize: 11, letterSpacing: ".56em", textTransform: "uppercase", color: "#7c6a4d", textShadow: "0 1px 6px rgba(255,255,255,.5)", marginBottom: 18 }}>The Celebration</div>
           <h2 data-reveal data-reveal-delay="120" className="details-title" style={{ ...reveal(), margin: "0 auto 10px", fontFamily: "'Cormorant Garamond',serif", fontWeight: 300, fontSize: "clamp(34px,5.6vw,64px)", letterSpacing: ".08em", color: "#3d3860", lineHeight: 1.04 }}>Wedding Details</h2>
-          <div data-reveal data-reveal-delay="180" className="details-date" style={{ ...reveal(), display: "flex", alignItems: "center", justifyContent: "center", gap: 16, margin: "0 0 54px", color: "#7c6a4d" }}>
+          <div data-reveal data-reveal-delay="180" className="details-date" style={{ ...reveal(), display: "flex", alignItems: "center", justifyContent: "center", gap: 16, margin: "0 0 clamp(18px,4vh,44px)", color: "#7c6a4d" }}>
             <span aria-hidden style={{ width: 44, height: 1, background: "linear-gradient(90deg,transparent,#c9a35b)" }} />
             <span style={{ fontFamily: "'Cormorant Garamond',serif", fontStyle: "italic", fontWeight: 300, fontSize: "clamp(15px,2vw,19px)", letterSpacing: ".08em" }}>{WEDDING.date.long}, {WEDDING.date.year.toLowerCase()}</span>
             <span aria-hidden style={{ width: 44, height: 1, background: "linear-gradient(270deg,transparent,#c9a35b)" }} />
@@ -975,25 +967,25 @@ export function CinematicInvitation() {
               ))}
             </div>
           </div>
-          <p data-reveal data-reveal-delay="300" className="details-note" style={{ ...reveal(), margin: "34px auto 0", maxWidth: "52ch", fontFamily: "'Cormorant Garamond',serif", fontWeight: 300, fontStyle: "italic", fontSize: "clamp(15px,1.8vw,18px)", lineHeight: 1.7, color: "#6d6788" }}>{WEDDING.venue.arrivalNote}</p>
+          <p data-reveal data-reveal-delay="300" className="details-note" style={{ ...reveal(), margin: "clamp(14px,3vh,30px) auto 0", maxWidth: "52ch", fontFamily: "'Cormorant Garamond',serif", fontWeight: 300, fontStyle: "italic", fontSize: "clamp(15px,1.8vw,18px)", lineHeight: 1.7, color: "#6d6788" }}>{WEDDING.venue.arrivalNote}</p>
         </div>
       </section>
 
       {/* SCENE 7 — VENUE */}
-      <section id="venue" className="snap-sect" style={{ position: "relative", padding: "clamp(90px,14vh,160px) 24px", background: "linear-gradient(180deg,rgba(241,238,244,.92) 0%,rgba(228,226,240,.88) 100%)", overflow: "hidden" }}>
-        <div style={{ maxWidth: 1000, margin: "0 auto", display: "flex", flexWrap: "wrap", gap: "clamp(30px,5vw,68px)", alignItems: "center", justifyContent: "center" }}>
+      <section id="venue" className="snap-sect scene" style={{ position: "relative", display: "flex", flexDirection: "column", justifyContent: "center", padding: "clamp(64px,9vh,90px) 24px clamp(20px,4vh,44px)", background: "linear-gradient(180deg,rgba(241,238,244,.92) 0%,rgba(228,226,240,.88) 100%)", overflow: "hidden" }}>
+        <div style={{ maxWidth: 1000, width: "100%", margin: "0 auto", display: "flex", flexWrap: "wrap", gap: "clamp(22px,4vw,68px)", alignItems: "center", justifyContent: "center" }}>
           <div data-reveal style={{ ...reveal(), flex: "1 1 300px", minWidth: 280 }}>
             <div style={{ fontSize: 11, letterSpacing: ".56em", textTransform: "uppercase", color: "#6a6486", marginBottom: 16 }}>The Venue</div>
-            <h2 style={{ margin: "0 0 8px", fontFamily: "'Cormorant Garamond',serif", fontWeight: 400, fontSize: "clamp(34px,5vw,58px)", color: "#3d3860", lineHeight: 1.05 }}>{WEDDING.venue.name}</h2>
-            <div style={{ fontFamily: "'Cormorant Garamond',serif", fontWeight: 300, fontStyle: "italic", fontSize: 22, color: "#574f74", marginBottom: 26 }}>{WEDDING.venue.city}</div>
-            <p style={{ fontFamily: "'Cormorant Garamond',serif", fontWeight: 300, fontSize: 18, lineHeight: 1.75, color: "#4e4a68", maxWidth: "42ch" }}>{WEDDING.venue.description}</p>
+            <h2 className="venue-title" style={{ margin: "0 0 8px", fontFamily: "'Cormorant Garamond',serif", fontWeight: 400, fontSize: "clamp(34px,5vw,58px)", color: "#3d3860", lineHeight: 1.05 }}>{WEDDING.venue.name}</h2>
+            <div className="venue-city" style={{ fontFamily: "'Cormorant Garamond',serif", fontWeight: 300, fontStyle: "italic", fontSize: 22, color: "#574f74", marginBottom: 26 }}>{WEDDING.venue.city}</div>
+            <p className="venue-desc" style={{ fontFamily: "'Cormorant Garamond',serif", fontWeight: 300, fontSize: 18, lineHeight: 1.75, color: "#4e4a68", maxWidth: "42ch" }}>{WEDDING.venue.description}</p>
             <div className="venue-arrival" style={{ display: "flex", gap: 14, alignItems: "flex-start", marginTop: 24, maxWidth: "44ch" }}>
               <span aria-hidden style={{ flexShrink: 0, marginTop: 9, width: 26, height: 1, background: "#c9a35b" }} />
               <p style={{ margin: 0, fontFamily: "'Cormorant Garamond',serif", fontWeight: 300, fontStyle: "italic", fontSize: 16, lineHeight: 1.65, color: "#6d6788" }}>{WEDDING.venue.arrivalNote}</p>
             </div>
-            <a href={WEDDING.venue.mapsUrl} target="_blank" rel="noopener" className="lux-btn" style={{ display: "inline-flex", alignItems: "center", gap: 10, marginTop: 28, padding: "14px 30px", borderRadius: 100, border: "1px solid rgba(201,163,91,.7)", fontSize: 11, letterSpacing: ".32em", textTransform: "uppercase", color: "#a9853f" }}>Directions →</a>
+            <a href={WEDDING.venue.mapsUrl} target="_blank" rel="noopener" className="lux-btn venue-btn" style={{ display: "inline-flex", alignItems: "center", gap: 10, marginTop: 28, padding: "14px 30px", borderRadius: 100, border: "1px solid rgba(201,163,91,.7)", fontSize: 11, letterSpacing: ".32em", textTransform: "uppercase", color: "#a9853f" }}>Directions →</a>
           </div>
-          <div data-reveal data-reveal-style="mask" data-reveal-delay="200" style={{ ...reveal(), flex: "1 1 320px", minWidth: 300 }}>
+          <div data-reveal data-reveal-style="mask" data-reveal-delay="200" className="venue-map" style={{ ...reveal(), flex: "1 1 320px", minWidth: 300 }}>
             <div style={{ position: "relative", borderRadius: 8, overflow: "hidden", boxShadow: "0 30px 60px rgba(90,84,130,.26),inset 0 0 0 1px rgba(216,189,133,.4),inset 0 0 0 7px rgba(255,255,255,.55)", background: "linear-gradient(160deg,#eef0f5,#e4e6f0)" }}>
               {/* An engraved, brand-matched plan of the journey — an
                   atlas plate rather than an embedded map product. */}
@@ -1031,14 +1023,12 @@ export function CinematicInvitation() {
       </section>
 
       {/* SCENE 9 — RSVP */}
-      <section id="rsvp" className="snap-sect" style={{ position: "relative", minHeight: "100dvh", display: "flex", flexDirection: "column", justifyContent: "center", padding: "clamp(40px,6vh,150px) 20px", boxSizing: "border-box", background: "radial-gradient(120% 90% at 50% 10%, rgba(239,234,243,.6) 0%, rgba(228,226,239,.46) 55%, rgba(216,215,234,.4) 100%)", overflow: "hidden" }}>
+      <section id="rsvp" className="snap-sect scene" style={{ position: "relative", display: "flex", flexDirection: "column", justifyContent: "center", padding: "clamp(40px,6vh,120px) 20px", boxSizing: "border-box", background: "radial-gradient(120% 90% at 50% 10%, rgba(239,234,243,.6) 0%, rgba(228,226,239,.46) 55%, rgba(216,215,234,.4) 100%)", overflow: "hidden" }}>
         <RsvpForm />
       </section>
 
       {/* SCENE 10 — CLOSING */}
-      <section className="snap-sect" style={{ position: "relative", minHeight: "100vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textAlign: "center", padding: "120px 24px", background: "radial-gradient(130% 100% at 50% 30%, #26243b 0%, #17152300 0%, #100e18 100%),linear-gradient(180deg,#1b1930,#100e18)", overflow: "hidden" }}>
-        {/* bridge: the last daylight fading into the final night */}
-        <div aria-hidden style={{ position: "absolute", top: 0, left: 0, right: 0, height: 150, zIndex: 1, pointerEvents: "none", background: "linear-gradient(180deg, rgba(221,219,236,.4), transparent)" }} />
+      <section className="snap-sect scene" style={{ position: "relative", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textAlign: "center", padding: "clamp(60px,9vh,110px) 24px", background: "radial-gradient(130% 100% at 50% 30%, #26243b 0%, #17152300 0%, #100e18 100%),linear-gradient(180deg,#1b1930,#100e18)", overflow: "hidden" }}>
         <div style={{ position: "absolute", top: "8%", left: "50%", transform: "translateX(-50%)", width: "44vw", height: "44vw", maxWidth: 520, maxHeight: 520, borderRadius: "50%", background: "radial-gradient(circle,rgba(240,236,224,.16),transparent 66%)" }} />
         {fx?.stars.map((s, i) => (
           <span key={i} style={{ position: "absolute", top: s.top, left: s.left, width: s.size, height: s.size, borderRadius: "50%", background: "#f3ecd8", animation: `twinkle ${s.dur} ease-in-out ${s.delay} infinite` }} />
