@@ -202,9 +202,19 @@ export function CinematicInvitation() {
       },
       { threshold: [0.01, 0.14], rootMargin: "0px 0px -10% 0px" },
     );
+    const reducedReveal = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const obs = requestAnimationFrame(() => {
       document.querySelectorAll<HTMLElement>("[data-reveal]:not([data-obs])").forEach((el) => {
         el.setAttribute("data-obs", "1");
+        // Reduced motion: content is simply present — no observers,
+        // no entrance choreography, nothing withheld from the reader.
+        if (reducedReveal) {
+          el.style.opacity = "1";
+          el.style.transform = "none";
+          el.style.filter = "none";
+          el.style.clipPath = "none";
+          return;
+        }
         el.style.filter = "blur(7px)";
         // Each reveal style is a different curtain: flip rises out of
         // perspective, mask wipes open, default drifts up from below.
@@ -787,14 +797,14 @@ export function CinematicInvitation() {
         {HERO_PETALS.map((p, i) => (
           <span key={i} aria-hidden className="fx-ambient" style={{ position: "absolute", top: 0, left: p.left, width: p.s, height: p.s * 0.72, borderRadius: "60% 60% 60% 0", background: p.c, opacity: 0, ["--px" as string]: p.px, ["--pr" as string]: p.pr, animation: `petalFall ${p.dur} linear ${p.delay} infinite`, pointerEvents: "none", filter: "drop-shadow(0 2px 3px rgba(90,84,130,.25))" } as CSSProperties} />
         ))}
-        <div data-reveal style={{ ...reveal(), fontFamily: "'Jost',sans-serif", fontWeight: 300, fontSize: 12, letterSpacing: ".62em", textTransform: "uppercase", color: "#8a86a4", marginBottom: 26 }}>{WEDDING.invitationLine}</div>
-        <div data-reveal data-reveal-delay="150" style={{ ...reveal(), position: "relative", width: "min(76vw,38vh,380px)", marginBottom: -6, animation: "floatySlow 10s ease-in-out infinite" }}>
+        <div data-reveal className="hero-kicker" style={{ ...reveal(), fontFamily: "'Jost',sans-serif", fontWeight: 300, fontSize: 12, letterSpacing: ".62em", textTransform: "uppercase", color: "#6d6887", marginBottom: 26 }}>{WEDDING.invitationLine}</div>
+        <div data-reveal data-reveal-delay="150" className="hero-crest" style={{ ...reveal(), position: "relative", width: "min(76vw,38vh,380px)", marginBottom: -6, animation: "floatySlow 10s ease-in-out infinite" }}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src={WEDDING.photos.crest} alt="" style={{ display: "block", width: "100%", filter: "drop-shadow(0 22px 42px rgba(90,84,130,.34))" }} />
         </div>
         <h1 data-reveal data-reveal-delay="300" className="gold-shimmer" style={{ ...reveal(), margin: "20px 0 4px", fontFamily: "'Pinyon Script',cursive", fontWeight: 400, fontSize: "clamp(42px,11vw,126px)", lineHeight: 0.92, ...goldText }}>{WEDDING.couple.first} &amp; {WEDDING.couple.second}</h1>
-        <div data-reveal data-reveal-delay="420" style={{ ...reveal(), marginTop: 12, fontFamily: "'Cormorant Garamond',serif", fontWeight: 300, fontStyle: "italic", fontSize: "clamp(15px,2vw,20px)", letterSpacing: ".1em", color: "#7a7494" }}>{WEDDING.heroLine}</div>
-        <div data-reveal data-reveal-delay="480" style={{ ...reveal(), display: "flex", alignItems: "center", gap: 18, marginTop: 16, color: "#6d688a" }}>
+        <div data-reveal data-reveal-delay="420" style={{ ...reveal(), marginTop: 12, fontFamily: "'Cormorant Garamond',serif", fontWeight: 300, fontStyle: "italic", fontSize: "clamp(15px,2vw,20px)", letterSpacing: ".1em", color: "#5f5980" }}>{WEDDING.heroLine}</div>
+        <div data-reveal data-reveal-delay="480" className="hero-date" style={{ ...reveal(), display: "flex", alignItems: "center", gap: 18, marginTop: 16, color: "#4f4a6e" }}>
           <span aria-hidden style={{ width: 52, height: 1, background: "linear-gradient(90deg,transparent,#c9a35b)" }} />
           <span style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 20, letterSpacing: ".36em", textTransform: "uppercase" }}>{WEDDING.date.display}</span>
           <span aria-hidden style={{ width: 52, height: 1, background: "linear-gradient(270deg,transparent,#c9a35b)" }} />

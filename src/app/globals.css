@@ -433,6 +433,17 @@ html { scrollbar-width: thin; scrollbar-color: #b8935a #14121e; }
   .details-grid .det-sub { font-size: 12.5px !important; margin-top: 4px !important; }
 }
 
+/* --- Hero on short viewports (≤760px tall — in-app webviews):
+       tighter rhythm so crest, names, date, countdown, and cue all
+       share the one screen without crowding the browser chrome --- */
+@media (max-height: 760px) {
+  #hero { padding: 84px 24px 64px !important; }
+  #hero .hero-kicker { margin-bottom: 12px !important; }
+  #hero .hero-crest { width: min(60vw, 30vh, 300px) !important; }
+  #hero h1 { font-size: clamp(38px, 10vw, 84px) !important; }
+  #hero [role="timer"] { margin-top: 16px !important; }
+}
+
 /* The editorial portrait plates flank the scene on wide screens only;
    below 960px the compressed single-screen composition takes over. */
 @media (max-width: 960px) {
