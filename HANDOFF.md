@@ -7,6 +7,67 @@
 
 ---
 
+## 0. Latest session — real story content, unified depth, focal-point images
+
+**Content.** Date is now **Thursday, December 17, 2026** everywhere in
+code (`content.ts`, `layout.tsx` metadata, details card). Story rewritten
+to the couple's real arc (University of Iloilo → eight years → Lyannah →
+the family's flight), with the couple's photographs framed in the
+engraved **StoryLocket** treatment. ⚠️ The crest raster (`logo.webp`)
+still says *12.12.2026* — needs a re-export from the designer.
+
+**One depth model** (`src/lib/depth.ts`). `EYE.perspective = 1000px`
+feeds: the FX layer, seal/dove `transformPerspective`, flip reveals, the
+story stage, pointer-parallax rates (`DEPTH_RATE`), and BOTH Three.js
+cameras (`fovForViewport` + `distanceForFraming` — 1 world unit ≡ 1 CSS
+px at the screen plane). Change the number there and the whole piece
+agrees. The butterflies' 70px wing perspective is a documented local
+exception (wing articulation, not scene space).
+
+**4D continuity.** Story chapters travel in real Z (far → screen plane →
+past the camera) instead of scrubbed blur; every scene has a paired
+scrubbed ENTER and EXIT (transform/opacity only — no filter animates
+anywhere continuous); **ContinuityVeil** crossfades a twilight-gold /
+ivory-gold screen-blend across the three tonal cuts (hero→couple,
+story→details, rsvp→closing); `enter()` is ONE master GSAP timeline (was
+six setTimeouts racing two timelines); the glide engine is
+velocity-aware (950→620ms with flick speed, same-direction gestures
+chain near a glide's end). 4×-CPU-throttled trace on the CI rig: story
+scrub avg 1.5→3.5fps, boundary worst frame 1453→756ms (relative — the
+rig is software-GL; real GPUs composite transform/opacity for free).
+
+**Focal-point photos.** Every photo slot in `content.ts` is a
+`WeddingPhoto = { src, focal: {x, y} }` — focal in % of the image,
+aimed between the eyes; it drives `object-position` via the one
+`FocalImage` component (next/image `fill`, honest `sizes`). To drop in
+a real portrait: put the file in `/public/assets`, set `src` + `focal`
+in `content.ts`, done — placeholders hold exact final geometry, nothing
+reflows. `priority` belongs to the arrival crest ONLY (it is the LCP).
+Measured: arrival crest 664KB → 47KB at 640w through the optimizer; the
+nav monogram serves at 43px instead of shipping 360KB.
+
+**Fixed this session:** couple vow was invisible at 1280×800/1440×900
+(reveal-observer rootMargin + a 24px overflow); reduced-motion story was
+a blurred ruin — now a composed still (nearest chapter crisp & present);
+story header/chapter-label collision on short desktops; reduced-motion
+users now get scroll control at 1.4s instead of waiting out the full
+4.4s spectacle.
+
+**Deliberately left alone:** the seal-burst/dive spectacle (its one-shot
+capped blur is the signature moment and adaptive already); the engraved
+SVG map, RunningCouple, EtherealScene (hand-made, load nothing, read as
+craft); the glide-stop model (client-approved navigation feel); the
+silk.jpg CSS background (decorative, behind everything, not worth a
+component); `logo-original.webp` (designer's master, don't touch).
+
+**Verify workflow:** `scripts/shoot.mjs` (56 captures, animated +
+reduced × desktop + phone), `scripts/fitcheck.mjs` (8 viewports — all
+scenes fit), `scripts/fps.mjs` (4×-throttled story + boundary trace).
+Gotcha #6 (stale `next-server` after rebuild → 400 chunks → hydration
+never runs) bit us twice more this session. `pkill -f next-server`.
+
+---
+
 ## 1. What this is now
 
 A cinematic luxury single-page invitation, heavily upgraded this session
@@ -155,9 +216,8 @@ merge → `main` for production.
 4. **Flight/growing-up copy** — captions ("Wild & Wonder", labels
    "Philippines · Departure") are placeholder-poetic; confirm with the
    couple.
-5. **Cleanup commit** — delete legacy unused components/deps
-   (tsparticles, lenis, motion, howler, react-hook-form, zod remain
-   installed but unused).
+5. ~~Cleanup commit~~ — DONE: legacy deps (tsparticles, lenis, motion,
+   howler, react-hook-form, zod) are no longer in `package.json`.
 6. **Optional polish** — real couple photos in the memory montage;
    contrail particles on the airliner; loading="lazy" audit for images.
 
