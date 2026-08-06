@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
+import Image from "next/image";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { playSealBurst3D, playCameraDive } from "@/animations/sealBurst3D";
@@ -8,6 +9,8 @@ import { playSealBurst3D, playCameraDive } from "@/animations/sealBurst3D";
 gsap.registerPlugin(ScrollTrigger);
 import { CinematicPreloader } from "@/components/CinematicPreloader";
 import { GoldenCenterpiece } from "@/components/GoldenCenterpiece";
+import { ContinuityVeil } from "@/components/ContinuityVeil";
+import { EYE, DEPTH_RATE, pointerShift } from "@/lib/depth";
 import { EtherealBackdrop } from "@/components/EtherealBackdrop";
 import { StoryFlight3D, type StoryFlightHandle } from "@/components/StoryFlight3D";
 import { WeddingRing3D } from "@/components/WeddingRing3D";
@@ -19,6 +22,8 @@ import { StoryLocket } from "@/components/StoryLocket";
 import { HeroCountdown } from "@/components/HeroCountdown";
 import { RsvpForm } from "@/components/RsvpForm";
 import { PortraitFrame } from "@/components/PortraitFrame";
+import { FocalImage } from "@/components/FocalImage";
+import type { WeddingPhoto } from "@/lib/content";
 import { Dove } from "@/components/Dove";
 
 /* Ported 1:1 from the approved "Helson & Luna" cinematic design.
@@ -43,7 +48,7 @@ interface SealBurst { x: number; y: number; r: number }
 
 const rnd = (a: number, b: number) => a + Math.random() * (b - a);
 
-const STORY = WEDDING.story.map((c, i) => ({ i, slot: `story-${i + 1}`, ...c, photo: c.photo as string | undefined }));
+const STORY = WEDDING.story.map((c, i) => ({ i, slot: `story-${i + 1}`, ...c, photo: c.photo as WeddingPhoto | undefined }));
 
 /* The invitation suite — rendered as engraved editorial columns, not
    dashboard cards. Icons are fine hairline SVG engravings (see
@@ -95,9 +100,9 @@ function DetailIcon({ kind }: { kind: "date" | "ceremony" | "reception" | "attir
    transition. Sourced from WEDDING.photos.montage (real artwork now,
    real photos later) — rotation/delay choreography stays here. */
 const MEMORY_POSES = ["-6deg", "5deg", "-3deg", "7deg", "-5deg"] as const;
-const MEMORIES = WEDDING.photos.montage.map((src, i) => ({
+const MEMORIES = WEDDING.photos.montage.map((photo, i) => ({
   slot: `memory-${i + 1}`,
-  src,
+  photo,
   r: MEMORY_POSES[i % MEMORY_POSES.length],
   delay: `${(i * 0.34).toFixed(2)}s`,
 }));
@@ -143,6 +148,10 @@ export function CinematicInvitation() {
 
   const opening = useRef(false);
   const entered = useRef(false);
+  const masterRef = useRef<gsap.core.Timeline | null>(null);
+
+  // The enter() master timeline outlives clicks but not the component.
+  useEffect(() => () => { masterRef.current?.kill(); }, []);
 
   // Random particle fields — generated on the client only (avoids SSR
   // hydration mismatch; the opaque arrival overlay hides the first paint).
@@ -192,16 +201,21 @@ export function CinematicInvitation() {
           const need = el.getAttribute("data-reveal-style") === "mask" ? 0.01 : 0.14;
           if (e.intersectionRatio < need) return;
           const dl = el.getAttribute("data-reveal-delay") || "0";
-          el.style.transition = `opacity 2.4s ${ease} ${dl}ms, transform 2.6s ${ease} ${dl}ms, filter 2.2s ease ${dl}ms, clip-path 2.2s ${ease} ${dl}ms`;
+          // Transform/opacity/clip only — the old blur(7px)→0 entrance
+          // repainted every revealing element for 2.4s; depth + drift
+          // carry the softness now, at a pace with more intent.
+          el.style.transition = `opacity 1.4s ${ease} ${dl}ms, transform 1.7s ${ease} ${dl}ms, clip-path 1.6s ${ease} ${dl}ms`;
           el.style.opacity = "1";
           el.style.transform = "none";
-          el.style.filter = "blur(0)";
           if (el.getAttribute("data-reveal-style") === "mask")
             el.style.clipPath = "inset(0 0 0 0)"; // gold-curtain wipe
           io.unobserve(el);
         });
       },
-      { threshold: [0.01, 0.14], rootMargin: "0px 0px -10% 0px" },
+      // NO negative bottom rootMargin: with one, any element living in
+      // the bottom slice of a 100vh scene can never reach the ratio
+      // threshold and stays invisible forever (the couple vow did).
+      { threshold: [0.01, 0.14] },
     );
     const reducedReveal = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const obs = requestAnimationFrame(() => {
@@ -216,12 +230,11 @@ export function CinematicInvitation() {
           el.style.clipPath = "none";
           return;
         }
-        el.style.filter = "blur(7px)";
         // Each reveal style is a different curtain: flip rises out of
         // perspective, mask wipes open, default drifts up from below.
         const styleType = el.getAttribute("data-reveal-style");
         if (styleType === "flip") {
-          el.style.transform = "perspective(900px) translateY(58px) rotateX(24deg) scale(.96)";
+          el.style.transform = `perspective(${EYE.perspective}px) translateY(58px) rotateX(24deg) scale(.96)`;
         } else if (styleType === "mask") {
           el.style.transform = "translateY(26px)";
           // NOT 100%: a fully-clipped element reports a zero-area
@@ -277,14 +290,36 @@ export function CinematicInvitation() {
         growT > 0 && growT < 1 ? Math.sin(Math.PI * growT) : 0,
         flightT > 0 && flightT < 1 ? Math.sin(Math.PI * flightT) : 0,
       );
-      const yield_ = 1 - 0.8 * setpiece;
+      const yield_ = 1 - 0.9 * setpiece;
+      const activeCh = Math.min(n - 1, Math.max(0, Math.floor(pos)));
       els.forEach((el, i) => {
         const d = pos - 0.5 - i;
         const dist = Math.abs(d);
+        if (reducedFx) {
+          // Reduced motion is a DESIGNED still, not a broken scrub:
+          // the chapter that owns this scroll segment is simply
+          // present — crisp, centered, full opacity — and neighbours
+          // are absent. (Index-based, so the section top shows
+          // chapter one; a distance test left it empty there.)
+          const op = i === activeCh ? 1 : 0;
+          el.style.opacity = String(op);
+          el.style.transform = "translate(-50%,-50%)";
+          el.style.zIndex = op > 0.5 ? "3" : "1";
+          el.style.pointerEvents = op > 0.5 ? "auto" : "none";
+          el.classList.toggle("ch-active", op > 0.5);
+          return;
+        }
         const op = Math.max(0, 1 - dist * 1.35) * yield_;
         el.style.opacity = op.toFixed(3);
-        el.style.transform = `translate(-50%,-50%) translateY(${(d * -64).toFixed(1)}px) scale(${(1 - Math.min(dist, 1) * 0.12).toFixed(3)})`;
-        el.style.filter = `blur(${(Math.min(dist, 1) * 9).toFixed(2)}px)`;
+        // Real depth travel (replaces the old per-frame blur): an
+        // incoming chapter approaches from far (−z, smaller), the
+        // active one holds the screen plane, the outgoing one flies
+        // PAST the camera (+z, growing) as it fades — and while a
+        // set-piece holds the stage, the yielding chapter recedes
+        // into depth instead of sitting under the figures. The sticky
+        // stage carries the shared EYE perspective. Transform/opacity only.
+        const z = Math.max(-1.2, Math.min(1.2, d)) * 110 - setpiece * 150;
+        el.style.transform = `translate(-50%,-50%) translate3d(0, ${(d * -58).toFixed(1)}px, ${z.toFixed(1)}px) scale(${(1 - Math.min(dist, 1) * 0.06).toFixed(3)})`;
         el.style.zIndex = op > 0.5 ? "3" : "1";
         el.style.pointerEvents = op > 0.6 ? "auto" : "none";
         // Drives the engraved-gold emblem: draws itself when its
@@ -349,16 +384,21 @@ export function CinematicInvitation() {
 
     // ── The glide engine: one gesture = one scene ──────────────────
     // Wheel / swipe / keys are quantized into single steps between
-    // "stops": each scene top, the four story-chapter centers, and
-    // intermediate stops inside any scene taller than the viewport
-    // (so nothing becomes unreachable on small screens). Each step
-    // glides there over ~950ms with a cinematic ease; native scrolling
-    // is suppressed. Recomputed per gesture, so it survives resizes
-    // and anchor jumps. Disabled under prefers-reduced-motion.
+    // "stops". VELOCITY-AWARE: a hard flick glides faster (950→620ms)
+    // than a gentle nudge, and a same-direction gesture in the final
+    // stretch of a glide CHAINS to the next stop instead of dying in
+    // the cooldown — fast scrolling reads as intent, not as jank.
+    // Disabled under prefers-reduced-motion.
     const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     let gliding = false;
     let cooldownUntil = 0;
     let touchStartY: number | null = null;
+    let touchStartT = 0;
+    let glideDir: 1 | -1 = 1;
+    let glideT0 = 0;
+    let glideDur = 950;
+    let queuedDir: 0 | 1 | -1 = 0;
+    const durForVelocity = (v01: number) => 950 - Math.min(Math.max(v01, 0), 1) * 330;
 
     const computeStops = () => {
       const vh = window.innerHeight;
@@ -388,44 +428,65 @@ export function CinematicInvitation() {
       return [...stops].sort((a, b) => a - b);
     };
 
-    const glide = (target: number) => {
+    const glide = (target: number, dur = 950) => {
       gliding = true;
+      glideT0 = performance.now();
+      glideDur = dur;
       const start = window.scrollY;
       const dist = target - start;
-      const t0 = performance.now();
-      const D = 950;
       const ease = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
       const frame = (now: number) => {
-        const p = Math.min(1, (now - t0) / D);
+        const p = Math.min(1, (now - glideT0) / dur);
         window.scrollTo({ top: start + dist * ease(p), behavior: "instant" as ScrollBehavior });
         if (p < 1) requestAnimationFrame(frame);
         else {
           gliding = false;
-          cooldownUntil = performance.now() + 350;
+          if (queuedDir) {
+            // chained gesture: continue straight into the next stop
+            const q = queuedDir;
+            queuedDir = 0;
+            stepScene(q, 700);
+          } else {
+            cooldownUntil = performance.now() + 300;
+          }
         }
       };
       requestAnimationFrame(frame);
     };
 
-    const stepScene = (dir: 1 | -1) => {
+    const stepScene = (dir: 1 | -1, dur = 950) => {
       const cur = window.scrollY;
       const stops = computeStops();
       const target =
         dir > 0 ? stops.find((s) => s > cur + 24) : [...stops].reverse().find((s) => s < cur - 24);
-      if (target !== undefined) glide(target);
+      if (target !== undefined) {
+        glideDir = dir;
+        glide(target, dur);
+      }
     };
 
     const gestureBlocked = () =>
       gliding || performance.now() < cooldownUntil || document.body.style.overflow === "hidden";
 
+    /** Mid-glide, a same-direction gesture past 65% queues one chain. */
+    const tryChain = (dir: 1 | -1) => {
+      if (gliding && dir === glideDir && (performance.now() - glideT0) / glideDur > 0.65) queuedDir = dir;
+    };
+
     const onWheel = (e: WheelEvent) => {
       if (reducedMotion) return;
       e.preventDefault();
-      if (gestureBlocked() || Math.abs(e.deltaY) < 4) return;
-      stepScene(e.deltaY > 0 ? 1 : -1);
+      if (Math.abs(e.deltaY) < 4) return;
+      const dir: 1 | -1 = e.deltaY > 0 ? 1 : -1;
+      if (gestureBlocked()) {
+        tryChain(dir);
+        return;
+      }
+      stepScene(dir, durForVelocity(Math.abs(e.deltaY) / 420));
     };
     const onTouchStart = (e: TouchEvent) => {
       touchStartY = e.touches[0].clientY;
+      touchStartT = performance.now();
     };
     const onTouchMove = (e: TouchEvent) => {
       const t = e.target as HTMLElement | null;
@@ -435,9 +496,16 @@ export function CinematicInvitation() {
     const onTouchEnd = (e: TouchEvent) => {
       if (reducedMotion || touchStartY === null) return;
       const dy = touchStartY - e.changedTouches[0].clientY;
+      const dt = Math.max(1, performance.now() - touchStartT);
       touchStartY = null;
-      if (gestureBlocked() || Math.abs(dy) < 50) return;
-      stepScene(dy > 0 ? 1 : -1);
+      if (Math.abs(dy) < 50) return;
+      const dir: 1 | -1 = dy > 0 ? 1 : -1;
+      if (gestureBlocked()) {
+        tryChain(dir);
+        return;
+      }
+      // px/ms: a 720px flick in 250ms ≈ 2.9 → full-speed glide
+      stepScene(dir, durForVelocity(Math.abs(dy) / dt / 2.4));
     };
     const onKey = (e: KeyboardEvent) => {
       if (reducedMotion) return;
@@ -474,28 +542,48 @@ export function CinematicInvitation() {
     };
   }, []);
 
-  // Scroll storytelling: sections don't just arrive — they LEAVE.
-  // As each scene scrolls past, it drifts up, softens, and dims
-  // (scrubbed, so it tracks the finger/wheel), which makes the next
-  // scene feel like it emerges through the last one's afterglow.
+  // Scroll storytelling: every scene has a designed EXIT and a
+  // designed ENTER, both scrubbed — one continuous camera move, no
+  // boundary reads as a cut. Transform/opacity ONLY (the old blur(5px)
+  // full-viewport scrub was the single worst frame-cost in the piece);
+  // the receding scale supplies the depth the blur used to fake.
   useEffect(() => {
     if (!sceneEntered) return;
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     const tweens: gsap.core.Tween[] = [];
     document.querySelectorAll<HTMLElement>(".snap-sect").forEach((sec) => {
+      // EXIT — drifts up and recedes into the veil's light
       tweens.push(
         gsap.fromTo(
           sec,
-          { opacity: 1, yPercent: 0, filter: "blur(0px)" },
+          { opacity: 1, yPercent: 0, scale: 1 },
           {
-            opacity: 0.28,
-            yPercent: -7,
-            filter: "blur(5px)",
+            opacity: 0.3,
+            yPercent: -6,
+            scale: 0.976,
             ease: "none",
             scrollTrigger: { trigger: sec, start: "bottom 60%", end: "bottom 8%", scrub: 0.8 },
           },
         ),
       );
+      // ENTER — emerges from below-and-behind through the same light
+      // (hero enters via the camera dive, not this)
+      if (sec.id !== "hero") {
+        tweens.push(
+          gsap.fromTo(
+            sec,
+            { opacity: 0.55, yPercent: 5, scale: 0.985 },
+            {
+              opacity: 1,
+              yPercent: 0,
+              scale: 1,
+              ease: "none",
+              immediateRender: false,
+              scrollTrigger: { trigger: sec, start: "top 96%", end: "top 28%", scrub: 0.8 },
+            },
+          ),
+        );
+      }
     });
     return () => {
       tweens.forEach((t) => {
@@ -528,8 +616,11 @@ export function CinematicInvitation() {
       raf = 0;
       cx += (tx - cx) * 0.08;
       cy += (ty - cy) * 0.08;
-      card.style.translate = `${(-cx * 18).toFixed(1)}px ${(-cy * 12).toFixed(1)}px`;
-      stage.style.translate = `${(-cx * 34).toFixed(1)}px ${(-cy * 22).toFixed(1)}px`;
+      // Depth ladder from the unified model: crest card rides the MID
+      // plane, the seal stage the NEAR plane — same rates the rest of
+      // the piece uses, so the arrival scene obeys the one depth model.
+      card.style.translate = `${(-cx * pointerShift(DEPTH_RATE.MID, 170)).toFixed(1)}px ${(-cy * pointerShift(DEPTH_RATE.MID, 110)).toFixed(1)}px`;
+      stage.style.translate = `${(-cx * pointerShift(DEPTH_RATE.NEAR, 170)).toFixed(1)}px ${(-cy * pointerShift(DEPTH_RATE.NEAR, 110)).toFixed(1)}px`;
       if (Math.abs(tx - cx) + Math.abs(ty - cy) > 0.001) raf = requestAnimationFrame(step);
     };
     window.addEventListener("mousemove", onMove);
@@ -583,8 +674,6 @@ export function CinematicInvitation() {
     unlock(); // user gesture — safe moment to arm WebAudio
     playSwell(); // golden shimmer + bells (audible only when sound is on)
     setRingBreak(true); // the ring joins the choreography
-    // Hand the backdrop's frames to the burst — the flash covers its exit.
-    setTimeout(() => setShowBackdrop(false), 450);
     const seal = sealRef.current, card = cardRef.current, bloom = bloomRef.current;
 
     // Mount the 3D FX layer anchored to the seal's center — the GSAP
@@ -603,35 +692,59 @@ export function CinematicInvitation() {
       seal.style.transition = "none";
     }
     const overlay = overlayRef.current, butter = butterRef.current, montage = montageRef.current, nav = navRef.current;
-    setTimeout(() => { if (card) { card.style.transition = "transform 2.4s cubic-bezier(.16,.84,.28,1), opacity 1.6s ease"; card.style.transform = "translateY(-70px) scale(1.12)"; } }, 420);
-    setTimeout(() => { if (bloom) { bloom.style.transition = "opacity 1s ease"; bloom.style.opacity = ".9"; } }, 1300);
-    // (the overlay itself is flown by playCameraDive — no CSS fade here)
-    setTimeout(() => {
-      if (butter) butter.style.opacity = "1";
-      if (montage) { montage.style.display = "block"; void montage.offsetWidth; }
-    }, 1500);
-    setTimeout(() => { if (bloom) { bloom.style.transition = "opacity 1.8s ease"; bloom.style.opacity = "0"; } }, 2600);
-    setTimeout(() => { if (montage) montage.style.opacity = "0"; }, 3700);
-    setTimeout(() => {
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    const finale = () => {
       entered.current = true;
-      setSceneEntered(true); // wakes the golden centerpiece
+      setSceneEntered(true); // wakes centerpiece + veil + boundary scrubs
       document.body.style.overflow = "";
       window.scrollTo(0, 0);
-      if (overlay) overlay.style.display = "none";
-      if (montage) montage.style.display = "none";
+      if (overlay) overlay.style.display = "none"; // already flown out by the dive
+      if (montage) montage.style.visibility = "hidden"; // opacity is 0 — nothing pops
       if (nav) { nav.style.opacity = "1"; nav.style.pointerEvents = "auto"; }
       // Safety: if the emerge tween was starved (weak GPU / throttled
       // rAF), never leave the hero frozen mid-transform. Scoped — NOT
       // "all", which would erase the section's inline layout styles.
       const hero = document.getElementById("hero");
       if (hero) gsap.set(hero, { clearProps: "transform,filter,opacity" });
-    }, 4400);
+    };
+
+    // ── ONE clock. The whole handoff is a single master timeline —
+    // the burst + dive children (launched by the `burst` effect) run
+    // against the same beats, so a starved main thread slows the
+    // WHOLE performance together instead of shearing three separate
+    // setTimeout/GSAP clocks apart.
+    const tl = gsap.timeline();
+    masterRef.current = tl;
+
+    if (reduced) {
+      // No spectacle to wait for — hand the page over quickly.
+      tl.call(finale, [], 1.4);
+      return;
+    }
+
+    if (card) {
+      card.style.transition = "none"; // GSAP owns it now
+      tl.to(card, { y: -70, scale: 1.12, duration: 2.4, ease: "expo.out" }, 0.42);
+    }
+    tl.call(() => setShowBackdrop(false), [], 0.45); // burst flash covers the sky's exit
+    if (bloom) {
+      tl.to(bloom, { opacity: 0.9, duration: 1, ease: "power1.inOut" }, 1.3)
+        .to(bloom, { opacity: 0, duration: 1.8, ease: "power1.out" }, 2.6);
+    }
+    tl.call(() => { if (butter) butter.style.opacity = "1"; }, [], 1.5);
+    if (montage) {
+      // frames flash via their own CSS keyframes once display flips
+      tl.call(() => { montage.style.display = "block"; void montage.offsetWidth; }, [], 1.5)
+        .to(montage, { opacity: 0, duration: 0.8, ease: "power1.in" }, 3.7);
+    }
+    tl.call(finale, [], 4.4);
   };
 
   const navLink: CSSProperties = { fontSize: 11, letterSpacing: ".28em", textTransform: "uppercase", color: "#e4dbc9" };
   const scrollCue: CSSProperties = { position: "absolute", bottom: 30, left: "50%", transform: "translateX(-50%)", fontSize: 10, letterSpacing: ".4em", textTransform: "uppercase", color: "#a5a1bd", display: "flex", flexDirection: "column", alignItems: "center", gap: 10 };
 
-  const reveal = (delay?: number): CSSProperties => ({ opacity: 0, transform: "translateY(38px)", ...(delay ? {} : {}) });
+  const reveal = (): CSSProperties => ({ opacity: 0, transform: "translateY(38px)" });
 
   // static portrait/story/detail data is memoized to keep identity stable
   const details = useMemo(() => DETAILS, []);
@@ -651,6 +764,9 @@ export function CinematicInvitation() {
 
       {/* the persistent golden centerpiece behind every scene */}
       <GoldenCenterpiece active={sceneEntered} />
+
+      {/* the continuity veil — light that carries across every scene boundary */}
+      <ContinuityVeil active={sceneEntered} />
 
       {/* SOUND — bottom-left, in the reference sites' whispered style */}
       <button
@@ -703,8 +819,7 @@ export function CinematicInvitation() {
       <div ref={montageRef} aria-hidden style={{ position: "fixed", inset: 0, zIndex: 82, pointerEvents: "none", display: "none", opacity: 1, transition: "opacity .8s ease", background: "radial-gradient(circle at 50% 50%, rgba(24,22,38,.34), rgba(16,14,24,.68) 80%)" }}>
         {MEMORIES.map((m) => (
           <div key={m.slot} style={{ position: "absolute", left: "50%", top: "50%", ["--r" as string]: m.r, opacity: 0, width: "min(70vw,340px)", aspectRatio: "4/5", borderRadius: 6, overflow: "hidden", boxShadow: "0 30px 80px rgba(0,0,0,.6),0 0 0 2px rgba(216,189,133,.6),0 0 0 10px rgba(255,255,255,.06)", animation: `memflash .82s ease-out ${m.delay} both` }}>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={m.src} alt="" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }} />
+            <FocalImage photo={m.photo} alt="" sizes="(max-width: 600px) 70vw, 340px" />
           </div>
         ))}
       </div>
@@ -712,8 +827,8 @@ export function CinematicInvitation() {
       {/* NAV */}
       <nav ref={navRef} aria-label="Invitation sections" style={{ position: "fixed", top: 0, left: 0, right: 0, zIndex: 55, display: "flex", alignItems: "center", justifyContent: "space-between", padding: "calc(16px + env(safe-area-inset-top, 0px)) clamp(20px,5vw,64px) 16px", opacity: 0, transition: "opacity 1.2s ease", pointerEvents: "none", background: "linear-gradient(180deg,rgba(20,18,30,.34),transparent)" }}>
         <a href="#hero" aria-label="Back to top — Helson and Luna" style={{ display: "flex", alignItems: "center" }}>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={WEDDING.photos.monogram} alt="" style={{ display: "block", height: 36, width: "auto" }} />
+          {/* HL.png is 1364×1153 — served at 43px by the optimizer, not 360KB */}
+          <Image src={WEDDING.photos.monogram} alt="" width={43} height={36} style={{ display: "block", height: 36, width: "auto" }} />
         </a>
         <div style={{ display: "flex", gap: "clamp(16px,2.4vw,34px)", alignItems: "center" }}>
           <span className="nav-mid" style={{ display: "flex", gap: "clamp(16px,2.4vw,34px)", alignItems: "center" }}>
@@ -743,8 +858,8 @@ export function CinematicInvitation() {
         ))}
 
         <div ref={cardRef} style={{ position: "relative", zIndex: 2, width: "min(86vw,440px)", transition: "transform 1.4s cubic-bezier(.19,1,.22,1),opacity 1s ease" }}>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/assets/logo.webp" alt="Helson and Luna monogram" style={{ display: "block", width: "100%", height: "auto", filter: "drop-shadow(0 26px 50px rgba(0,0,0,.55))" }} />
+          {/* The LCP — the only image that earns `priority`. */}
+          <Image src="/assets/logo.webp" alt="Helson and Luna monogram" width={1600} height={1600} priority sizes="(max-width: 512px) 86vw, 440px" style={{ display: "block", width: "100%", height: "auto", filter: "drop-shadow(0 26px 50px rgba(0,0,0,.55))" }} />
         </div>
 
         {/* seal stage: the 3D ring halos the seal; both leave together */}
@@ -771,7 +886,7 @@ export function CinematicInvitation() {
       {burst && (
         <div
           ref={fxLayerRef}
-          style={{ position: "fixed", inset: 0, zIndex: 84, pointerEvents: "none", perspective: "1100px", overflow: "hidden" }}
+          style={{ position: "fixed", inset: 0, zIndex: 84, pointerEvents: "none", perspective: `${EYE.perspective}px`, overflow: "hidden" }}
           aria-hidden="true"
         >
             {/* full-screen golden veil, breathing out from the seal */}
@@ -802,8 +917,9 @@ export function CinematicInvitation() {
         ))}
         <div data-reveal className="hero-kicker" style={{ ...reveal(), fontFamily: "'Jost',sans-serif", fontWeight: 300, fontSize: 12, letterSpacing: ".62em", textTransform: "uppercase", color: "#6d6887", marginBottom: 26 }}>{WEDDING.invitationLine}</div>
         <div data-reveal data-reveal-delay="150" className="hero-crest" style={{ ...reveal(), position: "relative", width: "min(76vw,38vh,380px)", marginBottom: -6, animation: "floatySlow 10s ease-in-out infinite" }}>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={WEDDING.photos.crest} alt="" style={{ display: "block", width: "100%", filter: "drop-shadow(0 22px 42px rgba(90,84,130,.34))" }} />
+          {/* same asset as the arrival card — already in cache; intrinsic
+              1600² reserves the square, so nothing shifts when it paints */}
+          <Image src={WEDDING.photos.crest} alt="" width={1600} height={1600} sizes="(max-width: 500px) 76vw, 380px" style={{ display: "block", width: "100%", height: "auto", filter: "drop-shadow(0 22px 42px rgba(90,84,130,.34))" }} />
         </div>
         <h1 data-reveal data-reveal-delay="300" className="gold-shimmer" style={{ ...reveal(), margin: "20px 0 4px", fontFamily: "'Pinyon Script',cursive", fontWeight: 400, fontSize: "clamp(42px,11vw,126px)", lineHeight: 0.92, ...goldText }}>{WEDDING.couple.first} &amp; {WEDDING.couple.second}</h1>
         <div data-reveal data-reveal-delay="420" style={{ ...reveal(), marginTop: 12, fontFamily: "'Cormorant Garamond',serif", fontWeight: 300, fontStyle: "italic", fontSize: "clamp(15px,2vw,20px)", letterSpacing: ".1em", color: "#5f5980" }}>{WEDDING.heroLine}</div>
@@ -858,7 +974,7 @@ export function CinematicInvitation() {
 
       {/* SCENE 5 — LOVE STORY */}
       <section id="story" ref={storyRef} style={{ position: "relative", height: "680vh", background: "linear-gradient(180deg,rgba(22,20,34,.62) 0%,rgba(26,23,42,.78) 50%,rgba(22,20,34,.62) 100%)" }}>
-        <div style={{ position: "sticky", top: 0, height: "100vh", overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <div style={{ position: "sticky", top: 0, height: "100vh", overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center", perspective: EYE.perspective }}>
           <div style={{ position: "absolute", top: "-14%", left: "50%", transform: "translateX(-50%)", width: "74vw", height: "74vw", maxWidth: 940, maxHeight: 940, borderRadius: "50%", background: "radial-gradient(circle,rgba(216,189,133,.15),rgba(200,196,224,.05) 44%,transparent 68%)", pointerEvents: "none" }} />
           {fx?.sparkles.map((s, i) => (
             <span key={i} style={{ position: "absolute", top: s.top, left: s.left, width: s.size, height: s.size, pointerEvents: "none", background: "radial-gradient(circle,#f6eccf,rgba(216,189,133,0))", borderRadius: "50%", boxShadow: "0 0 8px 2px rgba(216,189,133,.55)", animation: `sparkle ${s.dur} ease-in-out ${s.delay} infinite` }} />
@@ -919,8 +1035,8 @@ export function CinematicInvitation() {
             </div>
           </div>
 
-          <div style={{ position: "absolute", top: "clamp(30px,5vh,54px)", left: 0, right: 0, textAlign: "center", zIndex: 6, pointerEvents: "none" }}>
-            <div style={{ fontSize: 10, letterSpacing: ".56em", textTransform: "uppercase", color: "#8f89ad", marginBottom: 10 }}>{WEDDING.couple.first} &amp; {WEDDING.couple.second}</div>
+          <div className="story-head" style={{ position: "absolute", top: "clamp(30px,5vh,54px)", left: 0, right: 0, textAlign: "center", zIndex: 6, pointerEvents: "none" }}>
+            <div className="story-head-names" style={{ fontSize: 10, letterSpacing: ".56em", textTransform: "uppercase", color: "#8f89ad", marginBottom: 10 }}>{WEDDING.couple.first} &amp; {WEDDING.couple.second}</div>
             <h2 className="gold-shimmer" style={{ margin: 0, fontFamily: "'Cormorant Garamond',serif", fontWeight: 300, fontSize: "clamp(30px,4.2vw,52px)", letterSpacing: ".14em", lineHeight: 1, ...goldText }}>Our Story</h2>
             <div style={{ marginTop: 10, fontFamily: "'Cormorant Garamond',serif", fontSize: 15, letterSpacing: ".4em", color: "#c7bfe0" }}><span ref={counterRef} style={{ color: "#e9d29a" }}>01</span> &nbsp;/&nbsp; 04</div>
           </div>
@@ -930,11 +1046,11 @@ export function CinematicInvitation() {
           </div>
 
           {STORY.map((c) => (
-            <div key={c.i} data-ch={c.i} style={{ position: "absolute", left: "50%", top: "50%", transform: "translate(-50%,-50%)", width: "min(90vw,660px)", opacity: 0, textAlign: "center", willChange: "transform,opacity,filter" }}>
-              <div style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 14, letterSpacing: ".52em", textTransform: "uppercase", color: "#d8bd85", marginBottom: 24, textShadow: "0 0 20px rgba(216,189,133,.4)" }}>{c.no}</div>
+            <div key={c.i} data-ch={c.i} style={{ position: "absolute", left: "50%", top: "50%", transform: "translate(-50%,-50%)", width: "min(90vw,660px)", opacity: 0, textAlign: "center", willChange: "transform,opacity" }}>
+              <div className="ch-label" style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 14, letterSpacing: ".52em", textTransform: "uppercase", color: "#d8bd85", marginBottom: 24, textShadow: "0 0 20px rgba(216,189,133,.4)" }}>{c.no}</div>
               {c.photo ? (
                 <div style={{ position: "relative", width: "min(50vw,206px,22.5vh)", aspectRatio: "4/5", margin: "0 auto clamp(16px,3vh,32px)", animation: "floatySlow 12s ease-in-out infinite" }}>
-                  <StoryLocket src={c.photo} alt={c.title} />
+                  <StoryLocket photo={c.photo} alt={c.title} />
                 </div>
               ) : (
                 <div style={{ position: "relative", width: "min(56vw,214px,26vh)", aspectRatio: "4/5", margin: "0 auto clamp(14px,3vh,32px)", borderRadius: "50%", overflow: "hidden", boxShadow: "0 0 0 2px rgba(216,189,133,.7),0 0 0 10px rgba(255,255,255,.05),0 26px 60px rgba(0,0,0,.5),0 0 56px rgba(216,189,133,.22)", animation: "floatySlow 12s ease-in-out infinite" }}>
@@ -1035,7 +1151,7 @@ export function CinematicInvitation() {
       </section>
 
       {/* SCENE 10 — CLOSING */}
-      <section className="snap-sect scene" style={{ position: "relative", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textAlign: "center", padding: "clamp(60px,9vh,110px) 24px", background: "radial-gradient(130% 100% at 50% 30%, #26243b 0%, #17152300 0%, #100e18 100%),linear-gradient(180deg,#1b1930,#100e18)", overflow: "hidden" }}>
+      <section id="closing" className="snap-sect scene" style={{ position: "relative", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textAlign: "center", padding: "clamp(60px,9vh,110px) 24px", background: "radial-gradient(130% 100% at 50% 30%, #26243b 0%, #17152300 0%, #100e18 100%),linear-gradient(180deg,#1b1930,#100e18)", overflow: "hidden" }}>
         <div style={{ position: "absolute", top: "8%", left: "50%", transform: "translateX(-50%)", width: "44vw", height: "44vw", maxWidth: 520, maxHeight: 520, borderRadius: "50%", background: "radial-gradient(circle,rgba(240,236,224,.16),transparent 66%)" }} />
         {fx?.stars.map((s, i) => (
           <span key={i} style={{ position: "absolute", top: s.top, left: s.left, width: s.size, height: s.size, borderRadius: "50%", background: "#f3ecd8", animation: `twinkle ${s.dur} ease-in-out ${s.delay} infinite` }} />
@@ -1046,8 +1162,7 @@ export function CinematicInvitation() {
         <div data-reveal style={{ opacity: 0, transform: "translateY(38px)", position: "relative", zIndex: 2 }}>
           {/* the crest returns for the farewell — the artifact closes
               the way it opened, sealed with the same mark */}
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={WEDDING.photos.monogram} alt="" aria-hidden="true" style={{ display: "block", width: "clamp(54px,8vw,84px)", height: "auto", margin: "0 auto 34px", opacity: 0.9, filter: "drop-shadow(0 10px 30px rgba(0,0,0,.5))" }} />
+          <Image src={WEDDING.photos.monogram} alt="" aria-hidden width={1364} height={1153} sizes="84px" style={{ display: "block", width: "clamp(54px,8vw,84px)", height: "auto", margin: "0 auto 34px", opacity: 0.9, filter: "drop-shadow(0 10px 30px rgba(0,0,0,.5))" }} />
           <blockquote style={{ margin: "0 auto", fontFamily: "'Cormorant Garamond',serif", fontWeight: 300, fontStyle: "italic", fontSize: "clamp(24px,4vw,40px)", lineHeight: 1.6, color: "#e6dcc4", maxWidth: "20ch" }}>&ldquo;{WEDDING.closingQuote}&rdquo;</blockquote>
           <div aria-hidden style={{ margin: "44px auto 0", width: 60, height: 1, background: "linear-gradient(90deg,transparent,#c9a35b,transparent)" }} />
           <div className="gold-shimmer" style={{ marginTop: 44, fontFamily: "'Pinyon Script',cursive", fontSize: "clamp(42px,10vw,110px)", ...goldText }}>{WEDDING.couple.first} &amp; {WEDDING.couple.second}</div>
