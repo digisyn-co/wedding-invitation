@@ -484,12 +484,23 @@ html { scrollbar-width: thin; scrollbar-color: #b8935a #14121e; }
   #couple .couple-text { font-size: 13px !important; line-height: 1.45 !important; }
 }
 
-/* Desktop laptops with modest height (≤840px): shave the couple
-       scene's last few pixels so it never clips */
-@media (min-width: 961px) and (max-height: 840px) {
+/* Desktop with modest height: shave the couple scene so the vow
+       NEVER clips. 940px (not 840) — fitcheck showed a 24px overflow
+       at 1440×900 that clipped the vow paragraph entirely. */
+@media (min-width: 961px) and (max-height: 940px) {
   #couple .couple-quote { font-size: 21px !important; margin-bottom: 10px !important; }
-  #couple .couple-scene { max-height: 33vh !important; }
+  #couple .couple-scene { max-height: 32vh !important; }
   #couple .couple-text { font-size: 15px !important; }
+  #couple .couple-portrait { flex-basis: min(210px, 21vh) !important; }
+}
+
+/* Short desktop windows (≤860px): the story header and the chapter's
+   own label share vertical space — the label duplicates the header's
+   counter, so it yields, and the header tightens. */
+@media (min-width: 961px) and (max-height: 860px) {
+  .ch-label { display: none !important; }
+  .story-head h2 { font-size: 26px !important; }
+  .story-head-names { margin-bottom: 6px !important; }
 }
 
 /* The editorial portrait plates flank the scene on wide screens only;
