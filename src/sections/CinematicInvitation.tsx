@@ -15,6 +15,7 @@ import { unlock, setMuted, playSwell } from "@/lib/sealAudio";
 import { WEDDING } from "@/lib/content";
 import { EtherealScene } from "@/components/EtherealScene";
 import { StoryEmblem } from "@/components/StoryEmblem";
+import { StoryLocket } from "@/components/StoryLocket";
 import { HeroCountdown } from "@/components/HeroCountdown";
 import { RsvpForm } from "@/components/RsvpForm";
 import { PortraitFrame } from "@/components/PortraitFrame";
@@ -931,17 +932,15 @@ export function CinematicInvitation() {
           {STORY.map((c) => (
             <div key={c.i} data-ch={c.i} style={{ position: "absolute", left: "50%", top: "50%", transform: "translate(-50%,-50%)", width: "min(90vw,660px)", opacity: 0, textAlign: "center", willChange: "transform,opacity,filter" }}>
               <div style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 14, letterSpacing: ".52em", textTransform: "uppercase", color: "#d8bd85", marginBottom: 24, textShadow: "0 0 20px rgba(216,189,133,.4)" }}>{c.no}</div>
-              <div style={{ position: "relative", width: "min(56vw,214px,26vh)", aspectRatio: "4/5", margin: "0 auto clamp(14px,3vh,32px)", borderRadius: "50%", overflow: "hidden", boxShadow: "0 0 0 2px rgba(216,189,133,.7),0 0 0 10px rgba(255,255,255,.05),0 26px 60px rgba(0,0,0,.5),0 0 56px rgba(216,189,133,.22)", animation: "floatySlow 12s ease-in-out infinite" }}>
-                {c.photo ? (
-                  <>
-                    <img src={c.photo} alt={c.title} style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }} />
-                    {/* ethereal gold-dusk veil so the photograph sits inside the night-sky palette */}
-                    <div aria-hidden style={{ position: "absolute", inset: 0, background: "radial-gradient(circle at 50% 38%, rgba(216,189,133,0) 46%, rgba(24,20,40,.45) 100%)", boxShadow: "inset 0 0 44px rgba(24,20,40,.55), inset 0 0 18px rgba(216,189,133,.18)" }} />
-                  </>
-                ) : (
+              {c.photo ? (
+                <div style={{ position: "relative", width: "min(50vw,206px,22.5vh)", aspectRatio: "4/5", margin: "0 auto clamp(16px,3vh,32px)", animation: "floatySlow 12s ease-in-out infinite" }}>
+                  <StoryLocket src={c.photo} alt={c.title} />
+                </div>
+              ) : (
+                <div style={{ position: "relative", width: "min(56vw,214px,26vh)", aspectRatio: "4/5", margin: "0 auto clamp(14px,3vh,32px)", borderRadius: "50%", overflow: "hidden", boxShadow: "0 0 0 2px rgba(216,189,133,.7),0 0 0 10px rgba(255,255,255,.05),0 26px 60px rgba(0,0,0,.5),0 0 56px rgba(216,189,133,.22)", animation: "floatySlow 12s ease-in-out infinite" }}>
                   <StoryEmblem chapter={c.i} />
-                )}
-              </div>
+                </div>
+              )}
               <h3 style={{ margin: "0 0 clamp(10px,2vh,20px)", fontFamily: "'Cormorant Garamond',serif", fontWeight: 300, fontStyle: "italic", fontSize: "clamp(30px,5vw,56px)", color: "#f2ead4", lineHeight: 1.08 }}>{c.title}</h3>
               <p style={{ margin: "0 auto", maxWidth: "40ch", fontFamily: "'Cormorant Garamond',serif", fontWeight: 300, fontSize: "clamp(16px,2.1vw,21px)", lineHeight: 1.65, color: "#d6cebc" }}>{c.body}</p>
             </div>
