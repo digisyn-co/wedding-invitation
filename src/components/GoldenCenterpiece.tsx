@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import Image from "next/image";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 
@@ -97,10 +98,12 @@ export function GoldenCenterpiece({ active }: { active: boolean }) {
         }}
       />
       <div ref={crestRef} style={{ position: "relative", willChange: "transform" }}>
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
+        <Image
           src="/assets/HL.png"
           alt=""
+          width={1364}
+          height={1153}
+          sizes="(max-width: 913px) 46vw, 420px"
           style={{
             display: "block",
             width: "min(46vw,420px)",

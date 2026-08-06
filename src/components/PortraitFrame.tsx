@@ -1,4 +1,6 @@
 import type { CSSProperties } from "react";
+import { FocalImage } from "@/components/FocalImage";
+import type { WeddingPhoto } from "@/lib/content";
 
 /**
  * An editorial 3:4 portrait plate. When `src` is provided (a real
@@ -16,7 +18,7 @@ export function PortraitFrame({
   tilt = "0deg",
   style,
 }: {
-  src: string | null;
+  src: WeddingPhoto | null;
   initial: string;
   name: string;
   role: string;
@@ -38,12 +40,10 @@ export function PortraitFrame({
         }}
       >
         {src ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={src}
+          <FocalImage
+            photo={src}
             alt={`Portrait of ${name}, ${role.toLowerCase()}`}
-            loading="lazy"
-            style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }}
+            sizes="(max-width: 960px) 330px, 236px"
           />
         ) : (
           <div aria-label={`Portrait of ${name} to come`} role="img" style={{ position: "absolute", inset: 0 }}>

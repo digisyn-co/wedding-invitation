@@ -1,6 +1,8 @@
 "use client";
 
 import { useId } from "react";
+import { FocalImage } from "@/components/FocalImage";
+import type { WeddingPhoto } from "@/lib/content";
 
 /**
  * StoryLocket — the couture "engraved locket" treatment for the
@@ -31,7 +33,7 @@ const GOLD_STOPS = (
   </>
 );
 
-export function StoryLocket({ src, alt }: { src: string; alt: string }) {
+export function StoryLocket({ photo, alt }: { photo: WeddingPhoto; alt: string }) {
   const uid = useId().replace(/[:]/g, "");
   const gb = `lkb-${uid}`;
   const go = `lko-${uid}`;
@@ -81,8 +83,12 @@ export function StoryLocket({ src, alt }: { src: string; alt: string }) {
 
       {/* the photograph, in its triple gold fillet */}
       <div style={{ position: "absolute", inset: 0, borderRadius: "50%", overflow: "hidden", boxShadow: "0 0 0 1px rgba(246,236,207,.85), 0 0 0 3.5px rgba(180,140,74,.9), 0 0 0 5px rgba(246,236,207,.28), 0 26px 60px rgba(0,0,0,.55), 0 0 56px rgba(216,189,133,.24)" }}>
-        {/* eslint-disable-next-line @next/next/no-img-element -- matches the codebase's plain-img pattern; assets are pre-sized */}
-        <img src={src} alt={alt} loading="lazy" decoding="async" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", filter: "sepia(.22) saturate(.88) contrast(1.05) brightness(.98)" }} />
+        <FocalImage
+          photo={photo}
+          alt={alt}
+          sizes="(max-width: 768px) 50vw, 206px"
+          style={{ filter: "sepia(.22) saturate(.88) contrast(1.05) brightness(.98)" }}
+        />
         {/* gold-dusk grade */}
         <div aria-hidden style={{ position: "absolute", inset: 0, borderRadius: "50%", background: "linear-gradient(168deg, rgba(246,236,207,.16) 0%, rgba(148,128,186,.10) 46%, rgba(20,16,34,.42) 100%)" }} />
         {/* vignette + engraved inner fillet */}

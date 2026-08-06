@@ -1,6 +1,7 @@
 "use client";
 
 import { forwardRef, useEffect, useImperativeHandle, useRef } from "react";
+import { fovForViewport, distanceForFraming } from "@/lib/depth";
 
 export interface StoryFlightHandle {
   /** Drive the flight with the chapter-transition progress (0…1). */
@@ -53,8 +54,17 @@ export const StoryFlight3D = forwardRef<StoryFlightHandle>(function StoryFlight3
       mount.appendChild(renderer.domElement);
 
       const scene = new THREE.Scene();
-      const camera = new THREE.PerspectiveCamera(35, (mount.clientWidth || 1) / (mount.clientHeight || 1), 0.1, 100);
-      camera.position.set(0, 0, 16);
+      // Unified projection (lib/depth): fov matches the page's DOM
+      // perspective for this viewport; distance preserves the framing
+      // the old fov-35/z-16 camera had (half-height 5.05 world units).
+      const HALF_FRAME = 5.05;
+      const camera = new THREE.PerspectiveCamera(
+        fovForViewport(mount.clientHeight || 1),
+        (mount.clientWidth || 1) / (mount.clientHeight || 1),
+        0.1,
+        100,
+      );
+      camera.position.set(0, 0, distanceForFraming(HALF_FRAME, mount.clientHeight || 1));
 
       const pmrem = new THREE.PMREMGenerator(renderer);
       scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
@@ -196,6 +206,8 @@ export const StoryFlight3D = forwardRef<StoryFlightHandle>(function StoryFlight3
         const w = mount.clientWidth || 1, h = mount.clientHeight || 1;
         renderer.setSize(w, h);
         camera.aspect = w / h;
+        camera.fov = fovForViewport(h); // projection stays unified across resizes
+        camera.position.z = distanceForFraming(HALF_FRAME, h);
         camera.updateProjectionMatrix();
       };
       window.addEventListener("resize", resize);

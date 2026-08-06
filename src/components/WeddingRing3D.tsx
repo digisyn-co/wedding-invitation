@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import gsap from "gsap";
+import { fovForViewport, distanceForFraming } from "@/lib/depth";
 
 /**
  * A real 3D gold wedding ring, rendered with Three.js (lazy-loaded so
@@ -48,8 +49,13 @@ export function WeddingRing3D({ breaking }: { breaking: boolean }) {
       mount.appendChild(renderer.domElement);
 
       const scene = new THREE.Scene();
-      const camera = new THREE.PerspectiveCamera(35, 1, 0.1, 50);
-      camera.position.set(0, 0, 6);
+      // Projection matched to the page's unified depth model (see
+      // lib/depth): same growth-per-z as every DOM translateZ layer.
+      // 1.89 = the frame half-height the old fov-35/z-6 camera saw —
+      // framing is preserved, only the projection is unified.
+      const HALF_FRAME = 1.89;
+      const camera = new THREE.PerspectiveCamera(fovForViewport(SIZE), 1, 0.1, 50);
+      camera.position.set(0, 0, distanceForFraming(HALF_FRAME, SIZE));
 
       // Studio-style environment: this is what makes the gold read as
       // gold — moving reflections, not flat shading.
