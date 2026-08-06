@@ -1,5 +1,6 @@
 import gsap from "gsap";
 import { MotionPathPlugin } from "gsap/MotionPathPlugin";
+import { EYE } from "@/lib/depth";
 
 gsap.registerPlugin(MotionPathPlugin);
 
@@ -229,7 +230,7 @@ export function playSealBurst3D({ layer, x, y, seal, doves, reduced }: SealBurst
 
   // ══ 1. THE SEAL: press → shudder → 3D tumble toward the camera ══
   if (seal) {
-    tl.to(seal, { scale: 0.92, duration: 0.14, ease: "power2.in", transformPerspective: 900 }, 0)
+    tl.to(seal, { scale: 0.92, duration: 0.14, ease: "power2.in", transformPerspective: EYE.perspective }, 0)
       .to(seal, { rotation: 2.5, duration: 0.05, yoyo: true, repeat: 5, ease: "none" }, 0.14)
       .to(
         seal,
@@ -243,7 +244,7 @@ export function playSealBurst3D({ layer, x, y, seal, doves, reduced }: SealBurst
           filter: "blur(7px)",
           duration: 0.95,
           ease: "power3.in",
-          transformPerspective: 900,
+          transformPerspective: EYE.perspective,
         },
         0.42,
       );
@@ -264,7 +265,7 @@ export function playSealBurst3D({ layer, x, y, seal, doves, reduced }: SealBurst
   });
   tl.fromTo(
     ground,
-    { rotationX: 72, scale: 0.1, opacity: 0.95, transformPerspective: 800 },
+    { rotationX: 72, scale: 0.1, opacity: 0.95, transformPerspective: EYE.perspective },
     { scale: 14, opacity: 0, duration: 1.9, ease: "expo.out" },
     0.5,
   );
@@ -451,7 +452,7 @@ export function playSealBurst3D({ layer, x, y, seal, doves, reduced }: SealBurst
   doves.slice(0, flights.length).forEach((dove, i) => {
     const f = flights[i];
     if (f.blur) dove.style.filter = `blur(${f.blur}px)`;
-    tl.set(dove, { xPercent: -50, yPercent: -50, scale: 0.42, opacity: 0, transformPerspective: 900 }, f.at)
+    tl.set(dove, { xPercent: -50, yPercent: -50, scale: 0.42, opacity: 0, transformPerspective: EYE.perspective }, f.at)
       .to(dove, { opacity: 1, duration: 0.35, ease: "power1.out" }, f.at)
       // the flight itself — one smooth curve, banking through each leg
       .to(dove, { motionPath: { path: f.path, curviness: 1.4 }, duration: f.dur, ease: "power1.inOut" }, f.at)
