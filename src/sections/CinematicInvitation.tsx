@@ -42,13 +42,13 @@ interface SealBurst { x: number; y: number; r: number }
 
 const rnd = (a: number, b: number) => a + Math.random() * (b - a);
 
-const STORY = WEDDING.story.map((c, i) => ({ i, slot: `story-${i + 1}`, ...c }));
+const STORY = WEDDING.story.map((c, i) => ({ i, slot: `story-${i + 1}`, ...c, photo: c.photo as string | undefined }));
 
 /* The invitation suite — rendered as engraved editorial columns, not
    dashboard cards. Icons are fine hairline SVG engravings (see
    DetailIcon) rather than glyph characters. */
 const DETAILS = [
-  { icon: "date", label: "The Date", title: "December 12", sub: "Saturday, 2026", delay: 120 },
+  { icon: "date", label: "The Date", title: "December 17", sub: "Thursday, 2026", delay: 120 },
   { icon: "ceremony", label: "Ceremony", title: WEDDING.ceremony.time, sub: WEDDING.ceremony.note, delay: 220 },
   { icon: "reception", label: "Reception", title: WEDDING.reception.time, sub: WEDDING.reception.note, delay: 320 },
   { icon: "attire", label: "Dress Code", title: WEDDING.dressCode.title, sub: WEDDING.dressCode.note, delay: 420 },
@@ -932,7 +932,15 @@ export function CinematicInvitation() {
             <div key={c.i} data-ch={c.i} style={{ position: "absolute", left: "50%", top: "50%", transform: "translate(-50%,-50%)", width: "min(90vw,660px)", opacity: 0, textAlign: "center", willChange: "transform,opacity,filter" }}>
               <div style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 14, letterSpacing: ".52em", textTransform: "uppercase", color: "#d8bd85", marginBottom: 24, textShadow: "0 0 20px rgba(216,189,133,.4)" }}>{c.no}</div>
               <div style={{ position: "relative", width: "min(56vw,214px,26vh)", aspectRatio: "4/5", margin: "0 auto clamp(14px,3vh,32px)", borderRadius: "50%", overflow: "hidden", boxShadow: "0 0 0 2px rgba(216,189,133,.7),0 0 0 10px rgba(255,255,255,.05),0 26px 60px rgba(0,0,0,.5),0 0 56px rgba(216,189,133,.22)", animation: "floatySlow 12s ease-in-out infinite" }}>
-                <StoryEmblem chapter={c.i} />
+                {c.photo ? (
+                  <>
+                    <img src={c.photo} alt={c.title} style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }} />
+                    {/* ethereal gold-dusk veil so the photograph sits inside the night-sky palette */}
+                    <div aria-hidden style={{ position: "absolute", inset: 0, background: "radial-gradient(circle at 50% 38%, rgba(216,189,133,0) 46%, rgba(24,20,40,.45) 100%)", boxShadow: "inset 0 0 44px rgba(24,20,40,.55), inset 0 0 18px rgba(216,189,133,.18)" }} />
+                  </>
+                ) : (
+                  <StoryEmblem chapter={c.i} />
+                )}
               </div>
               <h3 style={{ margin: "0 0 clamp(10px,2vh,20px)", fontFamily: "'Cormorant Garamond',serif", fontWeight: 300, fontStyle: "italic", fontSize: "clamp(30px,5vw,56px)", color: "#f2ead4", lineHeight: 1.08 }}>{c.title}</h3>
               <p style={{ margin: "0 auto", maxWidth: "40ch", fontFamily: "'Cormorant Garamond',serif", fontWeight: 300, fontSize: "clamp(16px,2.1vw,21px)", lineHeight: 1.65, color: "#d6cebc" }}>{c.body}</p>
