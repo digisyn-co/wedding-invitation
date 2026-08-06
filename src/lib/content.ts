@@ -12,6 +12,22 @@
  * ────────────────────────────────────────────────────────────────
  */
 
+/**
+ * A photograph plus its focal point — the {x, y} (percent into the
+ * image) that must stay framed at every viewport and aspect ratio.
+ * Drives `object-position` wherever the photo renders, so a crop can
+ * tighten without ever cutting a face.
+ *
+ * Workflow for the couple's real photos: drop the file in
+ * /public/assets, then eyeball the focal point — x% from the left,
+ * y% from the top, aimed between the eyes of the most important face
+ * (or the midpoint between two faces). 50/50 is dead center.
+ */
+export interface WeddingPhoto {
+  src: string;
+  focal: { x: number; y: number };
+}
+
 export const WEDDING = {
   couple: {
     /** Display order is groom & bride per the approved artwork. */
@@ -72,25 +88,25 @@ export const WEDDING = {
       no: "Chapter One",
       title: "Where the Stars First Aligned",
       body: "In the halls of the University of Iloilo, two students crossed paths — and time, for a heartbeat, stood still. Between lectures and laughter, in glances that lingered a little too long, a quiet forever softly began.",
-      photo: "/assets/story-chapter-1.jpg",
+      photo: { src: "/assets/story-chapter-1.jpg", focal: { x: 50, y: 36 } },
     },
     {
       no: "Chapter Two",
       title: "Eight Golden Years",
       body: "Season after season, year after luminous year, they chose each other — through every triumph, every trial, every ordinary day made extraordinary. Eight years of patient, unwavering love, waiting for its perfect moment to be sealed.",
-      photo: "/assets/story-chapter-2.jpg",
+      photo: { src: "/assets/story-chapter-2.jpg", focal: { x: 50, y: 32 } },
     },
     {
       no: "Chapter Three",
       title: "A Blessing Arrives",
       body: "Then heaven leaned a little closer, and Lyannah arrived — a tiny heartbeat that made their love complete. Two hearts became three, and every sunrise since has felt like a gift wrapped in gold.",
-      photo: "/assets/story-chapter-3.jpg",
+      photo: { src: "/assets/story-chapter-3.jpg", focal: { x: 50, y: 46 } },
     },
     {
       no: "Chapter Four",
       title: "A New Horizon",
       body: "Now, hand in hand — the whole family together — they take flight toward a new destination, carrying their story across the sea to begin its most beautiful chapter yet: the one that never ends.",
-      photo: "/assets/story-chapter-4.jpg",
+      photo: { src: "/assets/story-chapter-4.jpg", focal: { x: 50, y: 44 } },
     },
   ],
 
@@ -111,13 +127,13 @@ export const WEDDING = {
   },
 
   /**
-   * Photography.
+   * Photography — every slot is a WeddingPhoto: `src` plus a `focal`
+   * point (percent into the image) that stays framed at every crop.
    *
    * The crest / monogram renders are real, approved artwork. The
    * portrait slots are ELEGANT PLACEHOLDERS until the couple's
-   * photographs arrive — drop files into /public/assets with the
-   * exact names below and set the path (they're picked up without
-   * any layout change):
+   * photographs arrive — drop files into /public/assets, set the
+   * path AND the focal point (aim it between the eyes):
    *
    *   portraitFirst   →  /assets/portrait-helson.jpg   (3:4 portrait, ≥900×1200)
    *   portraitSecond  →  /assets/portrait-luna.jpg     (3:4 portrait, ≥900×1200)
@@ -133,13 +149,13 @@ export const WEDDING = {
      * photographs of the couple as they arrive (any count works).
      */
     montage: [
-      "/assets/invitation-card.jpg",
-      "/assets/invitation-crest.jpg",
-      "/assets/invitation.jpg",
-    ] as readonly string[],
-    portraitFirst: null as string | null,
-    portraitSecond: null as string | null,
-    portraitCouple: null as string | null,
-    venuePhoto: null as string | null,
+      { src: "/assets/invitation-card.jpg", focal: { x: 50, y: 50 } },
+      { src: "/assets/invitation-crest.jpg", focal: { x: 50, y: 50 } },
+      { src: "/assets/invitation.jpg", focal: { x: 50, y: 50 } },
+    ] as readonly WeddingPhoto[],
+    portraitFirst: null as WeddingPhoto | null,
+    portraitSecond: null as WeddingPhoto | null,
+    portraitCouple: null as WeddingPhoto | null,
+    venuePhoto: null as WeddingPhoto | null,
   },
 } as const;
