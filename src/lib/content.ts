@@ -25,15 +25,15 @@ export const WEDDING = {
 
   /** Canonical event date — used for display AND the live countdown. */
   date: {
-    iso: "2026-12-12T15:30:00+08:00",
-    display: "12 · 12 · 2026",
-    long: "Saturday, the twelfth of December",
+    iso: "2026-12-17T15:30:00+08:00",
+    display: "12 · 17 · 2026",
+    long: "Thursday, the seventeenth of December",
     year: "Two thousand twenty-six",
-    shortLine: "12 December 2026 · Iloilo City",
+    shortLine: "17 December 2026 · Iloilo City",
   },
 
   /** One restrained romantic line under the hero names. */
-  heroLine: "A love written among the stars",
+  heroLine: "Eight years of love, written among the stars",
   invitationLine: "Together with their families",
 
   ceremony: {
@@ -62,44 +62,48 @@ export const WEDDING = {
   },
 
   /** The couple section vow copy. */
-  coupleQuote: "Woven together by destiny, and sealed in gold.",
+  coupleQuote: "Two hearts that grew up together, now sealed in gold.",
   coupleVow:
-    "Under a lilac sky they found one another — and in every quiet moment since, chose each other again. Now they invite you to witness the promise they were always meant to make.",
+    "They met as students beneath the Iloilo sky, and across eight golden years — in every quiet moment, through every season — they chose each other, again and again. Now, with little Lyannah lighting the way, they invite you to witness the promise they were always meant to make.",
 
   /** Our Story — four chapters plus the two scroll set-pieces. */
   story: [
     {
       no: "Chapter One",
-      title: "The First Glance",
-      body: "A crowded room, a fleeting look — and somehow the noise softened to a hush. Neither knew it yet, but the story had already begun.",
+      title: "Where the Stars First Aligned",
+      body: "In the halls of the University of Iloilo, two students crossed paths — and time, for a heartbeat, stood still. Between lectures and laughter, in glances that lingered a little too long, a quiet forever softly began.",
+      photo: "/assets/story-chapter-1.jpg",
     },
     {
       no: "Chapter Two",
-      title: "A Thousand Letters",
-      body: "Words became a bridge across the miles. Every note, every late-night call, drew two distant hearts a little closer to one home.",
+      title: "Eight Golden Years",
+      body: "Season after season, year after luminous year, they chose each other — through every triumph, every trial, every ordinary day made extraordinary. Eight years of patient, unwavering love, waiting for its perfect moment to be sealed.",
+      photo: "/assets/story-chapter-2.jpg",
     },
     {
       no: "Chapter Three",
-      title: "The Question",
-      body: "Beneath a sky spilling with stars, one knee, one ring, one breathless yes. Forever, it turned out, was simply a matter of asking.",
+      title: "A Blessing Arrives",
+      body: "Then heaven leaned a little closer, and Lyannah arrived — a tiny heartbeat that made their love complete. Two hearts became three, and every sunrise since has felt like a gift wrapped in gold.",
+      photo: "/assets/story-chapter-3.jpg",
     },
     {
       no: "Chapter Four",
-      title: "The Beginning",
-      body: "And now, surrounded by the people they love most, they write the truest chapter of all — the one that never ends.",
+      title: "A New Horizon",
+      body: "Now, hand in hand — the whole family together — they take flight toward a new destination, carrying their story across the sea to begin its most beautiful chapter yet: the one that never ends.",
+      photo: "/assets/story-chapter-4.jpg",
     },
   ],
 
-  /** [PLACEHOLDER] growing-up captions — confirm wording with the couple. */
-  growingUp: ["A New Light", "First Steps", "Wild & Wonder", "Grown for Love"],
+  /** Growing-up captions — the golden path leading into the blessing. */
+  growingUp: ["A New Light", "First Steps", "Wild & Wonder", "Our Greatest Gift"],
 
-  /** [PLACEHOLDER] flight labels — confirm cities with the couple. */
+  /** Flight labels for the chapter 3 → 4 set-piece. */
   flight: {
-    departure: "Philippines · Departure",
+    departure: "Iloilo · Philippines · Departure",
     arrival: "Perth · Australia · Arrival",
   },
 
-  closingQuote: "And in the hush of the stars, forever began.",
+  closingQuote: "Eight years, one little miracle — and in the hush of the stars, forever begins.",
 
   rsvp: {
     deadline: "Kindly reply on or before the 1st of November, 2026.",
